@@ -46,16 +46,17 @@
             z-index: 1;
         }
         .input-box {
-            padding: 12px; /* Increased from 10px */
-            font-size: 20px; /* Increased from 16px */
+            padding: 12px;
+            font-size: 20px;
             font-family: 'SMSScript', Arial, sans-serif;
-            width: 120px; /* Increased from 100px */
+            width: 120px;
             margin: 10px;
+            text-align: center; /* Center placeholder and text */
         }
         .button {
-            padding: 12px 24px; /* Increased from 10px 20px */
+            padding: 12px 24px;
             margin: 5px;
-            font-size: 20px; /* Increased from 16px */
+            font-size: 20px;
             font-family: 'Delfino', Arial, sans-serif;
             cursor: pointer;
         }
@@ -77,19 +78,19 @@
         h2 {
             color: white;
             margin: 10px 0;
-            font-size: 28px; /* Increased from implicit ~24px */
+            font-size: 28px;
         }
         p {
             color: white;
             margin: 10px 0;
-            font-size: 20px; /* Increased from implicit ~16px */
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>IL Time Tracker</h2>
-        <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}">
+        <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}|\d+\.\d{2,3}">
         <br>
         <button id="goodBtn" class="button" onclick="addTime('good')">Good</button>
         <button id="badBtn" class="button" onclick="addTime('bad')">Bad</button>
@@ -109,9 +110,25 @@
         let totalAttempts = 0;
 
         function timeToMilliseconds(timeStr) {
-            const [minutes, seconds] = timeStr.split(':');
-            const [secs, millis] = seconds.split('.');
-            return (parseInt(minutes) * 60000) + (parseInt(secs) * 1000) + parseInt(millis);
+            let minutes = 0;
+            let seconds = 0;
+            let millis = 0;
+
+            if (timeStr.includes(':')) {
+                // Format: "M:SS.mmm"
+                const [minSec, millisPart] = timeStr.split('.');
+                const [min, sec] = minSec.split(':');
+                minutes = parseInt(min);
+                seconds = parseInt(sec);
+                millis = parseInt(millisPart);
+            } else {
+                // Format: "SS.mmm"
+                const [sec, millisPart] = timeStr.split('.');
+                seconds = parseInt(sec);
+                millis = parseInt(millisPart);
+            }
+
+            return (minutes * 60000) + (seconds * 1000) + millis;
         }
 
         function millisecondsToTime(ms) {
@@ -123,8 +140,9 @@
 
         function addTime(type) {
             const timeInput = document.getElementById('timeInput').value;
-            if (!timeInput.match(/^\d+:\d{2}\.\d{3}$/)) {
-                alert('Please enter time in format "minutes:seconds.milliseconds" (e.g., 1:23.456)');
+            // Accept "M:SS.mmm" or "SS.mmm" (2-3 decimal places)
+            if (!timeInput.match(/^\d+:\d{2}\.\d{3}$/) && !timeInput.match(/^\d+\.\d{2,3}$/)) {
+                alert('Please enter time in format "minutes:seconds.milliseconds" (e.g., 1:23.456) or "seconds.milliseconds" (e.g., 30.26)');
                 return;
             }
 
