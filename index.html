@@ -14,35 +14,43 @@
             src: url('assets/fonts/SMSScript.ttf') format('truetype');
         }
         body {
-            background-image: url('assets/background/p3r.mp4');
-        }
-        body {
             font-family: Arial, sans-serif; /* Fallback font */
-            background-color: #f0f0f0;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden; /* Prevents scrollbars */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+        }
+        /* Background video styling */
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures video fills the screen */
+            z-index: -1; /* Places video behind content */
         }
         .container {
             text-align: center;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white for readability */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
+            z-index: 1; /* Ensures container is above video */
         }
         h1 {
-            font-family: 'Delfino', Arial, sans-serif; /* Delfino for the title */
+            font-family: 'Delfino', Arial, sans-serif;
             font-size: 24px;
             color: #333;
             margin-bottom: 20px;
         }
         .link {
             display: block;
-            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for links */
+            font-family: 'SMSScript', Arial, sans-serif;
             background-color: #007bff;
             color: white;
             padding: 10px;
@@ -57,6 +65,10 @@
     </style>
 </head>
 <body>
+    <video id="background-video" autoplay muted loop>
+        <source src="assets/background/p3r.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
     <div class="container">
         <h1>Zeldocto</h1>
         <a href="https://twitter.com/zeldocto" class="link">Twitter</a>
