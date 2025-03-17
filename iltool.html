@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IL Time Tracker</title>
+    <style>
+        @font-face {
+            font-family: 'Delfino';
+            src: url('assets/fonts/Delfino.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'SMSScript';
+            src: url('assets/fonts/SMSScript.ttf') format('truetype');
+        }
+        body {
+            font-family: 'Delfino', Arial, sans-serif; /* Delfino for general text */
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .input-box {
+            padding: 10px;
+            font-size: 16px;
+            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for time input (numbers) */
+            width: 100px;
+            margin: 10px;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            font-family: 'Delfino', Arial, sans-serif; /* Delfino for button text */
+            cursor: pointer;
+        }
+        #goodBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #badBtn {
+            background-color: #f44336;
+            color: white;
+        }
+        #resetBtn {
+            background-color: #808080;
+            color: white;
+        }
+        /* Apply SMSScript to numeric spans */
+        .number {
+            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for numbers */
+        }
+    </style>
+</head>
+<body>
+    <h2>IL Time Tracker</h2>
+    <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}">
+    <br>
+    <button id="goodBtn" class="button" onclick="addTime('good')">Good</button>
+    <button id="badBtn" class="button" onclick="addTime('bad')">Bad</button>
+    <br>
+    <button id="resetBtn" class="button" onclick="resetAll()">Reset</button>
+    <p>Good Count: <span id="goodCount" class="number">0</span></p>
+    <p>Bad Count: <span id="badCount" class="number">0</span></p>
+    <p>Streak: <span id="streakCount" class="number">0</span></p>
+    <p>Average Time: <span id="averageTime" class="number">0:00.000</span></p>
+
+    <script>
+        let goodCount = 0;
+        let badCount = 0;
+        let streakCount = 0;
+        let totalMilliseconds = 0;
+        let totalAttempts = 0;
+
+        function timeToMilliseconds(timeStr) {
+            const [minutes, seconds] = timeStr.split(':');
+            const [secs, millis] = seconds.split('.');
+            return (parseInt(minutes) * 60000) + (parseInt(secs) * 1000) + parseInt(millis);
+        }
+
+        function millisecondsToTime(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        function addTime(type) {
+            const timeInput = document.getElementById('timeInput').value;
+            if (!timeInput.match(/^\d+:\d{2}\.\d{3}$/)) {
+                alert('Please enter time in format "minutes:seconds.milliseconds" (e.g., 1:23.456)');
+                return;
+            }
+
+            const timeMs = timeToMilliseconds(timeInput);
+            totalMilliseconds += timeMs;
+            totalAttempts++;
+
+            if (type === 'good') {
+                goodCount++;
+                streakCount++;
+                document.getElementById('goodCount').textContent = goodCount;
+                document.getElementById('streakCount').textContent = streakCount;
+            } else {
+                badCount++;
+                streakCount = 0;
+                document.getElementById('badCount').textContent = badCount;
+                document.getElementById('streakCount').textContent = streakCount;
+            }
+
+            const averageMs = totalMilliseconds / totalAttempts;
+            document.getElementById('averageTime').textContent = millisecondsToTime(Math.round(averageMs));
+            document.getElementById('timeInput').value = '';
+        }
+
+        function resetAll() {
+            goodCount = 0;
+            badCount = 0;
+            streakCount = 0;
+            totalMilliseconds = 0;
+            totalAttempts = 0;
+            
+            document.getElementById('goodCount').textContent = '0';
+            document.getElementById('badCount').textContent = '0';
+            document.getElementById('streakCount').textContent = '0';
+            document.getElementById('averageTime').textContent = '0:00.000';
+            document.getElementById('timeInput').value = '';
+        }
+    </script>
+</body>
+</html>
