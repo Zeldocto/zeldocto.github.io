@@ -10,7 +10,7 @@
         @font-face {
             font-family: 'Delfino';
             src: url('assets/fonts/Delfino.ttf') format('truetype');
-            font-display: swap; /* Improves font loading performance */
+            font-display: swap;
         }
         @font-face {
             font-family: 'SMSScript';
@@ -21,7 +21,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevents scrollbars */
+            overflow: hidden;
         }
         html::before {
             content: '';
@@ -57,10 +57,10 @@
             text-align: center;
             position: relative;
             z-index: 1;
-            background: rgba(255, 255, 255, 0.1); /* Slight background for readability */
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         .input-box {
             padding: 12px;
@@ -89,7 +89,7 @@
             border-radius: 5px;
         }
         .button:hover {
-            opacity: 0.9; /* Subtle hover effect */
+            opacity: 0.9;
         }
         .button:active {
             transform: scale(0.95);
@@ -303,7 +303,7 @@
                 highlightElement('goodCount');
                 highlightElement('streakCount');
                 if (streakCount > bestStreak - 1) highlightElement('bestStreak');
-                if (timeMs < bestTimeMs || bestTimeMs === Infinity) highlightElement('bestTime');
+                if (timeMs <= bestTimeMs) highlightElement('bestTime');
             } else {
                 badCount++;
                 streakCount = 0;
