@@ -26,7 +26,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* 90% black overlay for 10% dim */
+            background-color: rgba(0, 0, 0, 0.9);
             z-index: 0;
         }
         body {
@@ -96,8 +96,8 @@
     </style>
 </head>
 <body>
-    <video id="background-video" autoplay muted loop>
-        <source src="assets/background/p3r.mp4" type="video/mp4">
+    <video id="background-video" autoplay muted>
+        <source src="assets/background/p3rstart.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     <a href="https://zeldocto.github.io/" class="home-link">home</a>
@@ -106,8 +106,28 @@
         <a href="https://x.com/zeldocto" class="link">X</a>
         <a href="https://twitch.tv/zeldocto" class="link">Twitch</a>
         <a href="https://youtube.com/@zeldocto" class="link">YouTube</a>
-        <a href="https://sunmar.io/wiki" class="link">Speedrun Wiki</a>
         <a href="/iltool.html" class="link">IL Tool</a>
     </div>
+
+    <script>
+        const video = document.getElementById('background-video');
+
+        // When the first video ends, switch to the looping video
+        video.addEventListener('ended', function() {
+            // Create a new video element for the looping video
+            const loopVideo = document.createElement('video');
+            loopVideo.id = 'background-video';
+            loopVideo.autoplay = true;
+            loopVideo.muted = true;
+            loopVideo.loop = true;
+            loopVideo.innerHTML = `
+                <source src="assets/background/p3r.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            `;
+
+            // Replace the initial video with the looping one
+            video.parentNode.replaceChild(loopVideo, video);
+        });
+    </script>
 </body>
 </html>
