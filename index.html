@@ -72,29 +72,13 @@
             color: white;
             text-decoration: none;
             z-index: 2;
-            /* Add 2px black stroke using text-shadow */
-            text-shadow: 
-                -2px -2px 0 #000,  
-                 2px -2px 0 #000,  
-                -2px  2px 0 #000,  
-                 2px  2px 0 #000,
-                -2px  0px 0 #000,  
-                 2px  0px 0 #000,
-                 0px -2px 0 #000,  
-                 0px  2px 0 #000;
+            /* Single 2px black shadow */
+            text-shadow: 2px 2px 2px #000;
         }
         .home-link:hover {
             color: #ddd;
-            /* Maintain stroke on hover with slightly lighter text */
-            text-shadow: 
-                -2px -2px 0 #000,  
-                 2px -2px 0 #000,  
-                -2px  2px 0 #000,  
-                 2px  2px 0 #000,
-                -2px  0px 0 #000,  
-                 2px  0px 0 #000,
-                 0px -2px 0 #000,  
-                 0px  2px 0 #000;
+            /* Maintain single shadow on hover */
+            text-shadow: 2px 2px 2px #000;
         }
     </style>
 </head>
