@@ -76,15 +76,7 @@
             font-family: 'SMSScript', Arial, sans-serif;
             font-size: 22px;
         }
-        #goodCount {
-            color: #24db11;
-        }
-        #badCount {
-            color: #f11e1e;
-        }
-        #streakCount {
-            color: #fffb00;
-        }
+        /* Removed initial colors from CSS */
         h2 {
             color: white;
             margin: 10px 0;
@@ -224,6 +216,14 @@
             document.getElementById('successPercent').style.color = 'white';
             document.getElementById('timeInput').value = '';
         }
+
+        // Initialize colors on page load
+        window.onload = function() {
+            updateCounterColor('goodCount', goodCount, '#24db11');
+            updateCounterColor('badCount', badCount, '#f11e1e');
+            updateCounterColor('streakCount', streakCount, '#fffb00');
+            updateSuccessPercent();
+        };
     </script>
 </body>
 </html>
