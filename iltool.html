@@ -14,24 +14,43 @@
             src: url('assets/fonts/SMSScript.ttf') format('truetype');
         }
         body {
-            font-family: 'Delfino', Arial, sans-serif; /* Delfino for general text */
+            font-family: 'Delfino', Arial, sans-serif;
             max-width: 600px;
             margin: 20px auto;
             text-align: center;
+            background: url('assets/background/p5 nurse.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures image fills the screen */
+            position: relative; /* For overlay positioning */
+            min-height: 100vh; /* Full height */
+        }
+        /* Overlay to dim/tint the background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Black tint, 90% opacity = 10% visibility */
+            z-index: 0; /* Behind content */
         }
         .input-box {
             padding: 10px;
             font-size: 16px;
-            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for time input (numbers) */
+            font-family: 'SMSScript', Arial, sans-serif;
             width: 100px;
             margin: 10px;
+            position: relative; /* Above overlay */
+            z-index: 1;
         }
         .button {
             padding: 10px 20px;
             margin: 5px;
             font-size: 16px;
-            font-family: 'Delfino', Arial, sans-serif; /* Delfino for button text */
+            font-family: 'Delfino', Arial, sans-serif;
             cursor: pointer;
+            position: relative; /* Above overlay */
+            z-index: 1;
         }
         #goodBtn {
             background-color: #4CAF50;
@@ -45,9 +64,13 @@
             background-color: #808080;
             color: white;
         }
-        /* Apply SMSScript to numeric spans */
         .number {
-            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for numbers */
+            font-family: 'SMSScript', Arial, sans-serif;
+        }
+        h2, p {
+            position: relative; /* Above overlay */
+            z-index: 1;
+            color: white; /* Improved contrast against dark background */
         }
     </style>
 </head>
