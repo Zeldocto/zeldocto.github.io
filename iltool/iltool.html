@@ -1,0 +1,345 @@
+<!-- Idea from akane174 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IL Time Tracker</title>
+    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+    <style>
+        @font-face {
+            font-family: 'Delfino';
+            src: url('assets/fonts/Delfino.ttf') format('truetype');
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'SMSScript';
+            src: url('assets/fonts/SMSScript.ttf') format('truetype');
+            font-display: swap;
+        }
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        .container {
+            font-family: 'Delfino', Arial, sans-serif;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .input-box {
+            padding: 12px;
+            font-size: 22px;
+            font-family: 'SMSScript', Arial, sans-serif;
+            width: 120px;
+            margin: 10px;
+            text-align: center;
+            transition: border 0.3s, box-shadow 0.3s;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-box:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
+        .button {
+            padding: 12px 24px;
+            margin: 5px;
+            font-size: 20px;
+            font-family: 'Delfino', Arial, sans-serif;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.3s;
+            border: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .button:active {
+            transform: scale(0.95);
+        }
+        #goodBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #badBtn {
+            background-color: #f44336;
+            color: white;
+        }
+        #resetBtn {
+            background-color: #808080;
+            color: white;
+        }
+        .number {
+            font-family: 'SMSScript', Arial, sans-serif;
+            font-size: 22px;
+            transition: all 0.3s;
+        }
+        .highlight {
+            text-shadow: 0 0 5px white;
+            transform: scale(1.1);
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        .pulse {
+            animation: pulse 0.5s;
+        }
+        h2 {
+            color: white;
+            margin: 10px 0;
+            font-size: 28px;
+        }
+        p {
+            color: white;
+            margin: 10px 0;
+            font-size: 20px;
+        }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Delfino', Arial, sans-serif;
+            font-size: 48px;
+            color: white;
+            text-decoration: none;
+            z-index: 2;
+            text-shadow: 2px 2px 2px #000;
+            transition: color 0.3s;
+        }
+        .home-link:hover {
+            color: #ddd;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <video id="background-video" autoplay muted loop preload="auto">
+        <source src="assets/background/fallingpetals.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <a href="https://zeldocto.github.io/" class="home-link">home</a>
+    <div class="container">
+        <h2>IL Time Tracker</h2>
+        <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}|\d+\.\d{2,3}">
+        <br>
+        <button id="goodBtn" class="button" onclick="addTime('good')">Good</button>
+        <button id="badBtn" class="button" onclick="addTime('bad')">Bad</button>
+        <br>
+        <button id="resetBtn" class="button" onclick="resetAll()">Reset</button>
+        <p>Good Count: <span id="goodCount" class="number">0</span></p>
+        <p>Bad Count: <span id="badCount" class="number">0</span></p>
+        <p>Best Streak: <span id="bestStreak" class="number">0</span></p>
+        <p>Streak: <span id="streakCount" class="number">0</span></p>
+        <p>Success: <span id="successPercent" class="number">0%</span></p>
+        <p>Average Time: <span id="averageTime" class="number">0:00.000</span></p>
+        <p>Best Time: <span id="bestTime" class="number">N/A</span></p>
+    </div>
+
+    <script>
+        let goodCount = 0;
+        let badCount = 0;
+        let streakCount = 0;
+        let bestStreak = 0;
+        let totalMilliseconds = 0;
+        let totalAttempts = 0;
+        let bestTimeMs = null; // Changed from Infinity to null for clarity
+
+        // Load saved data from localStorage
+        function loadData() {
+            const saved = JSON.parse(localStorage.getItem('ilTimeTracker') || '{}');
+            goodCount = saved.goodCount || 0;
+            badCount = saved.badCount || 0;
+            bestStreak = saved.bestStreak || 0;
+            totalMilliseconds = saved.totalMilliseconds || 0;
+            totalAttempts = saved.totalAttempts || 0;
+            bestTimeMs = saved.bestTimeMs !== undefined ? saved.bestTimeMs : null; // null if no best time
+            streakCount = saved.streakCount || 0;
+
+            updateDisplay();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('ilTimeTracker', JSON.stringify({
+                goodCount, badCount, bestStreak, totalMilliseconds, totalAttempts, bestTimeMs, streakCount
+            }));
+        }
+
+        function timeToMilliseconds(timeStr) {
+            let minutes = 0, seconds = 0, millis = 0;
+            if (timeStr.includes(':')) {
+                const [minSec, millisPart] = timeStr.split('.');
+                const [min, sec] = minSec.split(':');
+                minutes = parseInt(min);
+                seconds = parseInt(sec);
+                millis = parseInt(millisPart);
+            } else {
+                const [sec, millisPart] = timeStr.split('.');
+                seconds = parseInt(sec);
+                millis = parseInt(millisPart);
+            }
+            return (minutes * 60000) + (seconds * 1000) + millis;
+        }
+
+        function millisecondsToTime(ms) {
+            if (ms === null || ms === Infinity || isNaN(ms)) return 'N/A';
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        function interpolateColor(percent) {
+            const goodColor = { r: 0x24, g: 0xdb, b: 0x11 }; // #24db11
+            const badColor = { r: 0xf1, g: 0x1e, b: 0x1e };  // #f11e1e
+            const ratio = percent / 100;
+            const r = Math.round(badColor.r + (goodColor.r - badColor.r) * ratio);
+            const g = Math.round(badColor.g + (goodColor.g - badColor.g) * ratio);
+            const b = Math.round(badColor.b + (goodColor.b - badColor.b) * ratio);
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        function updateCounterColor(elementId, value, defaultColor) {
+            const element = document.getElementById(elementId);
+            element.style.color = value === 0 ? 'white' : defaultColor;
+        }
+
+        function highlightElement(elementId) {
+            const element = document.getElementById(elementId);
+            element.classList.add('highlight');
+            setTimeout(() => element.classList.remove('highlight'), 300);
+        }
+
+        function updateSuccessPercent() {
+            const total = goodCount + badCount;
+            const percent = total === 0 ? 0 : Math.round((goodCount / total) * 100);
+            const successElement = document.getElementById('successPercent');
+            successElement.textContent = `${percent}%`;
+            successElement.style.color = percent === 0 ? 'white' : interpolateColor(percent);
+            highlightElement('successPercent');
+        }
+
+        function updateDisplay() {
+            document.getElementById('goodCount').textContent = goodCount;
+            document.getElementById('badCount').textContent = badCount;
+            document.getElementById('streakCount').textContent = streakCount;
+            document.getElementById('bestStreak').textContent = bestStreak;
+            document.getElementById('averageTime').textContent = totalAttempts === 0 ? '0:00.000' : millisecondsToTime(Math.round(totalMilliseconds / totalAttempts));
+            document.getElementById('bestTime').textContent = (bestTimeMs === null || bestTimeMs === Infinity) ? 'N/A' : millisecondsToTime(bestTimeMs);
+            updateCounterColor('goodCount', goodCount, '#24db11');
+            updateCounterColor('badCount', badCount, '#f11e1e');
+            updateCounterColor('streakCount', streakCount, '#fffb00');
+            updateCounterColor('bestStreak', bestStreak, '#fffb00');
+            updateSuccessPercent();
+        }
+
+        function addTime(type) {
+            const timeInput = document.getElementById('timeInput');
+            const timeValue = timeInput.value.trim();
+            if (!timeValue.match(/^\d+:\d{2}\.\d{3}$/) && !timeValue.match(/^\d+\.\d{2,3}$/)) {
+                timeInput.classList.add('shake');
+                setTimeout(() => timeInput.classList.remove('shake'), 500);
+                alert('Please enter time in format "minutes:seconds.milliseconds" (e.g., 1:23.456) or "seconds.milliseconds" (e.g., 30.26)');
+                return;
+            }
+
+            const timeMs = timeToMilliseconds(timeValue);
+            totalMilliseconds += timeMs;
+            totalAttempts++;
+
+            if (type === 'good') {
+                goodCount++;
+                streakCount++;
+                if (streakCount > bestStreak) bestStreak = streakCount;
+                if (bestTimeMs === null || timeMs < bestTimeMs) {
+                    bestTimeMs = timeMs;
+                    highlightElement('bestTime');
+                }
+                highlightElement('goodCount');
+                highlightElement('streakCount');
+                if (streakCount > bestStreak - 1) highlightElement('bestStreak');
+            } else {
+                badCount++;
+                streakCount = 0;
+                highlightElement('badCount');
+                highlightElement('streakCount');
+            }
+
+            updateDisplay();
+            saveData();
+            timeInput.value = '';
+        }
+
+        function resetAll() {
+            goodCount = 0;
+            badCount = 0;
+            streakCount = 0;
+            bestStreak = 0;
+            totalMilliseconds = 0;
+            totalAttempts = 0;
+            bestTimeMs = null; // Reset to null
+            updateDisplay();
+            saveData();
+
+            const resetBtn = document.getElementById('resetBtn');
+            resetBtn.classList.add('pulse');
+            setTimeout(() => resetBtn.classList.remove('pulse'), 500);
+        }
+
+        window.onload = function() {
+            loadData();
+            document.getElementById('timeInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTime('good');
+            });
+        };
+    </script>
+</body>
+</html>
