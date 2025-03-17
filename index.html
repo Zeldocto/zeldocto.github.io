@@ -22,7 +22,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative; /* Added to position the home link */
+            position: relative;
         }
         #background-video {
             position: fixed;
@@ -71,10 +71,30 @@
             font-size: 48px;
             color: white;
             text-decoration: none;
-            z-index: 2; /* Above video and container */
+            z-index: 2;
+            /* Add 2px black stroke using text-shadow */
+            text-shadow: 
+                -2px -2px 0 #000,  
+                 2px -2px 0 #000,  
+                -2px  2px 0 #000,  
+                 2px  2px 0 #000,
+                -2px  0px 0 #000,  
+                 2px  0px 0 #000,
+                 0px -2px 0 #000,  
+                 0px  2px 0 #000;
         }
         .home-link:hover {
-            color: #ddd; /* Light gray on hover for feedback */
+            color: #ddd;
+            /* Maintain stroke on hover with slightly lighter text */
+            text-shadow: 
+                -2px -2px 0 #000,  
+                 2px -2px 0 #000,  
+                -2px  2px 0 #000,  
+                 2px  2px 0 #000,
+                -2px  0px 0 #000,  
+                 2px  0px 0 #000,
+                 0px -2px 0 #000,  
+                 0px  2px 0 #000;
         }
     </style>
 </head>
@@ -83,7 +103,7 @@
         <source src="assets/background/p3r.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
-    <a href="https://zeldocto.github.io/" class="home-link">Home</a>
+    <a href="https://zeldocto.github.io/" class="home-link">home</a>
     <div class="container">
         <h1>Zeldocto</h1>
         <a href="https://x.com/zeldocto" class="link">X</a>
