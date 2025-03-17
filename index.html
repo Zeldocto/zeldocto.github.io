@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeldocto</title>
     <style>
+        @font-face {
+            font-family: 'Delfino';
+            src: url('assets/fonts/Delfino.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'SMSScript';
+            src: url('assets/fonts/SMSScript.ttf') format('truetype');
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; /* Fallback font */
             background-color: #f0f0f0;
             display: flex;
             justify-content: center;
@@ -24,12 +32,14 @@
             max-width: 400px;
         }
         h1 {
+            font-family: 'Delfino', Arial, sans-serif; /* Delfino for the title */
             font-size: 24px;
             color: #333;
             margin-bottom: 20px;
         }
         .link {
             display: block;
+            font-family: 'SMSScript', Arial, sans-serif; /* SMSScript for links */
             background-color: #007bff;
             color: white;
             padding: 10px;
@@ -46,9 +56,9 @@
 <body>
     <div class="container">
         <h1>Zeldocto</h1>
-        <a href="https://www.speedrun.com/users/Zeldocto" class="link">Speedrun</a>
-        <a href="http://discordapp.com/users/78587378087763968" class="link">Discord</a>
-        <a href="https://www.twitch.tv/zeldocto" class="link">Twitch</a>
+        <a href="https://twitter.com/zeldocto" class="link">Twitter</a>
+        <a href="https://instagram.com/zeldocto" class="link">Instagram</a>
+        <a href="https://twitch.tv/zeldocto" class="link">Twitch</a>
         <a href="https://youtube.com/@zeldocto" class="link">YouTube</a>
     </div>
 </body>
