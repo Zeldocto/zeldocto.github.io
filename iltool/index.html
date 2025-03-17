@@ -146,6 +146,17 @@
         .home-link:hover {
             color: #ddd;
         }
+        .credit {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Delfino', Arial, sans-serif;
+            font-size: 8px;
+            color: white;
+            z-index: 1;
+            text-shadow: 1px 1px 1px #000;
+        }
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -182,6 +193,7 @@
         <p>Average Time: <span id="averageTime" class="number">0:00.000</span></p>
         <p>Best Time: <span id="bestTime" class="number">N/A</span></p>
     </div>
+    <div class="credit">Idea by akane174</div>
 
     <script>
         let goodCount = 0;
@@ -241,7 +253,7 @@
             const ratio = percent / 100;
             const r = Math.round(badColor.r + (goodColor.r - badColor.r) * ratio);
             const g = Math.round(badColor.g + (goodColor.g - badColor.g) * ratio);
-            const b = Math.round(badColor.b + (goodColor.b - badColor.b) * ratio);
+            const b = Math.round(badColor.b + (badColor.b - badColor.b) * ratio);
             return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
         }
 
