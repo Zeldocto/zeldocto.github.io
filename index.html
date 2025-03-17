@@ -54,14 +54,13 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.5s ease; /* Smooth fade transition */
         }
         #intro-video {
             z-index: 1; /* On top initially */
         }
         #loop-video {
             z-index: 0; /* Behind intro video */
-            opacity: 0; /* Hidden until intro ends */
+            display: none; /* Hidden until intro ends */
         }
         .container {
             text-align: center;
@@ -134,15 +133,15 @@
         const introVideo = document.getElementById('intro-video');
         const loopVideo = document.getElementById('loop-video');
 
-        // Preload and prepare the looping video
+        // Preload the looping video
         loopVideo.load();
 
-        // When the intro video ends, fade it out and start the looping video
+        // When the intro video ends, hide it and start the looping video
         introVideo.addEventListener('ended', function() {
+            introVideo.style.display = 'none'; // Instantly hide intro video
+            loopVideo.style.display = 'block';  // Instantly show loop video
             loopVideo.play();
             loopVideo.loop = true;
-            loopVideo.style.opacity = '1'; // Fade in loop video
-            introVideo.style.opacity = '0'; // Fade out intro video
         });
     </script>
 </body>
