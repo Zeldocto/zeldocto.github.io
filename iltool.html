@@ -37,6 +37,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative; /* Added to position the home link */
         }
         .container {
             font-family: 'Delfino', Arial, sans-serif;
@@ -102,6 +103,21 @@
             margin: 10px 0;
             font-size: 20px;
         }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Delfino', Arial, sans-serif;
+            font-size: 48px;
+            color: white;
+            text-decoration: none;
+            z-index: 2;
+            text-shadow: 2px 2px 2px #000;
+        }
+        .home-link:hover {
+            color: #ddd;
+            text-shadow: 2px 2px 2px #000;
+        }
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -117,6 +133,7 @@
     </style>
 </head>
 <body>
+    <a href="https://zeldocto.github.io/" class="home-link">home</a>
     <div class="container">
         <h2>IL Time Tracker</h2>
         <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}|\d+\.\d{2,3}">
