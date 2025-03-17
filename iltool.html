@@ -14,30 +14,34 @@
             src: url('assets/fonts/SMSScript.ttf') format('truetype');
         }
         html {
-            height: 100%; /* Full viewport height */
+            height: 100%;
             background: url('assets/background/p5 nurse.png') no-repeat center center fixed;
-            background-size: cover; /* Fills the screen */
-            margin: 0; /* Remove default margin */
+            background-size: cover;
+            margin: 0;
             padding: 0;
         }
-        /* Overlay for full viewport */
         html::before {
             content: '';
-            position: fixed; /* Fixed to cover viewport */
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* 10% visibility */
-            z-index: 0; /* Behind content */
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 0;
         }
         body {
             font-family: 'Delfino', Arial, sans-serif;
             max-width: 600px;
-            margin: 20px auto; /* Centers content */
+            margin: 0; /* Remove default margin */
             text-align: center;
-            position: relative; /* Above overlay */
-            z-index: 1; /* Ensure body content is above tint */
+            position: relative;
+            z-index: 1;
+            display: flex; /* Flexbox for centering */
+            flex-direction: column; /* Stack content vertically */
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            min-height: 100vh; /* Full viewport height */
         }
         .input-box {
             padding: 10px;
@@ -69,7 +73,8 @@
             font-family: 'SMSScript', Arial, sans-serif;
         }
         h2, p {
-            color: white; /* Contrast against dark background */
+            color: white;
+            margin: 10px 0; /* Consistent spacing */
         }
     </style>
 </head>
