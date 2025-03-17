@@ -31,29 +31,31 @@
             z-index: 0;
         }
         body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
             font-family: 'Delfino', Arial, sans-serif;
             max-width: 600px;
-            margin: 0; /* Remove default margin */
             text-align: center;
             position: relative;
             z-index: 1;
-            display: flex; /* Flexbox for centering */
-            flex-direction: column; /* Stack content vertically */
-            justify-content: center; /* Center vertically */
-            align-items: center; /* Center horizontally */
-            min-height: 100vh; /* Full viewport height */
         }
         .input-box {
-            padding: 10px;
-            font-size: 20px;
+            padding: 12px; /* Increased from 10px */
+            font-size: 20px; /* Increased from 16px */
             font-family: 'SMSScript', Arial, sans-serif;
-            width: 100px;
+            width: 120px; /* Increased from 100px */
             margin: 10px;
         }
         .button {
-            padding: 10px 20px;
+            padding: 12px 24px; /* Increased from 10px 20px */
             margin: 5px;
-            font-size: 20px;
+            font-size: 20px; /* Increased from 16px */
             font-family: 'Delfino', Arial, sans-serif;
             cursor: pointer;
         }
@@ -72,24 +74,32 @@
         .number {
             font-family: 'SMSScript', Arial, sans-serif;
         }
-        h2, p {
+        h2 {
             color: white;
-            margin: 10px 0; /* Consistent spacing */
+            margin: 10px 0;
+            font-size: 28px; /* Increased from implicit ~24px */
+        }
+        p {
+            color: white;
+            margin: 10px 0;
+            font-size: 20px; /* Increased from implicit ~16px */
         }
     </style>
 </head>
 <body>
-    <h2>IL Time Tracker</h2>
-    <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}">
-    <br>
-    <button id="goodBtn" class="button" onclick="addTime('good')">Good</button>
-    <button id="badBtn" class="button" onclick="addTime('bad')">Bad</button>
-    <br>
-    <button id="resetBtn" class="button" onclick="resetAll()">Reset</button>
-    <p>Good Count: <span id="goodCount" class="number">0</span></p>
-    <p>Bad Count: <span id="badCount" class="number">0</span></p>
-    <p>Streak: <span id="streakCount" class="number">0</span></p>
-    <p>Average Time: <span id="averageTime" class="number">0:00.000</span></p>
+    <div class="container">
+        <h2>IL Time Tracker</h2>
+        <input type="text" id="timeInput" class="input-box" placeholder="0:00.000" pattern="\d+:\d{2}\.\d{3}">
+        <br>
+        <button id="goodBtn" class="button" onclick="addTime('good')">Good</button>
+        <button id="badBtn" class="button" onclick="addTime('bad')">Bad</button>
+        <br>
+        <button id="resetBtn" class="button" onclick="resetAll()">Reset</button>
+        <p>Good Count: <span id="goodCount" class="number">0</span></p>
+        <p>Bad Count: <span id="badCount" class="number">0</span></p>
+        <p>Streak: <span id="streakCount" class="number">0</span></p>
+        <p>Average Time: <span id="averageTime" class="number">0:00.000</span></p>
+    </div>
 
     <script>
         let goodCount = 0;
