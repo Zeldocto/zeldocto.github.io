@@ -14,6 +14,21 @@
             font-family: 'SMSScript';
             src: url('assets/fonts/SMSScript.ttf') format('truetype');
         }
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        html::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* 90% black overlay for 10% dim */
+            z-index: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -72,12 +87,10 @@
             color: white;
             text-decoration: none;
             z-index: 2;
-            /* Single 2px black shadow */
             text-shadow: 2px 2px 2px #000;
         }
         .home-link:hover {
             color: #ddd;
-            /* Maintain single shadow on hover */
             text-shadow: 2px 2px 2px #000;
         }
     </style>
