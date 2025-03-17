@@ -190,7 +190,7 @@
         let bestStreak = 0;
         let totalMilliseconds = 0;
         let totalAttempts = 0;
-        let bestTimeMs = Infinity;
+        let bestTimeMs = null; // Changed from Infinity to null for clarity
 
         // Load saved data from localStorage
         function loadData() {
@@ -200,7 +200,7 @@
             bestStreak = saved.bestStreak || 0;
             totalMilliseconds = saved.totalMilliseconds || 0;
             totalAttempts = saved.totalAttempts || 0;
-            bestTimeMs = saved.bestTimeMs !== undefined ? saved.bestTimeMs : Infinity;
+            bestTimeMs = saved.bestTimeMs !== undefined ? saved.bestTimeMs : null; // null if no best time
             streakCount = saved.streakCount || 0;
 
             updateDisplay();
@@ -230,7 +230,7 @@
         }
 
         function millisecondsToTime(ms) {
-            if (ms === Infinity || isNaN(ms)) return 'N/A';
+            if (ms === null || ms === Infinity || isNaN(ms)) return 'N/A';
             const minutes = Math.floor(ms / 60000);
             const seconds = Math.floor((ms % 60000) / 1000);
             const milliseconds = ms % 1000;
@@ -273,7 +273,7 @@
             document.getElementById('streakCount').textContent = streakCount;
             document.getElementById('bestStreak').textContent = bestStreak;
             document.getElementById('averageTime').textContent = totalAttempts === 0 ? '0:00.000' : millisecondsToTime(Math.round(totalMilliseconds / totalAttempts));
-            document.getElementById('bestTime').textContent = bestTimeMs === Infinity ? 'N/A' : millisecondsToTime(bestTimeMs);
+            document.getElementById('bestTime').textContent = (bestTimeMs === null || bestTimeMs === Infinity) ? 'N/A' : millisecondsToTime(bestTimeMs);
             updateCounterColor('goodCount', goodCount, '#24db11');
             updateCounterColor('badCount', badCount, '#f11e1e');
             updateCounterColor('streakCount', streakCount, '#fffb00');
@@ -299,11 +299,13 @@
                 goodCount++;
                 streakCount++;
                 if (streakCount > bestStreak) bestStreak = streakCount;
-                if (timeMs < bestTimeMs) bestTimeMs = timeMs;
+                if (bestTimeMs === null || timeMs < bestTimeMs) {
+                    bestTimeMs = timeMs;
+                    highlightElement('bestTime');
+                }
                 highlightElement('goodCount');
                 highlightElement('streakCount');
                 if (streakCount > bestStreak - 1) highlightElement('bestStreak');
-                if (timeMs <= bestTimeMs) highlightElement('bestTime');
             } else {
                 badCount++;
                 streakCount = 0;
@@ -323,7 +325,7 @@
             bestStreak = 0;
             totalMilliseconds = 0;
             totalAttempts = 0;
-            bestTimeMs = Infinity;
+            bestTimeMs = null; // Reset to null
             updateDisplay();
             saveData();
 
