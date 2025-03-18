@@ -141,10 +141,15 @@
             text-decoration: none;
             z-index: 2;
             text-shadow: 2px 2px 2px #000;
-            transition: color 0.3s;
+            transition: all 0.2s ease; /* Smooth transition for all changes */
         }
         .home-link:hover {
             color: #ddd;
+            transform: scale(1.05); /* Slight scale up on hover */
+            text-shadow: 2px 2px 2px #000;
+        }
+        .home-link:active {
+            transform: scale(0.95); /* Slight scale down when clicked */
         }
         .credit {
             position: fixed;
@@ -168,6 +173,13 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
+        }
+        @media (max-width: 768px) {
+            .home-link {
+                font-size: 32px;
+                top: 5px;
+                left: 5px;
+            }
         }
     </style>
 </head>
