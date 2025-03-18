@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeldocto</title>
     <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+    <link rel="preload" href="assets/fonts/Delfino.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/SMSScript.ttf" as="font" type="font/ttf" crossorigin>
     <style>
         @font-face {
             font-family: 'Delfino';
@@ -56,17 +58,18 @@
             object-fit: cover;
         }
         #intro-video {
-            z-index: 1; /* On top initially */
+            z-index: 1;
         }
         #loop-video {
-            z-index: 0; /* Behind intro video */
-            display: none; /* Hidden until intro ends */
+            z-index: 0;
+            display: none;
         }
         .container {
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9); /* Increased opacity */
             padding: 20px;
             border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Added subtle border */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
@@ -84,23 +87,23 @@
             background-color: #007bff;
             color: white;
             padding: 10px;
-            margin: 10px 0;
+            margin: 15px 0; /* Increased spacing */
             text-decoration: none;
             border-radius: 5px;
             font-size: 16px;
-            transition: all 0.2s ease; /* Smooth transition for all changes */
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
         }
         .link:hover {
             background-color: #0056b3;
-            transform: translateY(-2px); /* Slight lift effect */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         .link:active {
-            background-color: #003d82; /* Darker shade when clicked */
-            transform: translateY(1px); /* Push down effect */
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+            background-color: #003d82;
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         .link::after {
             content: '';
@@ -134,10 +137,10 @@
         .home-link:hover {
             color: #ddd;
             text-shadow: 2px 2px 2px #000;
-            transform: scale(1.05); /* Slight scale up */
+            transform: scale(1.05);
         }
         .home-link:active {
-            transform: scale(0.95); /* Slight scale down when clicked */
+            transform: scale(0.95);
         }
         .separator {
             border: 0;
@@ -146,19 +149,41 @@
             margin: 15px 0;
             opacity: 0.3;
         }
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            z-index: 3;
+            font-family: 'Delfino', Arial, sans-serif;
+            text-shadow: 1px 1px 2px #000;
+        }
+        @media (max-width: 768px) {
+            .home-link {
+                font-size: 32px;
+                top: 5px;
+                left: 5px;
+            }
+            .container {
+                padding: 15px;
+                max-width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="video-container">
-        <video id="intro-video" autoplay muted preload="auto">
+        <video id="intro-video" autoplay muted preload="auto" playsinline>
             <source src="assets/background/p3rstart.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
-        <video id="loop-video" muted preload="auto">
+        <video id="loop-video" muted preload="auto" playsinline>
             <source src="assets/background/p3r.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
+    <div class="loading" id="loading">Loading...</div>
     <a href="https://zeldocto.github.io/" class="home-link">home</a>
     <div class="container">
         <h1>Zeldocto</h1>
@@ -173,14 +198,20 @@
     <script>
         const introVideo = document.getElementById('intro-video');
         const loopVideo = document.getElementById('loop-video');
+        const loading = document.getElementById('loading');
 
         // Preload the looping video
         loopVideo.load();
 
+        // Hide loading when intro video can play
+        introVideo.addEventListener('canplay', () => {
+            loading.style.display = 'none';
+        });
+
         // When the intro video ends, hide it and start the looping video
         introVideo.addEventListener('ended', function() {
-            introVideo.style.display = 'none'; // Instantly hide intro video
-            loopVideo.style.display = 'block';  // Instantly show loop video
+            introVideo.style.display = 'none';
+            loopVideo.style.display = 'block';
             loopVideo.play();
             loopVideo.loop = true;
         });
