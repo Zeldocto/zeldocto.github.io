@@ -383,10 +383,13 @@
 
         function toggleVideo() {
             const video = document.getElementById('background-video');
+            const toggleIcon = document.getElementById('videoToggle');
             if (video.style.display === 'none') {
                 video.style.display = 'block';
+                toggleIcon.style.opacity = '1'; // Full opacity when video is on
             } else {
                 video.style.display = 'none';
+                toggleIcon.style.opacity = '0.5'; // 50% opacity when video is off
             }
         }
 
@@ -396,6 +399,8 @@
                 if (e.key === 'Enter') addTime('good');
             });
             document.getElementById('videoToggle').addEventListener('click', toggleVideo);
+            // Set initial opacity to 1 since video starts on
+            document.getElementById('videoToggle').style.opacity = '1';
         };
     </script>
 </body>
