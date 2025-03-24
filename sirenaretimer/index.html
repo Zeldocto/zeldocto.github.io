@@ -38,14 +38,24 @@
             font-family: 'Delfino', sans-serif;
             font-size: 32px;
         }
-        select, input {
-            font-family: 'SMSScript', sans-serif;
+        select {
+            font-family: 'SMSScript', sans-serif !important;
             font-size: 18px;
             padding: 5px;
             margin: 5px;
             background-color: #333;
             color: #fff;
             border: 1px solid #666;
+        }
+        input[type="number"] {
+            font-family: 'SMSScript', sans-serif !important;
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #666;
+            width: 100px;
         }
         .time-inputs {
             margin-top: 20px;
@@ -59,7 +69,7 @@
             align-items: center;
         }
         .time-box label {
-            font-family: 'Delfino', sans-serif;
+            font-family: 'Delfino', sans-serif !important;
             font-size: 20px;
             margin-right: 10px;
             width: 100px;
@@ -68,7 +78,7 @@
         .final-time {
             font-size: 24px;
             margin-top: 20px;
-            font-family: 'SMSScript', sans-serif;
+            font-family: 'SMSScript', sans-serif !important;
         }
     </style>
 </head>
@@ -117,18 +127,23 @@
             const level = document.getElementById("level-select").value;
             const numInputs = levelInputs[level];
             const timeInputsDiv = document.getElementById("time-inputs");
-            timeInputsDiv.innerHTML = "";
+            timeInputsDiv.innerHTML = ""; // Clear previous inputs
+
+            if (!numInputs) {
+                console.error("Invalid level selected:", level);
+                return;
+            }
 
             for (let i = 1; i <= numInputs; i++) {
                 const inputDiv = document.createElement("div");
                 inputDiv.className = "time-box";
                 inputDiv.innerHTML = `
                     <label for="time-${i}">Split ${i}:</label>
-                    <input type="number" id="time-${i}" step="0.01" min="0" oninput="calculateTime()">
+                    <input type="number" id="time-${i}" step="0.01" min="0" value="0" oninput="calculateTime()">
                 `;
                 timeInputsDiv.appendChild(inputDiv);
             }
-            calculateTime();
+            calculateTime(); // Recalculate after generating inputs
         }
 
         function calculateTime() {
@@ -138,10 +153,22 @@
             let totalFrames = 0;
 
             for (let i = 1; i <= numInputs; i++) {
-                const time = parseFloat(document.getElementById(`time-${i}`).value) || 0;
-                const frames = Math.round(time * frameRates[region]);
-                totalFrames += frames;
+                const input = document.getElementById(`time-${i}`);
+                if (input) {
+                    const time = parseFloat(input.value) || 0;
+                    const frames = Math.round(time * frameRates[region]);
+                    totalFrames += frames;
+                }
             }
 
             const totalSeconds = totalFrames / frameRates[region];
-            document.getElementById("final-time").textContent = `Final Time
+            document.getElementById("final-time").textContent = `Final Time: ${totalSeconds.toFixed(2)}`;
+        }
+
+        // Ensure inputs load on page start
+        window.onload = function() {
+            updateInputs();
+        };
+    </script>
+</body>
+</html>
