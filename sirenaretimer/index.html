@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speedrunning Time Calculator</title>
+    <title>Sirena Retimer</title>
     <style>
         @font-face {
             font-family: 'SMSScript';
-            src: url('assets/fonts/SMSScript.ttf') format('truetype');
+            src: url('../assets/fonts/SMSScript.ttf') format('truetype');
+            font-display: swap;
         }
         @font-face {
             font-family: 'Delfino';
-            src: url('assets/fonts/Delfino.ttf') format('truetype');
+            src: url('../assets/fonts/Delfino.ttf') format('truetype');
+            font-display: swap;
         }
         body {
             background-color: #1a1a1a;
             color: #fff;
-            font-family: 'Delfino', sans-serif;
+            font-family: 'Delfino', Arial, sans-serif;
             margin: 0;
             padding: 20px;
         }
@@ -27,7 +29,7 @@
             font-size: 24px;
             text-decoration: none;
             color: #fff;
-            font-family: 'Delfino', sans-serif;
+            font-family: 'Delfino', Arial, sans-serif !important;
         }
         .container {
             max-width: 600px;
@@ -35,11 +37,11 @@
             text-align: center;
         }
         h1 {
-            font-family: 'Delfino', sans-serif;
+            font-family: 'Delfino', Arial, sans-serif !important;
             font-size: 32px;
         }
         select {
-            font-family: 'SMSScript', sans-serif !important;
+            font-family: 'SMSScript', Arial, sans-serif !important;
             font-size: 18px;
             padding: 5px;
             margin: 5px;
@@ -48,7 +50,7 @@
             border: 1px solid #666;
         }
         input[type="number"] {
-            font-family: 'SMSScript', sans-serif !important;
+            font-family: 'SMSScript', Arial, sans-serif !important;
             font-size: 18px;
             padding: 5px;
             margin: 5px;
@@ -69,7 +71,7 @@
             align-items: center;
         }
         .time-box label {
-            font-family: 'Delfino', sans-serif !important;
+            font-family: 'Delfino', Arial, sans-serif !important;
             font-size: 20px;
             margin-right: 10px;
             width: 100px;
@@ -78,7 +80,7 @@
         .final-time {
             font-size: 24px;
             margin-top: 20px;
-            font-family: 'SMSScript', sans-serif !important;
+            font-family: 'SMSScript', Arial, sans-serif !important;
         }
     </style>
 </head>
@@ -127,7 +129,7 @@
             const level = document.getElementById("level-select").value;
             const numInputs = levelInputs[level];
             const timeInputsDiv = document.getElementById("time-inputs");
-            timeInputsDiv.innerHTML = ""; // Clear previous inputs
+            timeInputsDiv.innerHTML = "";
 
             if (!numInputs) {
                 console.error("Invalid level selected:", level);
@@ -143,7 +145,7 @@
                 `;
                 timeInputsDiv.appendChild(inputDiv);
             }
-            calculateTime(); // Recalculate after generating inputs
+            calculateTime();
         }
 
         function calculateTime() {
@@ -165,7 +167,6 @@
             document.getElementById("final-time").textContent = `Final Time: ${totalSeconds.toFixed(2)}`;
         }
 
-        // Ensure inputs load on page start
         window.onload = function() {
             updateInputs();
         };
