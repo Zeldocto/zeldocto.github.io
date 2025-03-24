@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speedrunning Time Calculator</title>
+    <style>
+        @font-face {
+            font-family: 'SMSScript';
+            src: url('assets/fonts/SMSScript.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Delfino';
+            src: url('assets/fonts/Delfino.ttf') format('truetype');
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Delfino', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .home-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        select, input {
+            font-family: 'SMSScript', sans-serif;
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #666;
+        }
+        .time-inputs {
+            margin-top: 20px;
+        }
+        .time-box {
+            margin: 10px 0;
+        }
+        .final-time {
+            font-size: 24px;
+            margin-top: 20px;
+            font-family: 'SMSScript', sans-serif;
+        }
+        label {
+            font-family: 'Delfino', sans-serif;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <a href="#" class="home-button">Home</a>
+    <div class="container">
+        <h1>Speedrunning Time Calculator</h1>
+        <div>
+            <label for="level-select">Level:</label>
+            <select id="level-select" onchange="updateInputs()">
+                <option value="SB1 - Manta">SB1 - Manta</option>
+                <option value="SB2 - Boo Secret">SB2 - Boo Secret</option>
+                <option value="SB3 - Cheep">SB3 - Cheep</option>
+                <option value="SB4 - Dire">SB4 - Dire</option>
+                <option value="SB5 - Bowser 1">SB5 - Bowser 1</option>
+            </select>
+        </div>
+        <div>
+            <label for="region-select">Region:</label>
+            <select id="region-select" onchange="calculateTime()">
+                <option value="JP">JP</option>
+                <option value="PAL">PAL</option>
+            </select>
+        </div>
+        <div class="time-inputs" id="time-inputs"></div>
+        <div class="final-time" id="final-time">Final Time: 0.00</div>
+    </div>
+
+    <script>
+        const levelInputs = {
+            "SB1 - Manta": 5,
+            "SB2 - Boo Secret": 4,
+            "SB3 - Cheep": 3,
+            "SB4 - Dire": 4,
+            "SB5 - Bowser 1": 2
+        };
+
+        // Frame rates from the Backend sheet
+        const frameRates = {
+            "JP": 30,
+            "PAL": 25
+        };
+
+        function updateInputs() {
+            const level = document.getElementById("level-select").value;
+            const numInputs = levelInputs[level];
+            const timeInputsDiv = document.getElementById("time-inputs");
+            timeInputsDiv.innerHTML = "";
+
+            for (let i = 1; i <= numInputs; i++) {
+                const inputDiv = document.createElement("div");
+                inputDiv.className = "time-box";
+                inputDiv.innerHTML = `
+                    <label for="time-${i}">Split ${i} (seconds):</label>
+                    <input type="number" id="time-${i}" step="0.01" min="0" oninput="calculateTime()">
+                `;
+                timeInputsDiv.appendChild(inputDiv);
+            }
+            calculateTime();
+        }
+
+        function calculateTime() {
+            const level = document.getElementById("level-select").value;
+            const region = document.getElementById("region-select").value;
+            const numInputs = levelInputs[level];
+            let totalFrames = 0;
+
+            // Conversion logic from Backend sheet
+            for (let i = 1; i <= numInputs; i++) {
+                const time = parseFloat(document.getElementById(`time-${i}`).value) || 0;
+                const frames = Math.round(time * frameRates[region]);
+                totalFrames += frames;
+            }
+
+            // Convert total frames back to seconds
+            const totalSeconds = totalFrames / frameRates[region];
+            document.getElementById("final-time").textContent = `Final Time: ${totalSeconds.toFixed(2)}`;
+        }
+
+        // Initialize with default level
+        updateInputs();
+    </script>
+</body>
+</html>
