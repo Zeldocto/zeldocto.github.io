@@ -27,11 +27,16 @@
             font-size: 24px;
             text-decoration: none;
             color: #fff;
+            font-family: 'Delfino', sans-serif;
         }
         .container {
             max-width: 600px;
             margin: 50px auto;
             text-align: center;
+        }
+        h1 {
+            font-family: 'Delfino', sans-serif;
+            font-size: 32px;
         }
         select, input {
             font-family: 'SMSScript', sans-serif;
@@ -44,18 +49,26 @@
         }
         .time-inputs {
             margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .time-box {
             margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .time-box label {
+            font-family: 'Delfino', sans-serif;
+            font-size: 20px;
+            margin-right: 10px;
+            width: 100px;
+            text-align: right;
         }
         .final-time {
             font-size: 24px;
             margin-top: 20px;
             font-family: 'SMSScript', sans-serif;
-        }
-        label {
-            font-family: 'Delfino', sans-serif;
-            font-size: 20px;
         }
     </style>
 </head>
@@ -68,9 +81,10 @@
             <select id="level-select" onchange="updateInputs()">
                 <option value="SB1 - Manta">SB1 - Manta</option>
                 <option value="SB2 - Boo Secret">SB2 - Boo Secret</option>
-                <option value="SB3 - Cheep">SB3 - Cheep</option>
-                <option value="SB4 - Dire">SB4 - Dire</option>
-                <option value="SB5 - Bowser 1">SB5 - Bowser 1</option>
+                <option value="SB3 - Banana Clip">SB3 - Banana Clip</option>
+                <option value="SB4 - Casino Secret">SB4 - Casino Secret</option>
+                <option value="SB5 - King Boo">SB5 - King Boo</option>
+                <option value="SB7 - Shadow Mario">SB7 - Shadow Mario</option>
             </select>
         </div>
         <div>
@@ -87,13 +101,13 @@
     <script>
         const levelInputs = {
             "SB1 - Manta": 5,
-            "SB2 - Boo Secret": 4,
-            "SB3 - Cheep": 3,
-            "SB4 - Dire": 4,
-            "SB5 - Bowser 1": 2
+            "SB2 - Boo Secret": 9,
+            "SB3 - Banana Clip": 7,
+            "SB4 - Casino Secret": 14,
+            "SB5 - King Boo": 14,
+            "SB7 - Shadow Mario": 10
         };
 
-        // Frame rates from the Backend sheet
         const frameRates = {
             "JP": 30,
             "PAL": 25
@@ -109,7 +123,7 @@
                 const inputDiv = document.createElement("div");
                 inputDiv.className = "time-box";
                 inputDiv.innerHTML = `
-                    <label for="time-${i}">Split ${i} (seconds):</label>
+                    <label for="time-${i}">Split ${i}:</label>
                     <input type="number" id="time-${i}" step="0.01" min="0" oninput="calculateTime()">
                 `;
                 timeInputsDiv.appendChild(inputDiv);
@@ -123,20 +137,11 @@
             const numInputs = levelInputs[level];
             let totalFrames = 0;
 
-            // Conversion logic from Backend sheet
             for (let i = 1; i <= numInputs; i++) {
                 const time = parseFloat(document.getElementById(`time-${i}`).value) || 0;
                 const frames = Math.round(time * frameRates[region]);
                 totalFrames += frames;
             }
 
-            // Convert total frames back to seconds
             const totalSeconds = totalFrames / frameRates[region];
-            document.getElementById("final-time").textContent = `Final Time: ${totalSeconds.toFixed(2)}`;
-        }
-
-        // Initialize with default level
-        updateInputs();
-    </script>
-</body>
-</html>
+            document.getElementById("final-time").textContent = `Final Time
