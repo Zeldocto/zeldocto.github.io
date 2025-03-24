@@ -121,11 +121,6 @@
             "SB7 - Shadow Mario": 10
         };
 
-        const frameRates = {
-            "JP": 30,
-            "PAL": 25
-        };
-
         function updateInputs() {
             const level = document.getElementById("level-select").value;
             const numInputs = levelInputs[level];
@@ -153,18 +148,16 @@
             const level = document.getElementById("level-select").value;
             const region = document.getElementById("region-select").value;
             const numInputs = levelInputs[level];
-            let totalFrames = 0;
+            let totalSeconds = 0;
 
             for (let i = 1; i <= numInputs; i++) {
                 const input = document.getElementById(`time-${i}`);
                 if (input) {
                     const time = parseFloat(input.value) || 0;
-                    const frames = Math.round(time * frameRates[region]);
-                    totalFrames += frames;
+                    totalSeconds += time;
                 }
             }
 
-            const totalSeconds = totalFrames / frameRates[region];
             document.getElementById("final-time").textContent = `Final Time: ${totalSeconds.toFixed(2)}`;
         }
 
