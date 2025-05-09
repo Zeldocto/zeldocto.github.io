@@ -11,6 +11,11 @@
       src: url('../assets/fonts/Delfino.ttf') format('truetype');
       font-display: swap;
     }
+    @font-face {
+      font-family: 'SMSScript';
+      src: url('../assets/fonts/SMSScript.ttf') format('truetype');
+      font-display: swap;
+    }
     html, body {
       margin: 0;
       padding: 0;
@@ -61,6 +66,12 @@
       padding: 10px;
       border-bottom: 1px solid #666;
       text-align: left;
+    }
+    td, th {
+      font-family: 'Delfino', Arial, sans-serif;
+    }
+    td time {
+      font-family: 'SMSScript', Arial, sans-serif;
     }
     tr:nth-child(even) {
       background-color: rgba(255, 255, 255, 0.05);
@@ -115,30 +126,30 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>04/03/2014</td><td>2:23:10</td><td class="note">missing video</td></tr>
-        <tr><td>04/03/2014</td><td><a href="https://youtu.be/1GY4k9E9ZPg">1:57:15</a></td><td></td></tr>
-        <tr><td>04/16/2014</td><td>1:49:45</td><td></td></tr>
-        <tr><td>05/08/2014</td><td>1:44:50</td><td></td></tr>
-        <tr><td>05/11/2014</td><td>1:42:29</td><td></td></tr>
-        <tr><td>05/14/2014</td><td>1:39:29</td><td></td></tr>
-        <tr><td>05/15/2014</td><td>1:36:38</td><td></td></tr>
-        <tr><td>05/22/2014</td><td>1:36:05</td><td></td></tr>
-        <tr><td>05/23/2014</td><td>1:32:25</td><td></td></tr>
-        <tr><td>06/04/2014</td><td>1:31:45</td><td></td></tr>
-        <tr><td>08/19/2014</td><td>1:29:29</td><td></td></tr>
-        <tr><td>10/31/2014</td><td>1:25:53</td><td class="note">missing video</td></tr>
-        <tr><td>12/03/2014</td><td>1:25:19</td><td></td></tr>
-        <tr><td>08/22/2023</td><td>1:24:29</td><td></td></tr>
-        <tr><td>09/23/2023</td><td>1:23:50</td><td></td></tr>
-        <tr><td>10/13/2023</td><td>1:23:20</td><td></td></tr>
-        <tr><td>10/18/2023</td><td>1:22:32</td><td></td></tr>
-        <tr><td>01/29/2024</td><td>1:20:44</td><td></td></tr>
-        <tr><td>04/04/2024</td><td>1:19:18</td><td></td></tr>
-        <tr><td>09/24/2024</td><td>1:18:43</td><td></td></tr>
-        <tr><td>11/29/2024</td><td>1:18:20</td><td></td></tr>
-        <tr><td>12/07/2024</td><td>1:18:10</td><td></td></tr>
-        <tr><td>01/10/2025</td><td>1:18:01</td><td></td></tr>
-        <tr><td>03/26/2025</td><td>1:17:26</td><td></td></tr>
+        <tr><td><time>04/03/2014</time></td><td><time>2:23:10</time></td><td class="note">missing video</td></tr>
+        <tr><td><time>04/03/2014</time></td><td><time><a href="https://youtu.be/1GY4k9E9ZPg">1:57:15</a></time></td><td></td></tr>
+        <tr><td><time>04/16/2014</time></td><td><time><a href="https://youtu.be/jNPVCJwv0B4">1:49:45</a></time></td><td></td></tr>
+        <tr><td><time>05/08/2014</time></td><td><time><a href="https://youtu.be/ee-_t8IUdyI">1:44:50</a></time></td><td></td></tr>
+        <tr><td><time>05/11/2014</time></td><td><time><a href="https://youtu.be/klxLx2fH2ig">1:42:29</a></time></td><td></td></tr>
+        <tr><td><time>05/14/2014</time></td><td><time><a href="https://youtu.be/RdKXikQaV1Y">1:39:29</a></time></td><td></td></tr>
+        <tr><td><time>05/15/2014</time></td><td><time><a href="https://youtu.be/5FNvIqsJlL4">1:36:38</a></time></td><td></td></tr>
+        <tr><td><time>05/22/2014</time></td><td><time><a href="https://youtu.be/lAh234DhqCo">1:36:05</a></time></td><td></td></tr>
+        <tr><td><time>05/23/2014</time></td><td><time><a href="https://youtu.be/N2HbKWumBiQ">1:32:25</a></time></td><td></td></tr>
+        <tr><td><time>06/04/2014</time></td><td><time><a href="https://youtu.be/yZHXrG44cQs">1:31:45</a></time></td><td></td></tr>
+        <tr><td><time>08/19/2014</time></td><td><time><a href="https://youtu.be/c5WNdH0UEP8">1:29:29</a></time></td><td></td></tr>
+        <tr><td><time>10/31/2014</time></td><td><time>1:25:53</time></td><td class="note">missing video</td></tr>
+        <tr><td><time>12/03/2014</time></td><td><time><a href="https://youtu.be/J60Q2MjTmF0">1:25:19</a></time></td><td></td></tr>
+        <tr><td><time>08/22/2023</time></td><td><time><a href="https://youtu.be/z5qx5flcaAA">1:24:29</a></time></td><td></td></tr>
+        <tr><td><time>09/23/2023</time></td><td><time><a href="https://youtu.be/tgVax9KZEMo">1:23:50</a></time></td><td></td></tr>
+        <tr><td><time>10/13/2023</time></td><td><time><a href="https://youtu.be/tFqUsH0aM9A">1:23:20</a></time></td><td></td></tr>
+        <tr><td><time>10/18/2023</time></td><td><time><a href="https://youtu.be/8vP9VFejAZk">1:22:32</a></time></td><td></td></tr>
+        <tr><td><time>01/29/2024</time></td><td><time><a href="https://youtu.be/sOYOjtsC11Y">1:20:44</a></time></td><td></td></tr>
+        <tr><td><time>04/04/2024</time></td><td><time><a href="https://youtu.be/DPzRqPx9dI8">1:19:18</a></time></td><td></td></tr>
+        <tr><td><time>09/24/2024</time></td><td><time><a href="https://youtu.be/wuLJUUarfcI">1:18:43</a></time></td><td></td></tr>
+        <tr><td><time>11/29/2024</time></td><td><time><a href="https://youtu.be/pQP9vAogfr8">1:18:20</a></time></td><td></td></tr>
+        <tr><td><time>12/07/2024</time></td><td><time><a href="https://youtu.be/3TNskO9svQ4">1:18:10</a></time></td><td></td></tr>
+        <tr><td><time>01/10/2025</time></td><td><time><a href="https://youtu.be/xIeOs4i0HaY">1:18:01</a></time></td><td></td></tr>
+        <tr><td><time>03/26/2025</time></td><td><time><a href="https://youtu.be/lqLT2vVcLCc">1:17:26</a></time></td><td></td></tr>
       </tbody>
     </table>
   </div>
