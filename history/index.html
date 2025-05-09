@@ -21,7 +21,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
+      overflow: auto; /* ✅ FIXED: allow scrolling */
       font-family: 'Delfino', Arial, sans-serif;
     }
 
@@ -49,7 +49,7 @@
     }
 
     .scroll-wrapper {
-      height: 100vh;
+      min-height: 100vh;
       overflow-y: auto;
       padding: 150px 0;
     }
@@ -121,8 +121,8 @@
       color: white;
     }
 
-    .note:contains("missing video"),
-    .note:has-text("missing video") {
+    /* ✅ FIXED: make 'missing-video' notes red */
+    .note.missing-video {
       color: #e87575;
     }
 
@@ -131,13 +131,8 @@
       content: '';
     }
 
-    td.note {
-      color: white;
-    }
-
     td.note::before {
       content: attr(data-note);
-      color: white;
     }
 
     td.note[data-note*="missing video"]::before {
@@ -232,8 +227,9 @@
           <tr><td><time>12/07/2024</time></td><td><time><a href="https://youtu.be/3TNskO9svQ4">1:18:10</a></time></td><td class="note"></td></tr>
           <tr><td><time>01/10/2025</time></td><td><time><a href="https://youtu.be/xIeOs4i0HaY">1:18:01</a></time></td><td class="note"></td></tr>
           <tr><td><time>03/26/2025</time></td><td><time><a href="https://youtu.be/lqLT2vVcLCc">1:17:26</a></time></td><td class="note">officially top 100 again, and #1 Oregon (#88)</td></tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
 </body>
 </html>
