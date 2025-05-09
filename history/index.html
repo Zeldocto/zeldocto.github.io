@@ -69,6 +69,33 @@
       color: #ff8080;
       font-style: italic;
     }
+    .home-link {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: 'Delfino', Arial, sans-serif;
+      font-size: 48px;
+      color: white;
+      text-decoration: none;
+      z-index: 2;
+      text-shadow: 2px 2px 2px #000;
+      transition: all 0.2s ease;
+    }
+    .home-link:hover {
+      color: #ddd;
+      transform: scale(1.05);
+      text-shadow: 2px 2px 2px #000;
+    }
+    .home-link:active {
+      transform: scale(0.95);
+    }
+    @media (max-width: 768px) {
+      .home-link {
+        font-size: 32px;
+        top: 5px;
+        left: 5px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -76,6 +103,7 @@
     <source src="../assets/background/fallingpetals.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
+  <a href="https://zeldocto.github.io/" class="home-link">home</a>
   <div class="container">
     <h1>Super Mario Sunshine<br>Any% (No ACE) PB History</h1>
     <table>
