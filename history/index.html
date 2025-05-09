@@ -16,14 +16,15 @@
       src: url('../assets/fonts/SMSScript.ttf') format('truetype');
       font-display: swap;
     }
+
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow-x: hidden;  /* Keeps horizontal scrollbar hidden */
-      overflow-y: auto;    /* Allows vertical scrollbar */
+      overflow: hidden;
       font-family: 'Delfino', Arial, sans-serif;
     }
+
     html::before {
       content: '';
       position: fixed;
@@ -33,7 +34,9 @@
       height: 100%;
       background-color: rgba(0, 0, 0, 0.9);
       z-index: 0;
+      pointer-events: none;
     }
+
     #background-video {
       position: fixed;
       top: 0;
@@ -42,7 +45,36 @@
       height: 100%;
       object-fit: cover;
       z-index: -1;
+      pointer-events: none;
     }
+
+    .scroll-wrapper {
+      height: 100vh;
+      overflow-y: auto;
+      padding: 150px 0;
+    }
+
+    /* Custom Scrollbar */
+    .scroll-wrapper::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    .scroll-wrapper::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .scroll-wrapper::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 6px;
+      border: 3px solid rgba(0, 0, 0, 0);
+      background-clip: padding-box;
+    }
+
+    .scroll-wrapper {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
+    }
+
     .container {
       max-width: 700px;
       margin: auto;
@@ -53,41 +85,65 @@
       z-index: 1;
       position: relative;
       color: white;
-      margin-top: 150px;  /* Adds space from the top */
-      margin-bottom: 150px; /* Adds space from the bottom */
     }
+
     h1 {
       text-align: center;
       margin-bottom: 20px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background-color: rgba(0,0,0,0.2);
     }
+
     th, td {
       padding: 10px;
       border-bottom: 1px solid #666;
       text-align: left;
     }
+
     td, th {
       font-family: 'Delfino', Arial, sans-serif;
     }
+
     td time {
       font-family: 'SMSScript', Arial, sans-serif;
     }
+
     tr:nth-child(even) {
       background-color: rgba(255, 255, 255, 0.05);
     }
+
     .note {
       font-style: italic;
-    }
-    .note.missing-video {
-      color: #e87575;
-    }
-    .note:not(.missing-video) {
       color: white;
     }
+
+    .note:contains("missing video"),
+    .note:has-text("missing video") {
+      color: #e87575;
+    }
+
+    /* Fallback JS-less way to style specific notes */
+    td.note:empty::before {
+      content: '';
+    }
+
+    td.note {
+      color: white;
+    }
+
+    td.note::before {
+      content: attr(data-note);
+      color: white;
+    }
+
+    td.note[data-note*="missing video"]::before {
+      color: #e87575;
+    }
+
     .home-link {
       position: absolute;
       top: 10px;
@@ -100,54 +156,35 @@
       text-shadow: 2px 2px 2px #000;
       transition: all 0.2s ease;
     }
+
     .home-link:hover {
       color: #ddd;
       transform: scale(1.05);
       text-shadow: 2px 2px 2px #000;
     }
+
     .home-link:active {
       transform: scale(0.95);
     }
+
     a {
       color: #88b1d3;
       text-decoration: none;
       transition: color 0.3s ease, text-shadow 0.3s ease;
     }
+
     a:hover {
       text-decoration: underline;
       color: #a6c9e4;
       text-shadow: 0 0 5px rgba(136, 177, 211, 0.5);
     }
+
     @media (max-width: 768px) {
       .home-link {
         font-size: 32px;
         top: 5px;
         left: 5px;
       }
-    }
-
-    /* Custom scrollbar styles */
-    ::-webkit-scrollbar {
-      width: 12px;  /* Width of the scrollbar */
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.3); /* Light gray thumb */
-      border-radius: 6px;
-      border: 3px solid rgba(0, 0, 0, 0.1); /* Slight border for thumb */
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.5); /* Slightly darker on hover */
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);  /* Track background color */
-      border-radius: 6px;
-    }
-
-    ::-webkit-scrollbar-track-piece {
-      background: rgba(0, 0, 0, 0.1);  /* Faint track color */
     }
   </style>
 </head>
@@ -156,42 +193,45 @@
     <source src="../assets/background/fallingpetals.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
+
   <a href="https://zeldocto.github.io/" class="home-link">home</a>
-  <div class="container">
-    <h1>Super Mario Sunshine<br>Any% (No ACE) PB History</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Note</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td><time>04/03/2014</time></td><td><time>2:23:10</time></td><td class="note missing-video">missing video</td></tr>
-        <tr><td><time>04/03/2014</time></td><td><time><a href="https://youtu.be/1GY4k9E9ZPg">1:57:15</a></time></td><td class="note"></td></tr>
-        <tr><td><time>04/16/2014</time></td><td><time><a href="https://youtu.be/jNPVCJwv0B4">1:49:45</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/08/2014</time></td><td><time><a href="https://youtu.be/ee-_t8IUdyI">1:44:50</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/11/2014</time></td><td><time><a href="https://youtu.be/klxLx2fH2ig">1:42:29</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/14/2014</time></td><td><time><a href="https://youtu.be/RdKXikQaV1Y">1:39:29</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/15/2014</time></td><td><time><a href="https://youtu.be/5FNvIqsJlL4">1:36:38</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/22/2014</time></td><td><time><a href="https://youtu.be/lAh234DhqCo">1:36:05</a></time></td><td class="note"></td></tr>
-        <tr><td><time>05/23/2014</time></td><td><time><a href="https://youtu.be/N2HbKWumBiQ">1:32:25</a></time></td><td class="note"></td></tr>
-        <tr><td><time>06/04/2014</time></td><td><time><a href="https://youtu.be/yZHXrG44cQs">1:31:45</a></time></td><td class="note"></td></tr>
-        <tr><td><time>08/19/2014</time></td><td><time><a href="https://youtu.be/c5WNdH0UEP8">1:29:29</a></time></td><td class="note"></td></tr>
-        <tr><td><time>10/31/2014</time></td><td><time>1:25:53</time></td><td class="note missing-video">missing video</td></tr>
-        <tr><td><time>12/03/2014</time></td><td><time><a href="https://youtu.be/J60Q2MjTmF0">1:25:19</a></time></td><td class="note">officially top 100 (#69)</td></tr>
-        <tr><td><time>08/22/2023</time></td><td><time><a href="https://youtu.be/z5qx5flcaAA">1:24:29</a></time></td><td class="note">return after 9 years</td></tr>
-        <tr><td><time>09/23/2023</time></td><td><time><a href="https://youtu.be/tgVax9KZEMo">1:23:50</a></time></td><td class="note"></td></tr>
-        <tr><td><time>10/13/2023</time></td><td><time><a href="https://youtu.be/tFqUsH0aM9A">1:23:20</a></time></td><td class="note"></td></tr>
-        <tr><td><time>10/18/2023</time></td><td><time><a href="https://youtu.be/8vP9VFejAZk">1:22:32</a></time></td><td class="note"></td></tr>
-        <tr><td><time>01/29/2024</time></td><td><time><a href="https://youtu.be/sOYOjtsC11Y">1:20:44</a></time></td><td class="note"></td></tr>
-        <tr><td><time>04/04/2024</time></td><td><time><a href="https://youtu.be/DPzRqPx9dI8">1:19:18</a></time></td><td class="note">first sub 1:20</td></tr>
-        <tr><td><time>09/24/2024</time></td><td><time><a href="https://youtu.be/wuLJUUarfcI">1:18:43</a></time></td><td class="note"></td></tr>
-        <tr><td><time>11/29/2024</time></td><td><time><a href="https://youtu.be/pQP9vAogfr8">1:18:20</a></time></td><td class="note"></td></tr>
-        <tr><td><time>12/07/2024</time></td><td><time><a href="https://youtu.be/3TNskO9svQ4">1:18:10</a></time></td><td class="note"></td></tr>
-        <tr><td><time>01/10/2025</time></td><td><time><a href="https://youtu.be/xIeOs4i0HaY">1:18:01</a></time></td><td class="note"></td></tr>
-        <tr><td><time>03/26/2025</time></td><td><time><a href="https://youtu.be/lqLT2vVcLCc">1:17:26</a></time></td><td class="note">officially top 100 again, and #1 Oregon (#88)</td></tr>
+
+  <div class="scroll-wrapper">
+    <div class="container">
+      <h1>Super Mario Sunshine<br>Any% (No ACE) PB History</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><time>04/03/2014</time></td><td><time>2:23:10</time></td><td class="note missing-video">missing video</td></tr>
+          <tr><td><time>04/03/2014</time></td><td><time><a href="https://youtu.be/1GY4k9E9ZPg">1:57:15</a></time></td><td class="note"></td></tr>
+          <tr><td><time>04/16/2014</time></td><td><time><a href="https://youtu.be/jNPVCJwv0B4">1:49:45</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/08/2014</time></td><td><time><a href="https://youtu.be/ee-_t8IUdyI">1:44:50</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/11/2014</time></td><td><time><a href="https://youtu.be/klxLx2fH2ig">1:42:29</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/14/2014</time></td><td><time><a href="https://youtu.be/RdKXikQaV1Y">1:39:29</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/15/2014</time></td><td><time><a href="https://youtu.be/5FNvIqsJlL4">1:36:38</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/22/2014</time></td><td><time><a href="https://youtu.be/lAh234DhqCo">1:36:05</a></time></td><td class="note"></td></tr>
+          <tr><td><time>05/23/2014</time></td><td><time><a href="https://youtu.be/N2HbKWumBiQ">1:32:25</a></time></td><td class="note"></td></tr>
+          <tr><td><time>06/04/2014</time></td><td><time><a href="https://youtu.be/yZHXrG44cQs">1:31:45</a></time></td><td class="note"></td></tr>
+          <tr><td><time>08/19/2014</time></td><td><time><a href="https://youtu.be/c5WNdH0UEP8">1:29:29</a></time></td><td class="note"></td></tr>
+          <tr><td><time>10/31/2014</time></td><td><time>1:25:53</time></td><td class="note missing-video">missing video</td></tr>
+          <tr><td><time>12/03/2014</time></td><td><time><a href="https://youtu.be/J60Q2MjTmF0">1:25:19</a></time></td><td class="note">officially top 100 (#69)</td></tr>
+          <tr><td><time>08/22/2023</time></td><td><time><a href="https://youtu.be/z5qx5flcaAA">1:24:29</a></time></td><td class="note">return after 9 years</td></tr>
+          <tr><td><time>09/23/2023</time></td><td><time><a href="https://youtu.be/tgVax9KZEMo">1:23:50</a></time></td><td class="note"></td></tr>
+          <tr><td><time>10/13/2023</time></td><td><time><a href="https://youtu.be/tFqUsH0aM9A">1:23:20</a></time></td><td class="note"></td></tr>
+          <tr><td><time>10/18/2023</time></td><td><time><a href="https://youtu.be/8vP9VFejAZk">1:22:32</a></time></td><td class="note"></td></tr>
+          <tr><td><time>01/29/2024</time></td><td><time><a href="https://youtu.be/sOYOjtsC11Y">1:20:44</a></time></td><td class="note"></td></tr>
+          <tr><td><time>04/04/2024</time></td><td><time><a href="https://youtu.be/DPzRqPx9dI8">1:19:18</a></time></td><td class="note">first sub 1:20</td></tr>
+          <tr><td><time>09/24/2024</time></td><td><time><a href="https://youtu.be/wuLJUUarfcI">1:18:43</a></time></td><td class="note"></td></tr>
+          <tr><td><time>11/29/2024</time></td><td><time><a href="https://youtu.be/pQP9vAogfr8">1:18:20</a></time></td><td class="note"></td></tr> 
+          <tr><td><time>12/07/2024</time></td><td><time><a href="https://youtu.be/3TNskO9svQ4">1:18:10</a></time></td><td class="note"></td></tr>
+          <tr><td><time>01/10/2025</time></td><td><time><a href="https://youtu.be/xIeOs4i0HaY">1:18:01</a></time></td><td class="note"></td></tr>
+          <tr><td><time>03/26/2025</time></td><td><time><a href="https://youtu.be/lqLT2vVcLCc">1:17:26</a></time></td><td class="note">officially top 100 again, and #1 Oregon (#88)</td></tr>
       </tbody>
     </table>
   </div>
