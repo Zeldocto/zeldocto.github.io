@@ -21,7 +21,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: auto; /* ✅ FIXED: allow scrolling */
+      overflow: auto; 
       font-family: 'Delfino', Arial, sans-serif;
     }
 
@@ -54,7 +54,6 @@
       padding: 150px 0;
     }
 
-    /* Custom Scrollbar */
     .scroll-wrapper::-webkit-scrollbar {
       width: 12px;
     }
@@ -89,7 +88,7 @@
 
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 2px;
     }
     
     h2 {
@@ -126,12 +125,10 @@
       color: white;
     }
 
-    /* ✅ FIXED: make 'missing-video' notes red */
     .note.missing-video {
       color: #e87575;
     }
 
-    /* Fallback JS-less way to style specific notes */
     td.note:empty::before {
       content: '';
     }
