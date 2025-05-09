@@ -20,7 +20,8 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
+      overflow-x: hidden;  /* Keeps horizontal scrollbar hidden */
+      overflow-y: auto;    /* Allows vertical scrollbar */
       font-family: 'Delfino', Arial, sans-serif;
     }
     html::before {
@@ -116,6 +117,30 @@
         top: 5px;
         left: 5px;
       }
+    }
+
+    /* Custom scrollbar styles */
+    ::-webkit-scrollbar {
+      width: 12px;  /* Width of the scrollbar */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.3); /* Light gray thumb */
+      border-radius: 6px;
+      border: 3px solid rgba(0, 0, 0, 0.1); /* Slight border for thumb */
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.5); /* Slightly darker on hover */
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);  /* Track background color */
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-track-piece {
+      background: rgba(0, 0, 0, 0.1);  /* Faint track color */
     }
   </style>
 </head>
