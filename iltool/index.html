@@ -223,7 +223,6 @@
         <p>Best Time: <span id="bestTime" class="number">N/A</span></p>
     </div>
     <div class="credit">Idea by akane174</div>
-
     <script>
         let goodCount = 0;
         let badCount = 0;
@@ -245,13 +244,11 @@
 
             updateDisplay();
         }
-
         function saveData() {
             localStorage.setItem('ilTimeTracker', JSON.stringify({
                 goodCount, badCount, bestStreak, totalMilliseconds, totalAttempts, bestTimeMs, streakCount
             }));
         }
-
         function normalizeTimeInput(timeStr) {
             if (timeStr.includes(':')) {
                 const [minSec, millisPart] = timeStr.split('.');
@@ -264,7 +261,6 @@
                 return `0:${sec}.${paddedMillis}`;
             }
         }
-
         function timeToMilliseconds(timeStr) {
             let minutes = 0, seconds = 0, millis = 0;
             const normalizedTime = normalizeTimeInput(timeStr);
@@ -275,7 +271,6 @@
             millis = parseInt(millisPart);
             return (minutes * 60000) + (seconds * 1000) + millis;
         }
-
         function millisecondsToTime(ms) {
             if (ms === null || ms === Infinity || isNaN(ms)) return 'N/A';
             const minutes = Math.floor(ms / 60000);
@@ -283,7 +278,6 @@
             const milliseconds = ms % 1000;
             return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
         }
-
         function interpolateColor(percent) {
             const goodColor = { r: 0x24, g: 0xdb, b: 0x11 };
             const badColor = { r: 0xf1, g: 0x1e, b: 0x1e };
@@ -293,18 +287,15 @@
             const b = Math.round(badColor.b + (badColor.b - badColor.b) * ratio);
             return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
         }
-
         function updateCounterColor(elementId, value, defaultColor) {
             const element = document.getElementById(elementId);
             element.style.color = value === 0 ? 'white' : defaultColor;
         }
-
         function highlightElement(elementId) {
             const element = document.getElementById(elementId);
             element.classList.add('highlight');
             setTimeout(() => element.classList.remove('highlight'), 300);
         }
-
         function updateSuccessPercent() {
             const total = goodCount + badCount;
             const percent = total === 0 ? 0 : Math.round((goodCount / total) * 100);
@@ -313,7 +304,6 @@
             successElement.style.color = percent === 0 ? 'white' : interpolateColor(percent);
             highlightElement('successPercent');
         }
-
         function updateDisplay() {
             document.getElementById('goodCount').textContent = goodCount;
             document.getElementById('badCount').textContent = badCount;
@@ -327,7 +317,6 @@
             updateCounterColor('bestStreak', bestStreak, '#fffb00');
             updateSuccessPercent();
         }
-
         function addTime(type) {
             const timeInput = document.getElementById('timeInput');
             const timeValue = timeInput.value.trim();
@@ -337,11 +326,9 @@
                 alert('Please enter time in format "minutes:seconds.milliseconds" (e.g., 1:23.456) or "seconds.milliseconds" (e.g., 26.6)');
                 return;
             }
-
             const timeMs = timeToMilliseconds(timeValue);
             totalMilliseconds += timeMs;
             totalAttempts++;
-
             if (type === 'good') {
                 goodCount++;
                 streakCount++;
@@ -359,12 +346,10 @@
                 highlightElement('badCount');
                 highlightElement('streakCount');
             }
-
             updateDisplay();
             saveData();
             timeInput.value = '';
         }
-
         function resetAll() {
             goodCount = 0;
             badCount = 0;
@@ -380,7 +365,6 @@
             resetBtn.classList.add('pulse');
             setTimeout(() => resetBtn.classList.remove('pulse'), 500);
         }
-
         function toggleVideo() {
             const video = document.getElementById('background-video');
             const toggleIcon = document.getElementById('videoToggle');
@@ -392,7 +376,6 @@
                 toggleIcon.style.opacity = '0.5'; // 50% opacity when video is off
             }
         }
-
         window.onload = function() {
             loadData();
             document.getElementById('timeInput').addEventListener('keypress', (e) => {
