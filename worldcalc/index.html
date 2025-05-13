@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>World Calculator</title>
   <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
   <style>
@@ -15,6 +16,11 @@
       src: url('../assets/fonts/SMSScript.ttf') format('truetype');
       font-display: swap;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Delfino', Arial, sans-serif;
       margin: 0;
@@ -24,40 +30,48 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
     }
+
     .container {
-      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
       background: #1e1e1e;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
+
     .title-section {
       text-align: center;
       margin-bottom: 20px;
     }
-    h1 {
+
+    h1, h2 {
       color: #ffffff;
       margin: 0;
     }
+
     h2 {
-      margin: 10px 0 0;
-      color: #ffffff;
+      margin-top: 10px;
+      font-size: 1.1em;
     }
+
     .inputRow {
       display: flex;
-      align-items: center;
-      margin: 5px 0;
+      flex-direction: column;
+      margin: 10px 0;
     }
+
     .inputRow label {
-      width: 100px;
       font-size: 14px;
-      margin-right: 8px;
+      margin-bottom: 4px;
       color: #ccc;
     }
+
     input.timeInput {
-      width: 160px;
-      padding: 3px 8px;
+      width: 100%;
+      padding: 8px;
       border: 1px solid #555;
       border-radius: 4px;
       font-family: SMSScript, Arial, sans-serif;
@@ -65,47 +79,72 @@
       background-color: #2a2a2a;
       color: #fff;
     }
+
     button {
-      margin-top: 10px;
-      padding: 6px 12px;
+      margin-top: 15px;
+      padding: 10px 16px;
       font-family: 'Delfino', Arial, sans-serif;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
       border: none;
       background-color: #4CAF50;
       color: white;
       border-radius: 4px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+      width: 100%;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     #total {
       margin-top: 15px;
       font-weight: bold;
       font-size: 16px;
+      text-align: center;
       color: #fff;
     }
+
     .home-link {
       position: absolute;
-      top: 0px;
+      top: 10px;
       left: 10px;
       font-family: 'Delfino', Arial, sans-serif;
-      font-size: 48px;
+      font-size: 36px;
       color: white;
       text-decoration: none;
       z-index: 2;
       text-shadow: 2px 2px 2px #000;
       transition: all 0.2s ease;
     }
+
     .home-link:hover {
       color: #bbb;
       transform: scale(1.05);
     }
+
     .home-link:active {
       transform: scale(0.95);
+    }
+
+    @media (min-width: 600px) {
+      .inputRow {
+        flex-direction: row;
+        align-items: center;
+      }
+      .inputRow label {
+        width: 100px;
+        margin-bottom: 0;
+        margin-right: 8px;
+      }
+      input.timeInput {
+        width: 160px;
+      }
+      button {
+        width: auto;
+        display: block;
+        margin: 15px auto 0;
+      }
     }
   </style>
 </head>
@@ -130,6 +169,7 @@
     <button onclick="calculateTotal()">Calculate Total</button>
     <div id="total">Total Time: </div>
   </div>
+
   <script>
     function parseTime(str) {
       str = str.trim();
@@ -143,6 +183,7 @@
       let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
       return seconds * 1000 + milliseconds;
     }
+
     function formatTime(totalMs) {
       const totalSeconds = Math.floor(totalMs / 1000);
       const ms = totalMs % 1000;
@@ -155,6 +196,7 @@
         String(s).padStart(2, '0')
       ].join(':') + '.' + String(ms).padStart(3, '0');
     }
+
     function calculateTotal() {
       const inputs = document.querySelectorAll('.timeInput');
       let totalMs = 0;
