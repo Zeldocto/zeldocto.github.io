@@ -4,17 +4,166 @@
   <meta charset="UTF-8">
   <title>World Segment Calculator</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input { margin: 5px 0; width: 160px; padding: 5px; }
-    button { margin-top: 10px; padding: 5px 10px; }
-    #total { margin-top: 15px; font-weight: bold; }
+    <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
+  <style>
+    @font-face {
+      font-family: 'Delfino';
+      src: url('../assets/fonts/Delfino.ttf') format('truetype');
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SMSScript';
+      src: url('../assets/fonts/SMSScript.ttf') format('truetype');
+      font-display: swap;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: auto; 
+      font-family: 'Delfino', Arial, sans-serif;
+    }
+    html::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 0;
+      pointer-events: none;
+    }
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .scroll-wrapper {
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 150px 0;
+    }
+    .scroll-wrapper::-webkit-scrollbar {
+      width: 12px;
+    }
+    .scroll-wrapper::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .scroll-wrapper::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 6px;
+      border: 3px solid rgba(0, 0, 0, 0);
+      background-clip: padding-box;
+    }
+    .scroll-wrapper {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+      position: relative;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: rgba(0,0,0,0.2);
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #666;
+      text-align: left;
+    }
+    td, th {
+      font-family: 'Delfino', Arial, sans-serif;
+    }
+    td time {
+      font-family: 'SMSScript', Arial, sans-serif;
+    }
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .note {
+      font-style: italic;
+      color: white;
+    }
+    .note.missing-video {
+      color: #e87575;
+    }
+    td.note:empty::before {
+      content: '';
+    }
+    td.note::before {
+      content: attr(data-note);
+    }
+    td.note[data-note*="missing video"]::before {
+      color: #e87575;
+    }
+    .home-link {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: 'Delfino', Arial, sans-serif;
+      font-size: 48px;
+      color: white;
+      text-decoration: none;
+      z-index: 2;
+      text-shadow: 2px 2px 2px #000;
+      transition: all 0.2s ease;
+    }
+    .home-link:hover {
+      color: #ddd;
+      transform: scale(1.05);
+      text-shadow: 2px 2px 2px #000;
+    }
+    .home-link:active {
+      transform: scale(0.95);
+    }
+    a {
+      color: #88b1d3;
+      text-decoration: none;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #a6c9e4;
+      text-shadow: 0 0 5px rgba(136, 177, 211, 0.5);
+    }
+    @media (max-width: 768px) {
+      .home-link {
+        font-size: 32px;
+        top: 5px;
+        left: 5px;
+      }
+    }
+  </style>
   </style>
 </head>
 <body>
-  <h2>Enter Times</h2>
+  <h1>Enter Times</h1>
   <div id="inputs">
     <!-- 9 input boxes -->
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <time></time><input type="text" class="timeInput" placeholder="00:00:00.000"><br></time>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
