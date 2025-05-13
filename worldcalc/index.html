@@ -32,11 +32,16 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
+    .title-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
     h1 {
       color: #ffffff;
+      margin: 0;
     }
     h2 {
-      margin-bottom: 10px;
+      margin: 10px 0 0;
       color: #ffffff;
     }
     .inputRow {
@@ -55,7 +60,7 @@
       padding: 3px 8px;
       border: 1px solid #555;
       border-radius: 4px;
-      font-family: SMSScript; Arial, sans-serif;
+      font-family: SMSScript, Arial, sans-serif;
       font-size: 14px;
       background-color: #2a2a2a;
       color: #fff;
@@ -70,6 +75,9 @@
       background-color: #4CAF50;
       color: white;
       border-radius: 4px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     button:hover {
       background-color: #45a049;
@@ -79,6 +87,7 @@
       font-weight: bold;
       font-size: 16px;
       color: #fff;
+      text-align: center;
     }
     .home-link {
       position: absolute;
@@ -104,8 +113,10 @@
 <body>
   <a class="home-link" href="/">⌂</a>
   <div class="container">
-    <center><h1>World Calculator</h1>
-    <h2>Enter Times</h2></center>
+    <div class="title-section">
+      <h1>World Calculator</h1>
+      <h2>Enter Times</h2>
+    </div>
     <div id="inputs">
       <div class="inputRow"><label for="seg1">Bianco I:</label><input id="seg1" type="text" class="timeInput" placeholder="00:00.000"></div>
       <div class="inputRow"><label for="seg2">Gelato:</label><input id="seg2" type="text" class="timeInput" placeholder="00:00.000"></div>
@@ -117,7 +128,7 @@
       <div class="inputRow"><label for="seg8">Noki:</label><input id="seg8" type="text" class="timeInput" placeholder="00:00.000"></div>
       <div class="inputRow"><label for="seg9">Corona:</label><input id="seg9" type="text" class="timeInput" placeholder="00:00.000"></div>
     </div>
-    <center><button onclick="calculateTotal()">Calculate Total</button></center>
+    <button onclick="calculateTotal()">Calculate Total</button>
     <div id="total">Total Time: </div>
   </div>
   <script>
