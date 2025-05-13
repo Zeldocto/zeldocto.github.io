@@ -9,19 +9,28 @@
       font-family: 'Delfino';
       src: url('../assets/fonts/Delfino.ttf') format('truetype');
       font-display: swap;
-        }
+    }
     @font-face {
       font-family: 'SMSScript';
       src: url('../assets/fonts/SMSScript.ttf') format('truetype');
       font-display: swap;
-        }
+    }
     body {
       font-family: 'Delfino', Arial, sans-serif;
-      height: calc(100% - 80px);
-      padding: 40px;
+      margin: 0;
+      padding: 0;
       background-color: #f9f9f9;
       color: #222;
+      display: flex;
       align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     h1 {
       margin-bottom: 10px;
@@ -85,53 +94,48 @@
   </style>
 </head>
 <body>
-  <h1>Enter Times</h1>
-  <div id="inputs">
-    <div class="inputRow"><label for="seg1">Bianco I:</label><input id="seg1" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg2">Gelato:</label><input id="seg2" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg3">Pianta:</label><input id="seg3" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg4">Pinna:</label><input id="seg4" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg5">Ricco:</label><input id="seg5" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg6">Bianco II:</label><input id="seg6" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg7">Sirena:</label><input id="seg7" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg8">Noki:</label><input id="seg8" type="text" class="timeInput" placeholder="00:00.000"></div>
-    <div class="inputRow"><label for="seg9">Corona:</label><input id="seg9" type="text" class="timeInput" placeholder="00:00.000"></div>
+  <a class="home-link" href="/">⌂</a>
+  <div class="container">
+    <h1>Enter Times</h1>
+    <div id="inputs">
+      <div class="inputRow"><label for="seg1">Bianco I:</label><input id="seg1" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg2">Gelato:</label><input id="seg2" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg3">Pianta:</label><input id="seg3" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg4">Pinna:</label><input id="seg4" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg5">Ricco:</label><input id="seg5" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg6">Bianco II:</label><input id="seg6" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg7">Sirena:</label><input id="seg7" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg8">Noki:</label><input id="seg8" type="text" class="timeInput" placeholder="00:00.000"></div>
+      <div class="inputRow"><label for="seg9">Corona:</label><input id="seg9" type="text" class="timeInput" placeholder="00:00.000"></div>
+    </div>
+    <button onclick="calculateTotal()">Calculate Total</button>
+    <div id="total">Total Time: </div>
   </div>
-  <button onclick="calculateTotal()">Calculate Total</button>
-  <div id="total">Total Time: </div>
-
   <script>
     function parseTime(str) {
       str = str.trim();
       if (!str) return 0;
-
       let [main, ms = '0'] = str.split('.');
       const parts = main.split(':').map(Number).reverse();
-
       let seconds = 0;
       if (parts.length >= 1) seconds += parts[0];        // SS
       if (parts.length >= 2) seconds += parts[1] * 60;   // MM
       if (parts.length >= 3) seconds += parts[2] * 3600; // HH
-
       let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
       return seconds * 1000 + milliseconds;
     }
-
     function formatTime(totalMs) {
       const totalSeconds = Math.floor(totalMs / 1000);
       const ms = totalMs % 1000;
-
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
       const s = totalSeconds % 60;
-
       return [
         String(h).padStart(2, '0'),
         String(m).padStart(2, '0'),
         String(s).padStart(2, '0')
       ].join(':') + '.' + String(ms).padStart(3, '0');
     }
-
     function calculateTotal() {
       const inputs = document.querySelectorAll('.timeInput');
       let totalMs = 0;
