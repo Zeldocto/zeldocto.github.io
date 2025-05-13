@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>World Segment Calculator</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input { margin: 5px 0; width: 160px; padding: 5px; }
+    button { margin-top: 10px; padding: 5px 10px; }
+    #total { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Enter Times</h2>
+  <div id="inputs">
+    <!-- 9 input boxes -->
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+  </div>
+  <button onclick="calculateTotal()">Calculate Total</button>
+  <div id="total">Total Time: 00:00:00.000</div>
+
+  <script>
+    function parseTime(str) {
+      str = str.trim();
+      if (!str) return 0;
+
+      let [main, ms = '0'] = str.split('.');
+      const parts = main.split(':').map(Number).reverse();
+
+      let seconds = 0;
+      if (parts.length >= 1) seconds += parts[0];        // SS
+      if (parts.length >= 2) seconds += parts[1] * 60;   // MM
+      if (parts.length >= 3) seconds += parts[2] * 3600; // HH
+
+      let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
+      return seconds * 1000 + milliseconds;
+    }
+
+    function formatTime(totalMs) {
+      const totalSeconds = Math.floor(totalMs / 1000);
+      const ms = totalMs % 1000;
+
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+
+      return [
+        String(h).padStart(2, '0'),
+        String(m).padStart(2, '0'),
+        String(s).padStart(2, '0')
+      ].join(':') + '.' + String(ms).padStart(3, '0');
+    }
+
+    function calculateTotal() {
+      const inputs = document.querySelectorAll('.timeInput');
+      let totalMs = 0;
+      inputs.forEach(input => {
+        totalMs += parseTime(input.value);
+      });
+      document.getElementById('total').innerText = 'Total Time: ' + formatTime(totalMs);
+    }
+  </script>
+</body>
+</html>
