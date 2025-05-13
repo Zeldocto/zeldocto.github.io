@@ -119,41 +119,26 @@
     td.note[data-note*="missing video"]::before {
       color: #e87575;
     }
-    .home-link {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-family: 'Delfino', Arial, sans-serif;
-      font-size: 48px;
-      color: white;
-      text-decoration: none;
-      z-index: 2;
-      text-shadow: 2px 2px 2px #000;
-      transition: all 0.2s ease;
-    }
-    .home-link:hover {
-      color: #ddd;
-      transform: scale(1.05);
-      text-shadow: 2px 2px 2px #000;
-    }
-    .home-link:active {
-      transform: scale(0.95);
-    }
-    a {
-      color: #88b1d3;
-      text-decoration: none;
-      transition: color 0.3s ease, text-shadow 0.3s ease;
-    }
-    a:hover {
-      text-decoration: underline;
-      color: #a6c9e4;
-      text-shadow: 0 0 5px rgba(136, 177, 211, 0.5);
-    }
-    @media (max-width: 768px) {
-      .home-link {
-        font-size: 32px;
-        top: 5px;
-        left: 5px;
+        .home-link {
+            position: absolute;
+            top: 0px;
+            left: 10px;
+            font-family: 'Delfino', Arial, sans-serif;
+            font-size: 48px;
+            color: white;
+            text-decoration: none;
+            z-index: 2;
+            text-shadow: 2px 2px 2px #000;
+            transition: all 0.2s ease;
+        }
+        .home-link:hover {
+            color: #ddd;
+            transform: scale(1.05);
+            text-shadow: 2px 2px 2px #000;
+        }
+        .home-link:active {
+            transform: scale(0.95);
+        }
       }
     }
   </style>
