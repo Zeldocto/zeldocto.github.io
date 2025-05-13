@@ -16,9 +16,19 @@
       margin-bottom: 10px;
     }
 
-    input.timeInput {
-      display: block;
+    .inputRow {
+      display: flex;
+      align-items: center;
       margin: 5px 0;
+    }
+
+    .inputRow label {
+      width: 100px;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+
+    input.timeInput {
       width: 160px;
       padding: 3px 8px;
       border: 1px solid #ccc;
@@ -52,15 +62,15 @@
 <body>
   <h1>Enter Times</h1>
   <div id="inputs">
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
-    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
+    <div class="inputRow"><label for="seg1">Bianco I:</label><input id="seg1" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg2">Gelato:</label><input id="seg2" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg3">Pianta:</label><input id="seg3" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg4">Pinna:</label><input id="seg4" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg5">Ricco:</label><input id="seg5" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg6">Bianco II:</label><input id="seg6" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg7">Sirena:</label><input id="seg7" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg8">Noki:</label><input id="seg8" type="text" class="timeInput" placeholder="00:00:00.000"></div>
+    <div class="inputRow"><label for="seg9">Corona:</label><input id="seg9" type="text" class="timeInput" placeholder="00:00:00.000"></div>
   </div>
   <button onclick="calculateTotal()">Calculate Total</button>
   <div id="total">Total Time: 00:00:00.000</div>
