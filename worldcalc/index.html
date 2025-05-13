@@ -3,20 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <title>World Segment Calculator</title>
+  <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
   <style>
-    <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input { margin: 5px 0; width: 160px; padding: 5px; }
-    button { margin-top: 10px; padding: 5px 10px; }
-    #total { margin-top: 15px; font-weight: bold; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    input.timeInput {
+      display: block;
+      margin: 5px 0;
+      width: 160px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #total {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <h1>Enter Times</h1>
   <div id="inputs">
-    <!-- 9 input boxes -->
-    <time></time><input type="text" class="timeInput" placeholder="00:00:00.000"><br></time>
+    <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
     <input type="text" class="timeInput" placeholder="00:00:00.000"><br>
