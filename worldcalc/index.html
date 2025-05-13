@@ -23,23 +23,19 @@
       color: #222;
       align-items: center;
     }
-
     h1 {
       margin-bottom: 10px;
     }
-
     .inputRow {
       display: flex;
       align-items: center;
       margin: 5px 0;
     }
-
     .inputRow label {
       width: 100px;
       font-size: 14px;
       margin-right: 8px;
     }
-
     input.timeInput {
       width: 160px;
       padding: 3px 8px;
@@ -48,7 +44,6 @@
       font-family: monospace;
       font-size: 14px;
     }
-
     button {
       margin-top: 10px;
       padding: 6px 12px;
@@ -59,15 +54,33 @@
       color: white;
       border-radius: 4px;
     }
-
     button:hover {
       background-color: #45a049;
     }
-
     #total {
       margin-top: 15px;
       font-weight: bold;
       font-size: 16px;
+    }
+    .home-link {
+      position: absolute;
+      top: 0px;
+      left: 10px;
+      font-family: 'Delfino', Arial, sans-serif;
+      font-size: 48px;
+      color: white;
+      text-decoration: none;
+      z-index: 2;
+      text-shadow: 2px 2px 2px #000;
+      transition: all 0.2s ease;
+    }
+    .home-link:hover {
+      color: #ddd;
+      transform: scale(1.05);
+      text-shadow: 2px 2px 2px #000;
+    }
+    .home-link:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
