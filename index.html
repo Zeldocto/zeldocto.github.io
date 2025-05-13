@@ -41,6 +41,23 @@
             align-items: center;
             position: relative;
         }
+        #leaderboard {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
+        }
+        #leaderboard::-webkit-scrollbar {
+            width: 12px;
+        }
+        #leaderboard::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        #leaderboard::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 6px;
+            border: 3px solid rgba(0, 0, 0, 0);
+            background-clip: padding-box;
+        }
         .video-container {
             position: fixed;
             top: 0;
