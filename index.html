@@ -213,6 +213,28 @@
             background-color: #1e7e34;
             transform: translateY(1px);
         }
+        .social-icons {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            opacity: 0.8;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        .social-icon:hover {
+            opacity: 1;
+            transform: translateY(-2px) scale(1.1);
+        }
+        .social-icon:active {
+            transform: translateY(1px) scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -232,10 +254,6 @@
         <h1>Zeldocto</h1>
         <a href="https://speedrun.com/users/Zeldocto" class="link">Speedrun.com</a>
         <a href="https://zeldocto.github.io/history" class="link">PB History</a>
-        <a href="https://bsky.app/profile/zeldocto.bsky.social" class="link">Bsky</a>
-        <a href="https://x.com/zeldocto" class="link">X</a>
-        <a href="https://twitch.tv/zeldocto" class="link">Twitch</a>
-        <a href="https://youtube.com/@zeldocto" class="link">YouTube</a>
         <hr class="separator">
         <a href="/iltool/" class="link">IL Tool</a>
         <a href="/worldcalc/" class="link">World Calculator</a>
@@ -262,6 +280,25 @@
             loopVideo.loop = true;
         });
     </script>
+    
+    <div class="social-icons">
+        <a href="https://bsky.app/profile/zeldocto.bsky.social" target="_blank">
+            <img src="assets/icons/bluesky-48.png" alt="Bluesky" class="social-icon">
+        </a>
+        <a href="https://x.com/zeldocto" target="_blank">
+            <img src="assets/icons/x-48.png" alt="X" class="social-icon">
+        </a>
+        <a href="https://github.com/Zeldocto" target="_blank">
+            <img src="assets/icons/github-48.png" alt="GitHub" class="social-icon">
+        </a>
+        <a href="https://twitch.tv/zeldocto" target="_blank">
+            <img src="assets/icons/twitch-48.png" alt="Twitch" class="social-icon">
+        </a>
+        <a href="https://youtube.com/@zeldocto" target="_blank">
+            <img src="assets/icons/youtube-48.png" alt="YouTube" class="social-icon">
+        </a>
+    </div>
+    
     <a href="https://ko-fi.com/zeldocto" target="_blank" id="support-link">Support Me💲</a>
 </body>
 </html>
