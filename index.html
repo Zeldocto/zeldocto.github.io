@@ -17,10 +17,14 @@
             font-family: 'SMSScript';
             src: url('assets/fonts/SMSScript.ttf') format('truetype');
         }
-        html {
-            height: 100%;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            height: 100%;
+            overflow: hidden;
         }
         html::before {
             content: '';
@@ -34,13 +38,12 @@
         }
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px 0;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
+            overflow: hidden;
         }
         #leaderboard {
             overflow-y: auto;
@@ -84,10 +87,10 @@
         }
         .container {
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.9); /* Increased opacity */
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.1); /* Added subtle border */
+            border: 1px solid rgba(0, 0, 0, 0.1);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
@@ -105,7 +108,7 @@
             background-color: #007bff;
             color: white;
             padding: 10px;
-            margin: 15px 0; /* Increased spacing */
+            margin: 15px 0;
             text-decoration: none;
             border-radius: 5px;
             font-size: 18px;
