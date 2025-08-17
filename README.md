@@ -1,9 +1,11 @@
-# Personal Website
-My first experience coding.  
-Will eventually add more tools as I think of them.  
+<h1>Personal Website</h1><br>
+<a href="https://zeldocto.github.io"></a>
+<img src="{https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white}" />
+My first experience coding.<br>
+Will eventually add more tools as I think of them.<br>  
 
-## Tools  
-### [IL Streak Counter](https://zeldocto.github.io/iltool/)
-Keeps track of good/bad (self determined) times and streaks, shows success percentage, average time, and the best time of the session.
-### [World Segment Calculator](https://zeldocto.github.io/worldcalc/)
+<h2>Tools</h2><br>  
+<a href="https://zeldocto.github.io/iltool/"><b>IL Streak Counter</b></a><br>
+Keeps track of good/bad (self determined) times and streaks, shows success percentage, average time, and the best time of the session.<br>  
+<a href="https://zeldocto.github.io/worldcalc/"><b>World Segment Calculator</b></a><br>
 Simple tool that adds together the sum of world segments of the standard any% route (for the best world segments total).  
