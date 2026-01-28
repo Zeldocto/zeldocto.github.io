@@ -4,36 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS Randomizer Tracker</title>
-  
+    <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
+    <!-- External Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        @font-face {
-            font-family: 'Delfino';
-            src: url('../assets/fonts/Delfino.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
-
         body {
-            font-family: 'Open Sans', sans-serif;
             background: radial-gradient(circle at center, #60a5fa, #1d4ed8);
             background-attachment: fixed;
             min-height: 100vh;
             margin: 0;
             color: white;
+            font-family: 'Open Sans', sans-serif;
             overflow-x: hidden;
         }
 
         .mario-font {
-            font-family: 'Delfino', 'Fredoka One', cursive;
+            font-family: 'Delfino';
+            src: url('../assets/fonts/Delfino.ttf') format('truetype');
+            font-display: swap;
         }
 
         @keyframes rainbow {
@@ -41,21 +34,7 @@
             100% { filter: hue-rotate(360deg); }
         }
 
-        @keyframes rainbow-text {
-            0% { color: #ffadad; }
-            20% { color: #ffd6a5; }
-            40% { color: #fdffb6; }
-            60% { color: #caffbf; }
-            80% { color: #9bf6ff; }
-            100% { color: #ffadad; }
-        }
-
-        .animate-rainbow-text {
-            animation: rainbow-text 3s linear infinite;
-        }
-
         .shine-rainbow {
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
             animation: rainbow 4s linear infinite;
         }
 
@@ -66,27 +45,33 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .rainbow-text {
+            background: linear-gradient(to right, #ffadad, #ffd6a5, #fdffb6, #caffbf, #9bf6ff, #ffadad);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-scroll 3s linear infinite;
+        }
+
+        @keyframes rainbow-scroll {
+            to { background-position: 200% center; }
+        }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
-  }
-}
-</script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useCallback } = React;
 
-        const SHINE_STATES = {
+        const ShineState = {
             INACTIVE: 'INACTIVE',
             COLLECTED: 'COLLECTED',
             RAINBOW: 'RAINBOW'
         };
+
+        const STORAGE_KEY = 'sms-tracker-v6';
 
         const WORLDS = [
             { id: 'dp', name: 'Delfino Plaza', color: 'bg-rose-500', count: 19 },
@@ -102,37 +87,48 @@
         const ShineIcon = ({ status, onClick, index }) => {
             const getStyles = () => {
                 switch (status) {
-                    case SHINE_STATES.COLLECTED:
-                        return "brightness-110 drop-shadow-[0_0_5px_rgba(255,223,0,0.5)]";
-                    case SHINE_STATES.RAINBOW:
-                        return "shine-rainbow scale-110";
+                    case ShineState.COLLECTED:
+                        return "brightness-110 drop-shadow-[0_0_8px_rgba(255,223,0,0.6)] scale-100";
+                    case ShineState.RAINBOW:
+                        return "shine-rainbow scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]";
                     default:
-                        return "grayscale opacity-20 contrast-75";
+                        return "grayscale opacity-25 contrast-75 scale-90";
                 }
+            };
+
+            const getFillColor = () => {
+                if (status === ShineState.INACTIVE) return "#4a4a4a";
+                return "#FFD700";
+            };
+
+            const getStrokeColor = () => {
+                if (status === ShineState.RAINBOW) return "#FFFFFF";
+                return "#B8860B";
             };
 
             return (
                 <div 
                     onClick={onClick}
-                    className="relative cursor-pointer transition-all duration-200 transform hover:scale-110 active:scale-95 flex flex-col items-center p-0.5"
+                    className="group relative cursor-pointer transition-all duration-200 flex flex-col items-center p-1"
+                    title={`Shine #${index}`}
                 >
                     <svg 
                         viewBox="0 0 100 100" 
-                        className={`w-8 h-8 md:w-9 md:h-9 transition-all duration-300 ${getStyles()}`}
+                        className={`w-9 h-9 md:w-10 md:h-10 transition-all duration-300 transform active:scale-90 group-hover:scale-110 ${getStyles()}`}
                         xmlns="http://www.w3.org/2000/svg"
                     >
                         <path 
                             d="M50 5 L61 35 L95 35 L67 55 L78 85 L50 65 L22 85 L33 55 L5 35 L39 35 Z" 
-                            fill={status === SHINE_STATES.INACTIVE ? "#888" : "#FFD700"} 
-                            stroke={status === SHINE_STATES.RAINBOW ? "#FFF" : "#B8860B"} 
-                            strokeWidth="2"
+                            fill={getFillColor()} 
+                            stroke={getStrokeColor()} 
+                            strokeWidth="2.5"
                         />
                         <circle cx="50" cy="48" r="8" fill="#FFFACD" />
                         <ellipse cx="46" cy="44" rx="2" ry="3" fill="#000" />
                         <ellipse cx="54" cy="44" rx="2" ry="3" fill="#000" />
-                        <path d="M44 54 Q50 60 56 54" stroke="#000" fill="none" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M44 54 Q50 60 56 54" stroke="#000" fill="none" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
-                    <span className={`text-[8px] md:text-[9px] font-bold mt-0 select-none ${status === SHINE_STATES.INACTIVE ? 'text-white/20' : 'text-white'}`}>
+                    <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
                         {index}
                     </span>
                 </div>
@@ -140,23 +136,25 @@
         };
 
         const WorldCard = ({ world, shines, onShineClick, isHub = false }) => {
-            const collectedCount = shines.filter(s => s !== SHINE_STATES.INACTIVE).length;
+            const collectedCount = shines.filter(s => s !== ShineState.INACTIVE).length;
 
             return (
-                <div className={`bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 shadow-xl transition-all hover:bg-white/15 h-full`}>
-                    <div className={`${world.color} px-4 py-2 flex justify-between items-center shadow-lg`}>
-                        <h2 className={`mario-font text-white tracking-tight drop-shadow-md ${isHub ? 'text-xl md:text-2xl' : 'text-base md:text-lg'}`}>
+                <div className={`bg-white/10 backdrop-blur-lg rounded-3xl overflow-hidden border border-white/20 shadow-2xl transition-all hover:bg-white/15 flex flex-col h-full`}>
+                    <div className={`${world.color} px-5 py-3 flex justify-between items-center shadow-lg border-b border-white/10`}>
+                        <h2 className={`mario-font text-white tracking-wide drop-shadow-md ${isHub ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}`}>
                             {world.name}
                         </h2>
-                        <span className="bg-black/30 text-white font-bold px-3 py-1 rounded-full text-xs">
-                            {collectedCount} / {world.count}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-black/40 text-white font-black px-4 py-1.5 rounded-2xl text-sm border border-white/10">
+                                {collectedCount} <span className="text-[10px] opacity-60">/ {world.count}</span>
+                            </span>
+                        </div>
                     </div>
-                    <div className="p-3">
-                        <div className="flex flex-wrap gap-1 justify-center md:justify-start">
+                    <div className="p-4 flex-1">
+                        <div className="flex flex-wrap gap-1.5 justify-center md:justify-start">
                             {shines.map((status, idx) => (
                                 <ShineIcon 
-                                    key={idx} 
+                                    key={`${world.id}-${idx}`} 
                                     index={idx + 1}
                                     status={status} 
                                     onClick={() => onShineClick(idx)} 
@@ -164,54 +162,69 @@
                             ))}
                         </div>
                     </div>
+                    
+                    <div className="h-1.5 w-full bg-black/20">
+                        <div 
+                            className={`h-full transition-all duration-500 ${world.color}`}
+                            style={{ width: `${(collectedCount / world.count) * 100}%` }}
+                        />
+                    </div>
                 </div>
             );
         };
 
         const App = () => {
             const [shineState, setShineState] = useState(() => {
-                const saved = localStorage.getItem('sms-tracker-v5');
-                if (saved) return JSON.parse(saved);
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        return JSON.parse(saved);
+                    } catch (e) {
+                        console.error("Failed to parse saved state", e);
+                    }
+                }
                 
                 const initial = {};
                 WORLDS.forEach(w => {
-                    initial[w.id] = new Array(w.count).fill(SHINE_STATES.INACTIVE);
+                    initial[w.id] = new Array(w.count).fill(ShineState.INACTIVE);
                 });
                 return initial;
             });
 
             useEffect(() => {
-                localStorage.setItem('sms-tracker-v5', JSON.stringify(shineState));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(shineState));
             }, [shineState]);
 
-            const handleShineClick = (worldId, index) => {
+            const handleShineClick = useCallback((worldId, index) => {
                 setShineState(prev => {
                     const worldShines = [...prev[worldId]];
                     const current = worldShines[index];
                     
                     let next;
-                    if (current === SHINE_STATES.INACTIVE) next = SHINE_STATES.COLLECTED;
-                    else if (current === SHINE_STATES.COLLECTED) next = SHINE_STATES.RAINBOW;
-                    else next = SHINE_STATES.INACTIVE;
+                    if (current === ShineState.INACTIVE) next = ShineState.COLLECTED;
+                    else if (current === ShineState.COLLECTED) next = ShineState.RAINBOW;
+                    else next = ShineState.INACTIVE;
 
                     worldShines[index] = next;
                     return { ...prev, [worldId]: worldShines };
                 });
-            };
+            }, []);
 
-            const reset = () => {
-                if (confirm("Reset everything?")) {
+            const reset = useCallback(() => {
+                if (window.confirm("Delete all progress? This cannot be undone!")) {
                     const fresh = {};
-                    WORLDS.forEach(w => fresh[w.id] = new Array(w.count).fill(SHINE_STATES.INACTIVE));
+                    WORLDS.forEach(w => {
+                        fresh[w.id] = new Array(w.count).fill(ShineState.INACTIVE);
+                    });
                     setShineState(fresh);
                 }
-            };
+            }, []);
 
             const totals = useMemo(() => {
                 const flat = Object.values(shineState).flat();
                 return {
-                    total: flat.filter(s => s !== SHINE_STATES.INACTIVE).length,
-                    rainbow: flat.filter(s => s === SHINE_STATES.RAINBOW).length
+                    total: flat.filter(s => s !== ShineState.INACTIVE).length,
+                    rainbow: flat.filter(s => s === ShineState.RAINBOW).length
                 };
             }, [shineState]);
 
@@ -219,37 +232,66 @@
             const otherWorlds = WORLDS.filter(w => w.id !== 'dp');
 
             return (
-                <div className="p-4 md:p-8 max-w-6xl mx-auto pb-20">
-                    <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+                <div className="p-4 md:p-10 max-w-7xl mx-auto pb-24">
+                    
+                    <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
                         <div className="text-center md:text-left">
-                            <h1 className="mario-font text-5xl md:text-6xl text-white drop-shadow-lg tracking-tighter">
+                            <h1 className="mario-font text-5xl md:text-7xl text-white drop-shadow-2xl tracking-tight leading-tight">
                                 SMS RANDOMIZER <span className="text-yellow-400">TRACKER</span>
                             </h1>
-                            <p className="text-blue-200 text-xs font-bold uppercase tracking-[0.3em] mt-1 opacity-80">Isle Delfino Division</p>
+                            <p className="text-blue-200 text-xs font-bold uppercase tracking-[0.4em] mt-2 opacity-90 drop-shadow">
+                                Super Mario Sunshine Randomizer
+                            </p>
                         </div>
 
-                        <div className="flex gap-4">
-                            <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-3xl flex items-center gap-6 md:gap-8 shadow-2xl">
-                                <div className="text-center">
-                                    <p className="text-[10px] uppercase font-black text-yellow-400 mb-1">Total Shines</p>
-                                    <p className="mario-font text-3xl">{totals.total}<span className="text-sm opacity-30 ml-1">/96</span></p>
+                        <div className="flex flex-col sm:flex-row gap-6 items-center">
+                            {/* Stats Panel */}
+                            <div className="bg-black/40 backdrop-blur-2xl border border-white/20 px-8 py-5 rounded-[2.5rem] flex items-center gap-8 md:gap-12 shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="text-center relative z-10">
+                                    <p className="text-[10px] uppercase font-black text-yellow-400 mb-1.5 tracking-widest">Total Shines</p>
+                                    <p className="mario-font text-4xl md:text-5xl flex items-baseline">
+                                        {totals.total}
+                                        <span className="text-sm opacity-40 ml-1.5 font-sans font-bold">/ 96</span>
+                                    </p>
                                 </div>
-                                <div className="w-px h-10 bg-white/10" />
-                                <div className="text-center">
-                                    <p className="text-[10px] uppercase font-black text-pink-400 mb-1">Rainbows</p>
-                                    <p className="mario-font text-3xl animate-rainbow-text">{totals.rainbow}<span className="text-sm opacity-30 ml-1">/22</span></p>
+                                <div className="w-px h-12 bg-white/20" />
+                                <div className="text-center relative z-10">
+                                    <p className="text-[10px] uppercase font-black text-pink-400 mb-1.5 tracking-widest">Rainbows</p>
+                                    <p className="mario-font text-4xl md:text-5xl flex items-baseline rainbow-text">
+                                        {totals.rainbow}
+                                        <span className="text-sm opacity-40 ml-1.5 font-sans font-bold text-white">/ 22</span>
+                                    </p>
                                 </div>
-                                <button onClick={reset} className="hover:rotate-180 transition-transform duration-500 p-2 text-rose-400">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><pa[...]
-                                </button>
                             </div>
+
+                            <button 
+                                onClick={reset} 
+                                className="group p-4 bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white rounded-full transition-all duration-300 border border-rose-500/30 active:scale-90 shadow-lg"
+                                title="Reset Tracker"
+                            >
+                                <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    width="28" 
+                                    height="28" 
+                                    viewBox="0 0 24 24" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    strokeWidth="2.5" 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    className="group-hover:rotate-180 transition-transform duration-500"
+                                >
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                    <path d="M3 3v5h5" />
+                                </svg>
+                            </button>
                         </div>
                     </header>
 
-                    <section className="space-y-8">
-                        {/* Delfino Plaza Centered and Width-Restricted */}
+                    <main className="space-y-10">
                         <div className="flex justify-center">
-                            <div className="w-full lg:w-3/4 xl:w-2/3">
+                            <div className="w-full lg:w-4/5 xl:w-2/3">
                                 <WorldCard 
                                     world={delfinoPlaza}
                                     isHub={true}
@@ -258,9 +300,7 @@
                                 />
                             </div>
                         </div>
-
-                        {/* Other worlds in a standard grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {otherWorlds.map(world => (
                                 <WorldCard 
                                     key={world.id}
@@ -270,10 +310,13 @@
                                 />
                             ))}
                         </div>
-                    </section>
+                    </main>
 
-                    <footer className="mt-16 text-center opacity-30 text-[10px] font-bold tracking-[0.5em] uppercase">
-                        96 SHINES &bull; 22 RAINBOWS
+                    <footer className="mt-20 text-center">
+                        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-8" />
+                        <p className="opacity-40 text-[10px] font-black tracking-[0.6em] uppercase">
+                            Isle Delfino Division &bull; SMS Tracker Pro
+                        </p>
                     </footer>
                 </div>
             );
