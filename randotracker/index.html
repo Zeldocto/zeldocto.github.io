@@ -119,28 +119,17 @@ html, body {
                     className="group relative cursor-pointer transition-all duration-200 flex flex-col items-center p-1"
                     title={`Shine #${index}`}
                 >
-                    <svg 
-                        viewBox="0 0 100 100" 
+                    <img 
+                        src="../assets/icons/shinesprite.png" 
+                        alt="Shine"
                         className={`w-9 h-9 md:w-10 md:h-10 transition-all duration-300 transform active:scale-90 group-hover:scale-110 ${getStyles()}`}
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path 
-                            d="M50 5 L61 35 L95 35 L67 55 L78 85 L50 65 L22 85 L33 55 L5 35 L39 35 Z" 
-                            fill={getFillColor()} 
-                            stroke={getStrokeColor()} 
-                            strokeWidth="2.5"
-                        />
-                        <circle cx="50" cy="48" r="8" fill="#FFFACD" />
-                        <ellipse cx="46" cy="44" rx="2" ry="3" fill="#000" />
-                        <ellipse cx="54" cy="44" rx="2" ry="3" fill="#000" />
-                        <path d="M44 54 Q50 60 56 54" stroke="#000" fill="none" strokeWidth="2.5" strokeLinecap="round" />
-                    </svg>
-                    <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
-                        {index}
-                    </span>
-                </div>
-            );
-        };
+                    />
+                                        <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
+                                            {index}
+                                        </span>
+                                    </div>
+                                );
+                            };
 
         const WorldCard = ({ world, shines, onShineClick, isHub = false }) => {
             const collectedCount = shines.filter(s => s !== ShineState.INACTIVE).length;
