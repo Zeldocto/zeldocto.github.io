@@ -23,11 +23,18 @@
             overflow-x: hidden;
         }
 
-        .mario-font {
-            font-family: 'Delfino';
-            src: url('../assets/fonts/Delfino.ttf') format('truetype');
-            font-display: swap;
-        }
+@font-face {
+  font-family: "Delfino";
+  src: local("Delfino"), 
+       url("../assets/fonts/Delfino.ttf") format("truetype");
+  font-display: swap;
+  font-weight: normal;
+  font-style: normal;
+}
+
+html, body {
+  font-family: "Delfino", "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
         @keyframes rainbow {
             0% { filter: hue-rotate(0deg); }
