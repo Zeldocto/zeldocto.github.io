@@ -13,14 +13,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            background: radial-gradient(circle at center, #176E99, #11254A);
-            min-height: 100dvh;
-            margin: 0;
-            color: white;
-            font-family: 'Open Sans', sans-serif;
-            overflow-x: hidden;
-        }
+html, body {
+    background: radial-gradient(circle at center, #176E99, #11254A);
+    min-height: 100%;
+    margin: 0;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+}
+
 
 @font-face {
   font-family: "Delfino";
@@ -227,7 +231,7 @@ html, body {
             const otherWorlds = WORLDS.filter(w => w.id !== 'dp');
 
             return (
-                <div className="p-4 md:p-10 max-w-7xl mx-auto pb-24">
+                <div className="p-4 md:p-10 max-w-7xl mx-auto pb-24 min-h-screen">
                     
                     <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
                         <div className="text-center md:text-left">
