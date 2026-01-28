@@ -8,7 +8,7 @@ Will eventually add more tools as I think of them.<br>
 
 <h2>Tools</h2><br>  
 <a href="https://zeldocto.github.io/randotracker/"><b>SMS Randomizer Tracker</b></a><br>
-Keeps track of collected shines and unlocks per world.
+Keeps track of collected shines and unlocks per world.<br>  
 <a href="https://zeldocto.github.io/iltool/"><b>IL Streak Counter</b></a><br>
 Keeps track of good/bad (self determined) times and streaks, shows success percentage, average time, and the best time of the session.<br>  
 <a href="https://zeldocto.github.io/worldcalc/"><b>World Segment Calculator</b></a><br>
