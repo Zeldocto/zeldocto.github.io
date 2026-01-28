@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,7 @@
     <style>
         @font-face {
             font-family: 'Delfino';
-            src: url('.../assets/fonts/Delfino.ttf') format('truetype');
+            src: url('../assets/fonts/Delfino.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
@@ -53,13 +52,11 @@
             animation: rainbow-text 3s linear infinite;
         }
 
-        /* Fixed Rainbow Effect: slowed down to 4s for a smoother gradient transition */
         .shine-rainbow {
             filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
             animation: rainbow 4s linear infinite;
         }
 
-        /* Global scrollbar removal */
         ::-webkit-scrollbar {
             display: none;
         }
@@ -241,7 +238,7 @@
                                     <p className="mario-font text-3xl animate-rainbow-text">{totals.rainbow}<span className="text-sm opacity-30 ml-1">/22</span></p>
                                 </div>
                                 <button onClick={reset} className="hover:rotate-180 transition-transform duration-500 p-2 text-rose-400">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><pa[...]
                                 </button>
                             </div>
                         </div>
