@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Randomizer Tracker</title>
+  
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'Delfino';
+            src: url('./assets/fonts/Delfino.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: radial-gradient(circle at center, #60a5fa, #1d4ed8);
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .mario-font {
+            font-family: 'Delfino', 'Fredoka One', cursive;
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes rainbow-text {
+            0% { color: #ffadad; }
+            20% { color: #ffd6a5; }
+            40% { color: #fdffb6; }
+            60% { color: #caffbf; }
+            80% { color: #9bf6ff; }
+            100% { color: #ffadad; }
+        }
+
+        .animate-rainbow-text {
+            animation: rainbow-text 3s linear infinite;
+        }
+
+        /* Fixed Rainbow Effect: slowed down to 4s for a smoother gradient transition */
+        .shine-rainbow {
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
+            animation: rainbow 4s linear infinite;
+        }
+
+        /* Global scrollbar removal */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const SHINE_STATES = {
+            INACTIVE: 'INACTIVE',
+            COLLECTED: 'COLLECTED',
+            RAINBOW: 'RAINBOW'
+        };
+
+        const WORLDS = [
+            { id: 'dp', name: 'Delfino Plaza', color: 'bg-rose-500', count: 19 },
+            { id: 'bh', name: 'Bianco Hills', color: 'bg-emerald-500', count: 11 },
+            { id: 'rh', name: 'Ricco Harbor', color: 'bg-blue-600', count: 11 },
+            { id: 'gb', name: 'Gelato Beach', color: 'bg-amber-400', count: 11 },
+            { id: 'pp', name: 'Pinna Park', color: 'bg-indigo-500', count: 11 },
+            { id: 'sb', name: 'Sirena Beach', color: 'bg-orange-500', count: 11 },
+            { id: 'nb', name: 'Noki Bay', color: 'bg-cyan-600', count: 11 },
+            { id: 'pv', name: 'Pianta Village', color: 'bg-purple-600', count: 11 },
+        ];
+
+        const ShineIcon = ({ status, onClick, index }) => {
+            const getStyles = () => {
+                switch (status) {
+                    case SHINE_STATES.COLLECTED:
+                        return "brightness-110 drop-shadow-[0_0_5px_rgba(255,223,0,0.5)]";
+                    case SHINE_STATES.RAINBOW:
+                        return "shine-rainbow scale-110";
+                    default:
+                        return "grayscale opacity-20 contrast-75";
+                }
+            };
+
+            return (
+                <div 
+                    onClick={onClick}
+                    className="relative cursor-pointer transition-all duration-200 transform hover:scale-110 active:scale-95 flex flex-col items-center p-0.5"
+                >
+                    <svg 
+                        viewBox="0 0 100 100" 
+                        className={`w-8 h-8 md:w-9 md:h-9 transition-all duration-300 ${getStyles()}`}
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path 
+                            d="M50 5 L61 35 L95 35 L67 55 L78 85 L50 65 L22 85 L33 55 L5 35 L39 35 Z" 
+                            fill={status === SHINE_STATES.INACTIVE ? "#888" : "#FFD700"} 
+                            stroke={status === SHINE_STATES.RAINBOW ? "#FFF" : "#B8860B"} 
+                            strokeWidth="2"
+                        />
+                        <circle cx="50" cy="48" r="8" fill="#FFFACD" />
+                        <ellipse cx="46" cy="44" rx="2" ry="3" fill="#000" />
+                        <ellipse cx="54" cy="44" rx="2" ry="3" fill="#000" />
+                        <path d="M44 54 Q50 60 56 54" stroke="#000" fill="none" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <span className={`text-[8px] md:text-[9px] font-bold mt-0 select-none ${status === SHINE_STATES.INACTIVE ? 'text-white/20' : 'text-white'}`}>
+                        {index}
+                    </span>
+                </div>
+            );
+        };
+
+        const WorldCard = ({ world, shines, onShineClick, isHub = false }) => {
+            const collectedCount = shines.filter(s => s !== SHINE_STATES.INACTIVE).length;
+
+            return (
+                <div className={`bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 shadow-xl transition-all hover:bg-white/15 h-full`}>
+                    <div className={`${world.color} px-4 py-2 flex justify-between items-center shadow-lg`}>
+                        <h2 className={`mario-font text-white tracking-tight drop-shadow-md ${isHub ? 'text-xl md:text-2xl' : 'text-base md:text-lg'}`}>
+                            {world.name}
+                        </h2>
+                        <span className="bg-black/30 text-white font-bold px-3 py-1 rounded-full text-xs">
+                            {collectedCount} / {world.count}
+                        </span>
+                    </div>
+                    <div className="p-3">
+                        <div className="flex flex-wrap gap-1 justify-center md:justify-start">
+                            {shines.map((status, idx) => (
+                                <ShineIcon 
+                                    key={idx} 
+                                    index={idx + 1}
+                                    status={status} 
+                                    onClick={() => onShineClick(idx)} 
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [shineState, setShineState] = useState(() => {
+                const saved = localStorage.getItem('sms-tracker-v5');
+                if (saved) return JSON.parse(saved);
+                
+                const initial = {};
+                WORLDS.forEach(w => {
+                    initial[w.id] = new Array(w.count).fill(SHINE_STATES.INACTIVE);
+                });
+                return initial;
+            });
+
+            useEffect(() => {
+                localStorage.setItem('sms-tracker-v5', JSON.stringify(shineState));
+            }, [shineState]);
+
+            const handleShineClick = (worldId, index) => {
+                setShineState(prev => {
+                    const worldShines = [...prev[worldId]];
+                    const current = worldShines[index];
+                    
+                    let next;
+                    if (current === SHINE_STATES.INACTIVE) next = SHINE_STATES.COLLECTED;
+                    else if (current === SHINE_STATES.COLLECTED) next = SHINE_STATES.RAINBOW;
+                    else next = SHINE_STATES.INACTIVE;
+
+                    worldShines[index] = next;
+                    return { ...prev, [worldId]: worldShines };
+                });
+            };
+
+            const reset = () => {
+                if (confirm("Reset everything?")) {
+                    const fresh = {};
+                    WORLDS.forEach(w => fresh[w.id] = new Array(w.count).fill(SHINE_STATES.INACTIVE));
+                    setShineState(fresh);
+                }
+            };
+
+            const totals = useMemo(() => {
+                const flat = Object.values(shineState).flat();
+                return {
+                    total: flat.filter(s => s !== SHINE_STATES.INACTIVE).length,
+                    rainbow: flat.filter(s => s === SHINE_STATES.RAINBOW).length
+                };
+            }, [shineState]);
+
+            const delfinoPlaza = WORLDS.find(w => w.id === 'dp');
+            const otherWorlds = WORLDS.filter(w => w.id !== 'dp');
+
+            return (
+                <div className="p-4 md:p-8 max-w-6xl mx-auto pb-20">
+                    <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+                        <div className="text-center md:text-left">
+                            <h1 className="mario-font text-5xl md:text-6xl text-white drop-shadow-lg tracking-tighter">
+                                SMS <span className="text-yellow-400">TRACKER</span>
+                            </h1>
+                            <p className="text-blue-200 text-xs font-bold uppercase tracking-[0.3em] mt-1 opacity-80">Isle Delfino Division</p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-3xl flex items-center gap-6 md:gap-8 shadow-2xl">
+                                <div className="text-center">
+                                    <p className="text-[10px] uppercase font-black text-yellow-400 mb-1">Total Shines</p>
+                                    <p className="mario-font text-3xl">{totals.total}<span className="text-sm opacity-30 ml-1">/96</span></p>
+                                </div>
+                                <div className="w-px h-10 bg-white/10" />
+                                <div className="text-center">
+                                    <p className="text-[10px] uppercase font-black text-pink-400 mb-1">Rainbows</p>
+                                    <p className="mario-font text-3xl animate-rainbow-text">{totals.rainbow}<span className="text-sm opacity-30 ml-1">/22</span></p>
+                                </div>
+                                <button onClick={reset} className="hover:rotate-180 transition-transform duration-500 p-2 text-rose-400">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <section className="space-y-8">
+                        {/* Delfino Plaza Centered and Width-Restricted */}
+                        <div className="flex justify-center">
+                            <div className="w-full lg:w-3/4 xl:w-2/3">
+                                <WorldCard 
+                                    world={delfinoPlaza}
+                                    isHub={true}
+                                    shines={shineState[delfinoPlaza.id]}
+                                    onShineClick={(idx) => handleShineClick(delfinoPlaza.id, idx)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Other worlds in a standard grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {otherWorlds.map(world => (
+                                <WorldCard 
+                                    key={world.id}
+                                    world={world}
+                                    shines={shineState[world.id]}
+                                    onShineClick={(idx) => handleShineClick(world.id, idx)}
+                                />
+                            ))}
+                        </div>
+                    </section>
+
+                    <footer className="mt-16 text-center opacity-30 text-[10px] font-bold tracking-[0.5em] uppercase">
+                        96 SHINES &bull; 22 RAINBOWS
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
