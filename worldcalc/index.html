@@ -105,27 +105,6 @@
       color: #fff;
     }
 
-    .divider {
-      border: none;
-      border-top: 1px solid #333;
-      margin: 20px 0;
-    }
-
-    .section-title {
-      text-align: center;
-      font-size: 1.1em;
-      color: #fff;
-      margin: 0 0 10px 0;
-    }
-
-    #difference {
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-      color: #fff;
-    }
-
     .home-link {
       position: absolute;
       top: 10px;
@@ -189,14 +168,6 @@
     </div>
     <button onclick="calculateTotal()">Calculate Total</button>
     <div id="total">Total Time: </div>
-
-    <hr class="divider">
-
-    <h2 class="section-title">PB vs SoB</h2>
-    <div class="inputRow"><label for="pbInput">PB:</label><input id="pbInput" type="text" class="timeInput" placeholder="h:mm:ss"></div>
-    <div class="inputRow"><label for="sobInput">SoB:</label><input id="sobInput" type="text" class="timeInput" placeholder="h:mm:ss"></div>
-    <button onclick="calculateDifference()">Calculate Difference</button>
-    <div id="difference">Difference: </div>
   </div>
 
   <script>
@@ -206,9 +177,9 @@
       let [main, ms = '0'] = str.split('.');
       const parts = main.split(':').map(Number).reverse();
       let seconds = 0;
-      if (parts.length >= 1) seconds += parts[0];       
-      if (parts.length >= 2) seconds += parts[1] * 60;   
-      if (parts.length >= 3) seconds += parts[2] * 3600; 
+      if (parts.length >= 1) seconds += parts[0];        // SS
+      if (parts.length >= 2) seconds += parts[1] * 60;   // MM
+      if (parts.length >= 3) seconds += parts[2] * 3600; // HH
       let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
       return seconds * 1000 + milliseconds;
     }
@@ -226,25 +197,6 @@
       ].join(':') + '.' + String(ms).padStart(3, '0');
     }
 
-    function parseHMS(str) {
-      str = str.trim();
-      if (!str) return 0;
-      const parts = str.split(':').map(Number).reverse();
-      let seconds = 0;
-      if (parts.length >= 1) seconds += parts[0];       
-      if (parts.length >= 2) seconds += parts[1] * 60;   
-      if (parts.length >= 3) seconds += parts[2] * 3600; 
-      return seconds * 1000;
-    }
-
-    function formatHMS(totalMs) {
-      const totalSeconds = Math.round(totalMs / 1000);
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      const s = totalSeconds % 60;
-      return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    }
-
     function calculateTotal() {
       const inputs = document.querySelectorAll('.timeInput');
       let totalMs = 0;
@@ -252,17 +204,6 @@
         totalMs += parseTime(input.value);
       });
       document.getElementById('total').innerText = 'Total Time: ' + formatTime(totalMs);
-    }
-
-    function calculateDifference() {
-      const pbMs = parseHMS(document.getElementById('pbInput').value);
-      const sobMs = parseHMS(document.getElementById('sobInput').value);
-      if (!pbMs && !sobMs) {
-        document.getElementById('difference').innerText = 'Difference: —';
-        return;
-      }
-      const diffMs = pbMs - sobMs;
-      document.getElementById('difference').innerText = 'Difference: ' + formatHMS(diffMs);
     }
   </script>
 </body>
