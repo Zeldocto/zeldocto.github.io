@@ -73,6 +73,31 @@ html, body {
         @keyframes rainbow-scroll {
             to { background-position: 200% center; }
         }
+
+        .shine-label-input {
+            width: 2.8rem;
+            font-size: 9px;
+            font-weight: 700;
+            text-align: center;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 4px;
+            color: white;
+            padding: 1px 2px;
+            outline: none;
+            letter-spacing: 0.03em;
+            transition: border-color 0.15s, background 0.15s;
+            font-family: inherit;
+        }
+
+        .shine-label-input:focus {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.55);
+        }
+
+        .shine-label-input::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
@@ -88,6 +113,7 @@ html, body {
         };
 
         const STORAGE_KEY = 'sms-tracker-v6';
+        const LABELS_KEY = 'sms-tracker-labels-v1';
 
         const WORLDS = [
             { id: 'dp', name: 'Delfino Plaza', color: 'bg-blue-400', count: 19 },
@@ -100,7 +126,7 @@ html, body {
             { id: 'pv', name: 'Pianta Village', color: 'bg-red-500', count: 11 },
         ];
 
-        const ShineIcon = ({ status, onClick, index }) => {
+        const ShineIcon = ({ status, onClick, index, label, onLabelChange }) => {
             const getStyles = () => {
                 switch (status) {
                     case ShineState.COLLECTED:
@@ -112,35 +138,34 @@ html, body {
                 }
             };
 
-            const getFillColor = () => {
-                if (status === ShineState.INACTIVE) return "#4a4a4a";
-                return "#FFD700";
-            };
-
-            const getStrokeColor = () => {
-                if (status === ShineState.RAINBOW) return "#FFFFFF";
-                return "#B8860B";
-            };
-
             return (
                 <div 
-                    onClick={onClick}
                     className="group relative cursor-pointer transition-all duration-200 flex flex-col items-center p-1"
                     title={`Shine #${index}`}
                 >
                     <img 
                         src="../assets/icons/shinesprite.png" 
                         alt="Shine"
+                        onClick={onClick}
                         className={`w-9 h-9 md:w-10 md:h-10 transition-all duration-300 transform active:scale-90 group-hover:scale-110 ${getStyles()}`}
                     />
-                                        <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
-                                            {index}
-                                        </span>
-                                    </div>
-                                );
-                            };
+                    <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
+                        {index}
+                    </span>
+                    <input
+                        type="text"
+                        maxLength={4}
+                        value={label}
+                        onChange={e => onLabelChange(e.target.value)}
+                        onClick={e => e.stopPropagation()}
+                        placeholder="···"
+                        className="shine-label-input mt-0.5"
+                    />
+                </div>
+            );
+        };
 
-        const WorldCard = ({ world, shines, onShineClick, isHub = false }) => {
+        const WorldCard = ({ world, shines, onShineClick, labels, onLabelChange, isHub = false }) => {
             const collectedCount = shines.filter(s => s !== ShineState.INACTIVE).length;
 
             return (
@@ -162,7 +187,9 @@ html, body {
                                     key={`${world.id}-${idx}`} 
                                     index={idx + 1}
                                     status={status} 
-                                    onClick={() => onShineClick(idx)} 
+                                    onClick={() => onShineClick(idx)}
+                                    label={labels[idx] || ''}
+                                    onLabelChange={val => onLabelChange(idx, val)}
                                 />
                             ))}
                         </div>
@@ -182,16 +209,23 @@ html, body {
             const [shineState, setShineState] = useState(() => {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
-                    try {
-                        return JSON.parse(saved);
-                    } catch (e) {
-                        console.error("Failed to parse saved state", e);
-                    }
+                    try { return JSON.parse(saved); } catch (e) {}
                 }
-                
                 const initial = {};
                 WORLDS.forEach(w => {
                     initial[w.id] = new Array(w.count).fill(ShineState.INACTIVE);
+                });
+                return initial;
+            });
+
+            const [labelState, setLabelState] = useState(() => {
+                const saved = localStorage.getItem(LABELS_KEY);
+                if (saved) {
+                    try { return JSON.parse(saved); } catch (e) {}
+                }
+                const initial = {};
+                WORLDS.forEach(w => {
+                    initial[w.id] = new Array(w.count).fill('');
                 });
                 return initial;
             });
@@ -200,28 +234,41 @@ html, body {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(shineState));
             }, [shineState]);
 
+            useEffect(() => {
+                localStorage.setItem(LABELS_KEY, JSON.stringify(labelState));
+            }, [labelState]);
+
             const handleShineClick = useCallback((worldId, index) => {
                 setShineState(prev => {
                     const worldShines = [...prev[worldId]];
                     const current = worldShines[index];
-                    
                     let next;
                     if (current === ShineState.INACTIVE) next = ShineState.COLLECTED;
                     else if (current === ShineState.COLLECTED) next = ShineState.RAINBOW;
                     else next = ShineState.INACTIVE;
-
                     worldShines[index] = next;
                     return { ...prev, [worldId]: worldShines };
                 });
             }, []);
 
+            const handleLabelChange = useCallback((worldId, index, value) => {
+                setLabelState(prev => {
+                    const worldLabels = [...(prev[worldId] || [])];
+                    worldLabels[index] = value;
+                    return { ...prev, [worldId]: worldLabels };
+                });
+            }, []);
+
             const reset = useCallback(() => {
-                if (window.confirm("Delete all progress? This cannot be undone!")) {
+                if (window.confirm("Delete all progress and notes? This cannot be undone!")) {
                     const fresh = {};
+                    const freshLabels = {};
                     WORLDS.forEach(w => {
                         fresh[w.id] = new Array(w.count).fill(ShineState.INACTIVE);
+                        freshLabels[w.id] = new Array(w.count).fill('');
                     });
                     setShineState(fresh);
+                    setLabelState(freshLabels);
                 }
             }, []);
 
@@ -266,7 +313,6 @@ html, body {
                                         <span className="rainbow-text">{totals.rainbow}</span>
                                         <span className="text-sm opacity-40 ml-1.5 font-sans font-bold text-white">/ 22</span>
                                     </p>
-
                                 </div>
                             </div>
 
@@ -302,6 +348,8 @@ html, body {
                                     isHub={true}
                                     shines={shineState[delfinoPlaza.id]}
                                     onShineClick={(idx) => handleShineClick(delfinoPlaza.id, idx)}
+                                    labels={labelState[delfinoPlaza.id] || []}
+                                    onLabelChange={(idx, val) => handleLabelChange(delfinoPlaza.id, idx, val)}
                                 />
                             </div>
                         </div>
@@ -312,6 +360,8 @@ html, body {
                                     world={world}
                                     shines={shineState[world.id]}
                                     onShineClick={(idx) => handleShineClick(world.id, idx)}
+                                    labels={labelState[world.id] || []}
+                                    onLabelChange={(idx, val) => handleLabelChange(world.id, idx, val)}
                                 />
                             ))}
                         </div>
