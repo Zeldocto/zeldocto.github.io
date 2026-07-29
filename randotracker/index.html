@@ -75,17 +75,24 @@ html, body {
         }
 
         .shine-label-input {
-            width: 2.8rem;
+            width: 4.6rem;
+            min-height: 1.1rem;
+            max-height: 3.6rem;
             font-size: 9px;
+            line-height: 1.2;
             font-weight: 700;
             text-align: center;
             background: rgba(0,0,0,0.35);
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 4px;
             color: white;
-            padding: 1px 2px;
+            padding: 2px 3px;
             outline: none;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
+            resize: none;
+            overflow: hidden;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
             transition: border-color 0.15s, background 0.15s;
             font-family: inherit;
         }
@@ -104,7 +111,7 @@ html, body {
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useCallback } = React;
+        const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
         const ShineState = {
             INACTIVE: 'INACTIVE',
@@ -114,6 +121,7 @@ html, body {
 
         const STORAGE_KEY = 'sms-tracker-v6';
         const LABELS_KEY = 'sms-tracker-labels-v1';
+        const NOTE_MAX = 25;
 
         const WORLDS = [
             { id: 'dp', name: 'Delfino Plaza', color: 'bg-blue-400', count: 19 },
@@ -127,6 +135,16 @@ html, body {
         ];
 
         const ShineIcon = ({ status, onClick, index, label, onLabelChange }) => {
+            const noteRef = useRef(null);
+
+            // grow/shrink the note box to fit its wrapped text
+            useEffect(() => {
+                const el = noteRef.current;
+                if (!el) return;
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+            }, [label]);
+
             const getStyles = () => {
                 switch (status) {
                     case ShineState.COLLECTED:
@@ -140,7 +158,7 @@ html, body {
 
             return (
                 <div 
-                    className="group relative cursor-pointer transition-all duration-200 flex flex-col items-center p-1"
+                    className="group relative cursor-pointer transition-all duration-200 flex flex-col items-center p-1 w-[5rem]"
                     title={`Shine #${index}`}
                 >
                     <img 
@@ -152,11 +170,13 @@ html, body {
                     <span className={`text-[10px] font-bold mt-1 select-none transition-opacity ${status === ShineState.INACTIVE ? 'text-white/30' : 'text-white'}`}>
                         {index}
                     </span>
-                    <input
-                        type="text"
-                        maxLength={4}
+                    <textarea
+                        ref={noteRef}
+                        rows={1}
+                        maxLength={NOTE_MAX}
                         value={label}
-                        onChange={e => onLabelChange(e.target.value)}
+                        onChange={e => onLabelChange(e.target.value.replace(/\n/g, ' '))}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
                         onClick={e => e.stopPropagation()}
                         placeholder="···"
                         className="shine-label-input mt-0.5"
@@ -181,7 +201,7 @@ html, body {
                         </div>
                     </div>
                     <div className="p-4 flex-1">
-                        <div className="flex flex-wrap gap-1.5 justify-center md:justify-start">
+                        <div className="flex flex-wrap gap-1.5 justify-center md:justify-start items-start">
                             {shines.map((status, idx) => (
                                 <ShineIcon 
                                     key={`${world.id}-${idx}`} 
@@ -254,7 +274,7 @@ html, body {
             const handleLabelChange = useCallback((worldId, index, value) => {
                 setLabelState(prev => {
                     const worldLabels = [...(prev[worldId] || [])];
-                    worldLabels[index] = value;
+                    worldLabels[index] = value.slice(0, NOTE_MAX);
                     return { ...prev, [worldId]: worldLabels };
                 });
             }, []);
