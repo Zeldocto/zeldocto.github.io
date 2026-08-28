@@ -1,210 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>World Calculator</title>
-  <link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
-  <style>
-    @font-face {
-      font-family: 'Delfino';
-      src: url('../assets/fonts/Delfino.ttf') format('truetype');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'SMSScript';
-      src: url('../assets/fonts/SMSScript.ttf') format('truetype');
-      font-display: swap;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Delfino', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #121212;
-      color: #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 400px;
-      padding: 20px;
-      background: #1e1e1e;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .title-section {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    h1, h2 {
-      color: #ffffff;
-      margin: 0;
-    }
-
-    h2 {
-      margin-top: 10px;
-      font-size: 1.1em;
-    }
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Calculator</title>
+<link rel="icon" type="image/x-icon" href="../assets/icons/favicon.ico">
+<style>
+  @font-face {
+    font-family: 'Delfino';
+    src: url('../assets/fonts/Delfino.ttf') format('truetype');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'SMSScript';
+    src: url('../assets/fonts/SMSScript.ttf') format('truetype');
+    font-display: swap;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Delfino', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    background: #1e1e1e;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+  .title-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  h1, h2 {
+    color: #ffffff;
+    margin: 0;
+  }
+  h2 {
+    margin-top: 10px;
+    font-size: 1.1em;
+  }
+  .routes {
+    margin-bottom: 20px;
+  }
+  .routes-header {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    color: #9ccc9e;
+    text-decoration: none;
+    margin-bottom: 8px;
+  }
+  .routes-header:hover {
+    color: #4CAF50;
+    text-decoration: underline;
+  }
+  .routeList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+  button.routeBtn {
+    position: relative;
+    width: auto;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 13px;
+    background-color: #2a2a2a;
+    color: #ccc;
+    border: 1px solid #555;
+    border-radius: 4px;
+  }
+  button.routeBtn:hover {
+    background-color: #333;
+    color: #fff;
+  }
+  button.routeBtn[aria-pressed="true"] {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: #fff;
+  }
+  .tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 5;
+  }
+  button.routeBtn:hover .tip,
+  button.routeBtn:focus-visible .tip {
+    opacity: 1;
+    visibility: visible;
+  }
+  #routeNote {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+    min-height: 1em;
+  }
+  .inputRow {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+  }
+  .inputRow label {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #ccc;
+  }
+  input.timeInput {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-family: SMSScript, Arial, sans-serif;
+    font-size: 14px;
+    background-color: #2a2a2a;
+    color: #fff;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px 16px;
+    font-family: 'Delfino', Arial, sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    width: 100%;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  #total {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+    color: #fff;
+  }
+  .home-link {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: 'Delfino', Arial, sans-serif;
+    font-size: 36px;
+    color: white;
+    text-decoration: none;
+    z-index: 2;
+    text-shadow: 2px 2px 2px #000;
+    transition: all 0.2s ease;
+  }
+  .home-link:hover {
+    color: #bbb;
+    transform: scale(1.05);
+  }
+  .home-link:active {
+    transform: scale(0.95);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+  @media (min-width: 600px) {
     .inputRow {
-      display: flex;
-      flex-direction: column;
-      margin: 10px 0;
+      flex-direction: row;
+      align-items: center;
     }
-
     .inputRow label {
-      font-size: 14px;
-      margin-bottom: 4px;
-      color: #ccc;
+      width: 100px;
+      margin-bottom: 0;
+      margin-right: 8px;
     }
-
     input.timeInput {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #555;
-      border-radius: 4px;
-      font-family: SMSScript, Arial, sans-serif;
-      font-size: 14px;
-      background-color: #2a2a2a;
-      color: #fff;
+      width: 160px;
     }
-
     button {
-      margin-top: 15px;
-      padding: 10px 16px;
-      font-family: 'Delfino', Arial, sans-serif;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 4px;
-      width: 100%;
+      width: auto;
+      display: block;
+      margin: 15px auto 0;
     }
-
-    button:hover {
-      background-color: #45a049;
+    button.routeBtn {
+      display: inline-block;
+      margin: 0;
     }
-
-    #total {
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-      color: #fff;
-    }
-
-    .home-link {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-family: 'Delfino', Arial, sans-serif;
-      font-size: 36px;
-      color: white;
-      text-decoration: none;
-      z-index: 2;
-      text-shadow: 2px 2px 2px #000;
-      transition: all 0.2s ease;
-    }
-
-    .home-link:hover {
-      color: #bbb;
-      transform: scale(1.05);
-    }
-
-    .home-link:active {
-      transform: scale(0.95);
-    }
-
-    @media (min-width: 600px) {
-      .inputRow {
-        flex-direction: row;
-        align-items: center;
-      }
-      .inputRow label {
-        width: 100px;
-        margin-bottom: 0;
-        margin-right: 8px;
-      }
-      input.timeInput {
-        width: 160px;
-      }
-      button {
-        width: auto;
-        display: block;
-        margin: 15px auto 0;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <a class="home-link" href="/">⌂</a>
   <div class="container">
     <div class="title-section">
       <h1>World Calculator</h1>
-      <h2>Enter Times</h2>
     </div>
-    <div id="inputs">
-      <div class="inputRow"><label for="seg1">Bianco I:</label><input id="seg1" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg2">Gelato:</label><input id="seg2" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg3">Pianta:</label><input id="seg3" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg4">Pinna:</label><input id="seg4" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg5">Ricco:</label><input id="seg5" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg6">Bianco II:</label><input id="seg6" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg7">Sirena:</label><input id="seg7" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg8">Noki:</label><input id="seg8" type="text" class="timeInput" placeholder="00:00.000"></div>
-      <div class="inputRow"><label for="seg9">Corona:</label><input id="seg9" type="text" class="timeInput" placeholder="00:00.000"></div>
+
+    <div class="routes">
+      <a class="routes-header"
+         href="https://docs.google.com/spreadsheets/d/1_YA7xzNsG1JgCPHRJEKPGEIQGD_0Dp6e5HD_lvV5uvE/edit?gid=0#gid=0"
+         target="_blank" rel="noopener">Any% Routes</a>
+      <div class="routeList" id="routeList"></div>
+      <div id="routeNote"></div>
     </div>
+
+    <h2 style="text-align:center;">Enter Times</h2>
+    <div id="inputs"></div>
+
     <button onclick="calculateTotal()">Calculate Total</button>
     <div id="total">Total Time: </div>
   </div>
 
-  <script>
-    function parseTime(str) {
-      str = str.trim();
-      if (!str) return 0;
-      let [main, ms = '0'] = str.split('.');
-      const parts = main.split(':').map(Number).reverse();
-      let seconds = 0;
-      if (parts.length >= 1) seconds += parts[0];        // SS
-      if (parts.length >= 2) seconds += parts[1] * 60;   // MM
-      if (parts.length >= 3) seconds += parts[2] * 3600; // HH
-      let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
-      return seconds * 1000 + milliseconds;
+<script>
+  const ROUTES = [
+    {
+      name: 'Standard',
+      label: 'Standard Route',
+      tip: 'Optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Pinna', 'Ricco', 'Bianco II', 'Sirena', 'Noki', 'Corona']
+    },
+    {
+      name: 'Movie Skip to Ricco',
+      label: 'Movie Skip to Ricco',
+      tip: 'Loses ~3.8s to optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Ricco', 'Pinna', 'Bianco II', 'Sirena', 'Noki', 'Corona']
+    },
+    {
+      name: 'Movie Skip to Bianco II',
+      label: 'Movie Skip to Bianco II',
+      tip: 'Loses ~3.8s to optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Bianco II', 'Ricco', 'Pinna', 'Sirena', 'Noki', 'Corona']
+    },
+    {
+      name: 'Save Warp to Sirena',
+      label: 'Save Warp to Sirena',
+      tip: 'Loses ~1.43s to optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Pinna', 'Sirena', 'Noki', 'Bianco II', 'Ricco', 'Corona']
+    },
+    {
+      name: 'Save Warp to Bianco II',
+      label: 'Save Warp to Bianco II',
+      tip: 'Loses ~1.43s to optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Pinna', 'Bianco II', 'Sirena', 'Noki', 'Ricco', 'Corona']
+    },
+    {
+      name: 'Bianco 6 Early',
+      label: 'Bianco 6 Early',
+      tip: 'Loses ~3.03s to optimal route',
+      order: ['Bianco I', 'Gelato', 'Pianta', 'Pinna', 'Ricco', 'Bianco II', 'Sirena', 'Noki', 'Corona']
     }
+  ];
 
-    function formatTime(totalMs) {
-      const totalSeconds = Math.floor(totalMs / 1000);
-      const ms = totalMs % 1000;
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      const s = totalSeconds % 60;
-      return [
-        String(h).padStart(2, '0'),
-        String(m).padStart(2, '0'),
-        String(s).padStart(2, '0')
-      ].join(':') + '.' + String(ms).padStart(3, '0');
-    }
+  const times = {};
+  let activeRoute = 0;
+  let hasCalculated = false;
 
-    function calculateTotal() {
-      const inputs = document.querySelectorAll('.timeInput');
-      let totalMs = 0;
-      inputs.forEach(input => {
-        totalMs += parseTime(input.value);
-      });
-      document.getElementById('total').innerText = 'Total Time: ' + formatTime(totalMs);
-    }
-  </script>
+  function slug(world) {
+    return 'seg-' + world.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  function buildRouteButtons() {
+    const list = document.getElementById('routeList');
+    list.innerHTML = '';
+    ROUTES.forEach((route, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'routeBtn';
+      btn.setAttribute('aria-pressed', String(i === activeRoute));
+      btn.textContent = route.label;
+
+      const tip = document.createElement('span');
+      tip.className = 'tip';
+      tip.textContent = route.tip;
+      btn.appendChild(tip);
+
+      btn.addEventListener('click', () => selectRoute(i));
+      list.appendChild(btn);
+    });
+  }
+
+  function buildInputs() {
+    const wrap = document.getElementById('inputs');
+    wrap.innerHTML = '';
+    ROUTES[activeRoute].order.forEach(world => {
+      const id = slug(world);
+
+      const row = document.createElement('div');
+      row.className = 'inputRow';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', id);
+      label.textContent = world + ':';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'timeInput';
+      input.id = id;
+      input.placeholder = '00:00.000';
+      input.value = times[world] || '';
+      input.addEventListener('input', () => { times[world] = input.value; });
+
+      row.appendChild(label);
+      row.appendChild(input);
+      wrap.appendChild(row);
+    });
+  }
+
+  function selectRoute(i) {
+    activeRoute = i;
+    document.querySelectorAll('.routeBtn').forEach((btn, idx) => {
+      btn.setAttribute('aria-pressed', String(idx === activeRoute));
+    });
+    document.getElementById('routeNote').textContent = ROUTES[i].tip;
+    buildInputs();
+    if (hasCalculated) calculateTotal();
+  }
+
+  function parseTime(str) {
+    str = str.trim();
+    if (!str) return 0;
+    let [main, ms = '0'] = str.split('.');
+    const parts = main.split(':').map(Number).reverse();
+    let seconds = 0;
+    if (parts.length >= 1) seconds += parts[0];      // SS
+    if (parts.length >= 2) seconds += parts[1] * 60;  // MM
+    if (parts.length >= 3) seconds += parts[2] * 3600; // HH
+    let milliseconds = parseInt(ms.padEnd(3, '0').slice(0, 3)) || 0;
+    return seconds * 1000 + milliseconds;
+  }
+
+  function formatTime(totalMs) {
+    const totalSeconds = Math.floor(totalMs / 1000);
+    const ms = totalMs % 1000;
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return [
+      String(h).padStart(2, '0'),
+      String(m).padStart(2, '0'),
+      String(s).padStart(2, '0')
+    ].join(':') + '.' + String(ms).padStart(3, '0');
+  }
+
+  function calculateTotal() {
+    const inputs = document.querySelectorAll('.timeInput');
+    let totalMs = 0;
+    inputs.forEach(input => {
+      totalMs += parseTime(input.value);
+    });
+    hasCalculated = true;
+    document.getElementById('total').innerText = 'Total Time: ' + formatTime(totalMs);
+  }
+
+  buildRouteButtons();
+  buildInputs();
+  document.getElementById('routeNote').textContent = ROUTES[activeRoute].tip;
+</script>
 </body>
 </html>
