@@ -13,3 +13,7 @@ Keeps track of collected shines and unlocks per world.<br>
 Keeps track of good/bad (self determined) times and streaks, shows success percentage, average time, and the best time of the session.<br>  
 <a href="https://zeldocto.github.io/worldcalc/"><b>World Segment Calculator</b></a><br>
 Simple tool that adds together the sum of world segments of the standard any% route (for the best world segments total).  
+
+<h2>Games</h2><br>  
+<a href="https://zeldocto.github.io/durian-clicker/"><b>Durian Clicker</b></a><br>
+Completely vibecoded cookie clicker rip off based off Super Mario Sunshine<br>  
