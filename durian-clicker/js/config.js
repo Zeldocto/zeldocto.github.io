@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-29-update3',
+    buildId: '2026-08-29-update3b',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -236,7 +236,7 @@
         description: 'Used to convert other fruits on the island into more durians.',
         flavor: 'Perfect RNG, everytime.',
         baseCost: 7000000,
-        baseProduction: 19000,
+        baseProduction: 34000,
         costMultiplier: 1.10,
         image: 'assets/placeholder-riccoconverter.png',
         unlock: { type: 'totalEarned', amount: 14000000 }
@@ -260,7 +260,7 @@
         description: 'The vast tree at the centre of Pianta Village, bursting with Durians all through Spring.',
         flavor: 'The whole village is built around it. So is the whole economy.',
         baseCost: 320000000,
-        baseProduction: 260000,
+        baseProduction: 400000,
         costMultiplier: 1.10,
         image: 'assets/placeholder-giantpiantatree.png',
         unlock: { type: 'totalEarned', amount: 640000000 }
