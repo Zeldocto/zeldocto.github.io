@@ -358,8 +358,9 @@
         var node = document.createElement('div');
         node.className = 'ach' + (a.earned ? ' earned' : '');
         node.tabIndex = 0;
-        node.innerHTML = '<img src="' + CONFIG.assets.shine + '" alt="">' +
-                         '<div class="ach-name">' + escapeHtml(a.earned ? a.def.name : '???') + '</div>';
+        node.setAttribute('aria-label',
+          a.earned ? a.def.name + ' — earned' : 'Locked: ' + a.def.description);
+        node.innerHTML = '<img src="' + CONFIG.assets.shine + '" alt="">';
 
         bindTip(node, function () {
           var note;
