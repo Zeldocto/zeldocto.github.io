@@ -602,11 +602,11 @@ input[type="range"] {
 .toasts {
   position: fixed;
   z-index: 40;
-  right: 14px; bottom: 14px;
+  left: 14px; bottom: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-end;
+  align-items: flex-start;
   pointer-events: none;
 }
 
@@ -628,7 +628,7 @@ input[type="range"] {
 .toast span { font-size: 0.76rem; color: var(--ink-soft); }
 .toast.unlock { border-left-color: var(--sea); }
 
-@keyframes toastIn { from { opacity: 0; transform: translateX(24px); } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-24px); } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(10px); } }
 
 /* ----------------------------------------------------------------- modals */
@@ -804,7 +804,7 @@ input[type="range"] {
   }
   .stage { gap: 10px; padding-top: 4px; }
   .clicker { width: clamp(160px, 30vh, 250px); }
-  .toasts { left: 14px; align-items: center; }
+  .toasts { left: 14px; right: 14px; align-items: center; }
 }
 
 /* Phone landscape: keep the two columns, shrink everything. */
@@ -1114,4 +1114,28 @@ input[type="range"] {
   font-size: 0.85rem;
   background: #FFFDF4;
   cursor: pointer;
+}
+
+
+/* ------------------------------------------------- grouped achievements */
+
+.ach-group-title {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--roof-dark);
+  margin: 16px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--sand-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ach-group-title:first-child { margin-top: 0; }
+.ach-group-title span {
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  font-weight: 800;
 }

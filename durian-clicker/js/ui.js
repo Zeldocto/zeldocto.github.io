@@ -320,30 +320,54 @@
 
   function buildAchievements() {
     el['ach-progress-text'].textContent = DC.Achievements.progressText();
-    var list = el['achievement-list'];
-    list.innerHTML = '';
+    var wrap = el['achievement-list'];
+    wrap.innerHTML = '';
 
+    // Keep each category together, in the order the content file declares them.
+    var order = [], buckets = {};
     DC.Achievements.list().forEach(function (a) {
-      var node = document.createElement('div');
-      node.className = 'ach' + (a.earned ? ' earned' : '');
-      node.tabIndex = 0;
-      node.innerHTML = '<img src="' + CONFIG.assets.shine + '" alt="">' +
-                       '<div class="ach-name">' + escapeHtml(a.earned ? a.def.name : '???') + '</div>';
+      var g = a.def.group || 'Milestones';
+      if (!buckets[g]) { buckets[g] = []; order.push(g); }
+      buckets[g].push(a);
+    });
 
-      bindTip(node, function () {
-        var note;
-        if (a.earned) {
-          note = a.earnedAt
-            ? 'Earned ' + new Date(a.earnedAt).toLocaleDateString() + ' at ' +
-              new Date(a.earnedAt).toLocaleTimeString()
-            : 'Earned';
-        } else {
-          note = 'Not yet earned';
-        }
-        return tipHtml(a.earned ? a.def.name : 'Locked Shine', a.def.description, note);
+    order.forEach(function (groupName) {
+      var items = buckets[groupName];
+      var earned = items.filter(function (a) { return a.earned; }).length;
+
+      var head = document.createElement('h3');
+      head.className = 'ach-group-title';
+      head.innerHTML = escapeHtml(groupName) +
+                       ' <span>' + earned + '/' + items.length + '</span>';
+      wrap.appendChild(head);
+
+      var grid = document.createElement('div');
+      grid.className = 'ach-grid';
+
+      items.forEach(function (a) {
+        var node = document.createElement('div');
+        node.className = 'ach' + (a.earned ? ' earned' : '');
+        node.tabIndex = 0;
+        node.innerHTML = '<img src="' + CONFIG.assets.shine + '" alt="">' +
+                         '<div class="ach-name">' + escapeHtml(a.earned ? a.def.name : '???') + '</div>';
+
+        bindTip(node, function () {
+          var note;
+          if (a.earned) {
+            note = a.earnedAt
+              ? 'Earned ' + new Date(a.earnedAt).toLocaleDateString() + ' at ' +
+                new Date(a.earnedAt).toLocaleTimeString()
+              : 'Earned';
+          } else {
+            note = 'Not yet earned';
+          }
+          return tipHtml(a.earned ? a.def.name : 'Locked Shine', a.def.description, note);
+        });
+
+        grid.appendChild(node);
       });
 
-      list.appendChild(node);
+      wrap.appendChild(grid);
     });
   }
 
@@ -573,6 +597,20 @@
         'Set <code>leaderboard.provider</code> in <code>js/config.js</code> to go online — see the README.';
   }
 
+  /**
+   * Scores are stored as log10 plus a display string. Rebuilding the number
+   * from the log means everyone sees the board in THEIR chosen number format,
+   * rather than in whatever format the submitting player happened to use.
+   */
+  function boardScore(entry, board) {
+    var log = entry[board.sortKey];
+    if (typeof log === 'number' && isFinite(log)) {
+      if (log <= 0) return '0';
+      return N.format(N.pow10(log));
+    }
+    return entry[board.displayKey] || '—';     // pre-log rows, if any
+  }
+
   function renderBoard() {
     var lb = DC.Leaderboard;
     var board = lb.boardDef();
@@ -596,7 +634,7 @@
           '<div class="board-player-name">' + escapeHtml(e.name || 'Anonymous') + '</div>' +
           '<div class="board-player-meta">' + meta.join(' · ') + '</div>' +
         '</div>' +
-        '<div class="board-score">' + escapeHtml(e[board.displayKey] || '—') + '</div>' +
+        '<div class="board-score">' + escapeHtml(boardScore(e, board)) + '</div>' +
       '</li>';
     }).join('');
 
@@ -702,7 +740,12 @@
     // Durian: pointerdown feels snappier than click, and covers touch.
     el['durian-button'].addEventListener('pointerdown', handleClick);
     el['durian-button'].addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e); }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      // Holding the key down makes the browser fire keydown on autorepeat,
+      // which was a free autoclicker. Only the initial press counts.
+      if (e.repeat) return;
+      handleClick(e);
     });
     // The button already fires on pointerdown; stop the synthetic click too.
     el['durian-button'].addEventListener('click', function (e) { e.preventDefault(); });

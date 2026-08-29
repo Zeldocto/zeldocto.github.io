@@ -173,7 +173,10 @@
   /** Writes every digit out with thousands separators. */
   function formatFull(v) {
     if (v.e > 60) return format(v, { mode: 'abbreviated' });   // beyond readable
-    var digits = v.m.toFixed(15).replace('.', '');
+    // 13 decimals, not 15: a value reconstructed from log10 (as the leaderboard
+    // does) carries float noise in the last digits, and 2.4999999999999996
+    // would otherwise print as 2,499,999,999 instead of 2,500,000,000.
+    var digits = v.m.toFixed(13).replace('.', '');
     var out;
     if (v.e >= 0) {
       out = digits.slice(0, v.e + 1);

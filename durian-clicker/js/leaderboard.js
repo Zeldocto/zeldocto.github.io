@@ -55,9 +55,11 @@
       public_id: s.player.publicId,    // safe to publish; identifies your row
       name: s.player.name,
       total_log: safeLog(s.totalEarned),
-      total_display: N.format(s.totalEarned),
+      // Always abbreviated: the stored string must not depend on the player's
+      // own number-format setting. Clients rebuild the display from the log.
+      total_display: N.format(s.totalEarned, { mode: 'abbreviated' }),
       dps_log: safeLog(d.dps),
-      dps_display: N.formatRate(d.dps),
+      dps_display: N.format(d.dps, { mode: 'abbreviated' }),
       play_time: Math.round(s.playTime),
       total_clicks: s.totalClicks,
       workers: d.totalWorkers,
