@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-29-update3b',
+    buildId: '2026-08-29-update3c',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -109,7 +109,8 @@
       // Each board is one sort order over the same submitted row.
       boards: [
         { id: 'total', label: 'Durians earned', sortKey: 'total_log', displayKey: 'total_display' },
-        { id: 'dps', label: 'Per second', sortKey: 'dps_log', displayKey: 'dps_display' }
+        { id: 'dps', label: 'Per second', sortKey: 'dps_log', displayKey: 'dps_display',
+          note: 'Base production, before temporary Shine effects.' }
       ]
     },
 

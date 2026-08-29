@@ -58,8 +58,10 @@
       // Always abbreviated: the stored string must not depend on the player's
       // own number-format setting. Clients rebuild the display from the log.
       total_display: N.format(s.totalEarned, { mode: 'abbreviated' }),
-      dps_log: safeLog(d.dps),
-      dps_display: N.format(d.dps, { mode: 'abbreviated' }),
+      // Base DPS on purpose: submitting during a x25 Shine Swarm would
+      // otherwise rank you far above an identical, unbuffed island.
+      dps_log: safeLog(d.baseDps !== undefined ? d.baseDps : d.dps),
+      dps_display: N.format(d.baseDps !== undefined ? d.baseDps : d.dps, { mode: 'abbreviated' }),
       play_time: Math.round(s.playTime),
       total_clicks: s.totalClicks,
       workers: d.totalWorkers,

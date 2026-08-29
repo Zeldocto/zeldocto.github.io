@@ -319,6 +319,8 @@
 
   /* -------------------------------------------------------- achievements */
 
+  var achGroupOpen = {};      // remembers which categories the player opened
+
   function buildAchievements() {
     el['ach-progress-text'].textContent = DC.Achievements.progressText();
     var wrap = el['achievement-list'];
@@ -335,12 +337,19 @@
     order.forEach(function (groupName) {
       var items = buckets[groupName];
       var earned = items.filter(function (a) { return a.earned; }).length;
+      var complete = earned === items.length;
 
-      var head = document.createElement('h3');
+      var box = document.createElement('details');
+      box.className = 'ach-group';
+      // Finished categories fold away; anything still in progress stays open.
+      box.open = achGroupOpen[groupName] !== undefined ? achGroupOpen[groupName] : !complete;
+      box.addEventListener('toggle', function () { achGroupOpen[groupName] = box.open; });
+
+      var head = document.createElement('summary');
       head.className = 'ach-group-title';
       head.innerHTML = escapeHtml(groupName) +
                        ' <span>' + earned + '/' + items.length + '</span>';
-      wrap.appendChild(head);
+      box.appendChild(head);
 
       var grid = document.createElement('div');
       grid.className = 'ach-grid';
@@ -368,7 +377,8 @@
         grid.appendChild(node);
       });
 
-      wrap.appendChild(grid);
+      box.appendChild(grid);
+      wrap.appendChild(box);
     });
   }
 
@@ -396,13 +406,34 @@
       ] },
       { title: 'Production', open: true, rows: [
         ['perclick', 'Durians per click', function () { return N.format(Game.derived.clickPower); }],
-        ['persec', 'Durians per second', function () { return N.formatRate(Game.derived.dps); }],
+        ['persec', 'Durians per second', function () {
+          var d = Game.derived;
+          var boosted = N.toNumber(d.dps), base = N.toNumber(d.baseDps);
+          if (base > 0 && boosted / base > 1.001) {
+            return N.formatRate(d.dps) + '  (base ' + N.formatRate(d.baseDps) + ')';
+          }
+          return N.formatRate(d.dps);
+        }],
         ['clicks', 'Total clicks', function () { return N.withCommas(Game.state.totalClicks); }],
         ['globalmult', 'Global multiplier', function () { return '×' + Game.derived.globalMult.toFixed(2); }]
       ] },
       { title: 'Crew', open: true, rows: crew.concat([
         ['hired', 'Workers hired', function () { return N.withCommas(Game.derived.totalWorkers); }]
       ]) },
+      { title: 'Island events', open: true, rows: [
+        ['ev_total', 'Events witnessed', function () { return N.withCommas(Game.state.events.total || 0); }],
+        ['ev_gained', 'Gained from events', function () { return N.format(Game.state.eventGained || N.ZERO); }],
+        ['ev_lost', 'Lost to setbacks', function () { return N.format(Game.state.lost || N.ZERO); }],
+        ['ev_buffs', 'Active effects', function () {
+          var b = DC.IslandEvents.activeBuffs();
+          if (!b.length) return 'none';
+          return b.map(function (x) { return x.label; }).join(', ');
+        }],
+        ['ev_next', 'Next event in', function () {
+          var t = DC.IslandEvents.timeUntilNext();
+          return t === null ? '—' : N.formatDuration(t);
+        }]
+      ].concat(eventBreakdown()) },
       { title: 'Progress', open: false, rows: [
         ['upgrades', 'Upgrades purchased', function () { return Game.derived.upgradesBought + ' / ' + CONFIG.upgrades.length; }],
         ['achievements', 'Achievements', function () { return DC.Achievements.progressText(); }],
@@ -410,6 +441,16 @@
         ['started', 'Started', function () { return new Date(Game.state.startedAt).toLocaleDateString(); }]
       ] }
     ];
+  }
+
+  /** One stats line per event type the player has actually seen. */
+  function eventBreakdown() {
+    var seen = Game.state.events.seen || {};
+    return CONFIG.events.filter(function (e) { return seen[e.id]; }).map(function (e) {
+      return ['ev_' + e.id, e.title || e.name, function () {
+        return N.withCommas(Game.state.events.seen[e.id] || 0) + '\u00D7';
+      }];
+    });
   }
 
   var statRefs = [];
@@ -589,7 +630,9 @@
       : (rank ? 'You are #' + N.withCommas(rank) : '');
 
     var status = lb.state;
-    el['board-status'].textContent = status.message || '';
+
+    var boardNote = lb.boardDef().note;
+    el['board-status'].textContent = status.message || (boardNote || '');
     el['board-status'].classList.toggle('is-error', status.status === 'error');
 
     el['board-note'].innerHTML = lb.isOnline()
@@ -627,8 +670,9 @@
 
     list.innerHTML = lb.state.entries.map(function (e) {
       var meta = [];
-      if (e.play_time) meta.push(N.formatDuration(e.play_time) + ' played');
+      if (e.achievements) meta.push(N.withCommas(e.achievements) + ' shines');
       if (e.workers) meta.push(N.withCommas(e.workers) + ' crew');
+      if (e.play_time) meta.push(N.formatDuration(e.play_time) + ' played');
       return '<li class="board-row' + (e.isYou ? ' is-you' : '') + (e.rank === 1 ? ' top1' : '') + '">' +
         '<div class="board-rank">' + e.rank + '</div>' +
         '<div class="board-player">' +
@@ -911,7 +955,10 @@
     });
 
     $('event-close').addEventListener('click', hideEvent);
-    DC.Events.on('islandEvent', showEvent);
+    DC.Events.on('islandEvent', function (r) {
+      showEvent(r);
+      if (currentTab === 'stats') buildStats();     // new event type = new row
+    });
     DC.Events.on('buffsChanged', refreshBuffs);
 
     DC.Events.on('leaderboardLoaded', renderBoard);

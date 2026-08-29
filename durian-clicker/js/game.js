@@ -64,6 +64,7 @@
       },
       buffs: [],                    // temporary event multipliers
       events: { seen: {}, total: 0, nextAt: 0 },
+      eventGained: N.ZERO,          // durians handed over by good events
       lost: N.ZERO,                 // durians taken by setback events
       offlineEarned: N.ZERO,
       playTime: 0,
@@ -219,6 +220,10 @@
         buffClick *= (s.buffs[bi].click !== undefined ? s.buffs[bi].click : 1);
       }
     }
+    // Keep the un-buffed multiplier: leaderboards and stats should reflect the
+    // economy you actually built, not whether a Shine Sprite happened to be
+    // overhead when you submitted.
+    var baseGlobalMult = globalMult;
     globalMult *= buffProd;
 
     // Worker counts are needed before production, because synergies read them.
@@ -228,7 +233,7 @@
       totalWorkers += counts[w.id];
     });
 
-    var dps = N.ZERO;
+    var dps = N.ZERO, baseDps = N.ZERO;
     d.perWorker = {};
     d.workerDps = {};
 
@@ -253,6 +258,7 @@
       var total = N.mul(each, count);
       d.workerDps[w.id] = total;
       dps = N.add(dps, total);
+      baseDps = N.add(baseDps, N.mul(total, baseGlobalMult / globalMult));
     });
 
     d.dps = dps;
@@ -260,6 +266,8 @@
     d.totalWorkers = totalWorkers;
     d.upgradesBought = bought;
     d.achievementsEarned = achievements;
+    d.baseDps = baseDps;                 // excludes temporary event buffs
+    d.baseGlobalMult = baseGlobalMult;
     d.eventChance = eventChance;
     d.eventGain = eventGain;
     d.eventLoss = eventLoss;

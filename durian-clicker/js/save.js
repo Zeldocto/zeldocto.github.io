@@ -10,7 +10,7 @@
   var CONFIG = DC.CONFIG;
 
   var BIG_FIELDS = ['durians', 'totalEarned', 'clickEarned', 'workerEarned', 'spent',
-                    'lost', 'offlineEarned'];
+                    'lost', 'offlineEarned', 'eventGained'];
 
   /* ------------------------------------------------------- (de)serialising */
 

@@ -75,6 +75,7 @@
         var secs = between(fx.min, fx.max) * gainMult;
         var amount = N.mul(d.dps, secs);
         DC.Game.addDurians(amount, 'worker');
+        s.eventGained = N.add(s.eventGained || N.ZERO, amount);
         result.amount = amount;
         result.direction = 'gain';
         break;
@@ -82,6 +83,7 @@
       case 'gainFlat': {
         var flat = N.mul(N.big(between(fx.min, fx.max)), gainMult);
         DC.Game.addDurians(flat, 'worker');
+        s.eventGained = N.add(s.eventGained || N.ZERO, flat);
         result.amount = flat;
         result.direction = 'gain';
         break;
