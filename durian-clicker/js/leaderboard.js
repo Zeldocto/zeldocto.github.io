@@ -60,6 +60,11 @@
 
   var PROVIDERS = {};
 
+  /** True for Supabase's newer opaque keys, which are not JWTs. */
+  function isOpaqueKey(key) {
+    return /^sb_(publishable|secret)_/.test(String(key || ''));
+  }
+
   /* -- local ------------------------------------------------------------- */
 
   PROVIDERS.local = {
@@ -98,15 +103,26 @@
     },
 
     headers: function (extra) {
+      var key = cfg.supabase.anonKey;
       var h = {
-        apikey: cfg.supabase.anonKey,
-        Authorization: 'Bearer ' + cfg.supabase.anonKey,
+        apikey: key,
         'Content-Type': 'application/json'
       };
+      // Legacy anon keys are JWTs, and Supabase accepts them as a bearer token.
+      // The newer sb_publishable_ / sb_secret_ keys are NOT JWTs: sending one in
+      // Authorization makes the gateway try to parse it as a JWT and reject the
+      // whole request with 401. Those keys go in the apikey header only.
+      if (!isOpaqueKey(key)) h.Authorization = 'Bearer ' + key;
       return Object.assign(h, extra || {});
     },
 
     configured: function () {
+      if (/^sb_secret_/.test(cfg.supabase.anonKey || '')) {
+        console.error('[Durian Clicker] That is a SECRET Supabase key — it must never ship ' +
+                      'in client code. Use the publishable key (sb_publishable_...) instead ' +
+                      'and rotate the secret one in your Supabase dashboard.');
+        return false;
+      }
       return !!(cfg.supabase.url && cfg.supabase.anonKey);
     },
 
