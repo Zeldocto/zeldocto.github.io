@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E86B8">
+<title>Durian Clicker</title>
+<meta name="description" content="An Isle Delfino incremental game. Shake the tree, hire the island, drown in fruit.">
+<link rel="icon" href="assets/placeholder-durian.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Ambient island backdrop. Swap CONFIG.assets.background to reskin. -->
+<div class="scene" aria-hidden="true">
+  <div class="scene-img" id="scene-img"></div>
+  <div class="scene-water"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-shine" id="brand-shine" alt="" aria-hidden="true">
+    <h1>Durian<span>Clicker</span></h1>
+  </div>
+  <div class="topbar-actions">
+    <div class="volume-wrap">
+      <button class="icon-btn" id="btn-mute" aria-pressed="false" title="Mute sound">🔊</button>
+      <input type="range" id="volume-slider" min="0" max="100" value="60" aria-label="Volume">
+    </div>
+    <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ------------------------------------------------------------- stage -->
+  <section class="stage">
+    <div class="counter">
+      <div class="count" id="durian-count">0</div>
+      <div class="count-label">Durians</div>
+      <div class="rate" id="dps-line">0 per second</div>
+    </div>
+
+    <div class="clicker">
+      <div class="rays" aria-hidden="true"></div>
+      <div class="pedestal" aria-hidden="true"></div>
+      <button class="durian-btn" id="durian-button" aria-label="Collect a Durian">
+        <img id="durian-img" alt="Durian" draggable="false">
+      </button>
+      <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+    </div>
+
+    <div class="stage-foot">
+      <div class="chip"><strong id="click-power">1</strong> per click</div>
+      <div class="chip"><strong id="mini-total">0</strong> earned all-time</div>
+      <div class="chip"><strong id="mini-shines">0/0</strong> shines</div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------- panel -->
+  <aside class="panel">
+    <nav class="tabs" role="tablist">
+      <button class="tab is-active" role="tab" data-tab="workers" aria-selected="true">Crew</button>
+      <button class="tab" role="tab" data-tab="upgrades" aria-selected="false">Upgrades<span class="pip" id="pip-upgrades" hidden></span></button>
+      <button class="tab" role="tab" data-tab="achievements" aria-selected="false">Shines</button>
+      <button class="tab" role="tab" data-tab="stats" aria-selected="false">Stats</button>
+      <button class="tab" role="tab" data-tab="leaderboard" aria-selected="false">Ranks</button>
+    </nav>
+
+    <div class="panel-body">
+      <section class="tab-page is-active" id="page-workers" role="tabpanel">
+        <div class="buy-amount" id="buy-amount" role="group" aria-label="Purchase amount">
+          <span class="buy-amount-label">Buy</span>
+          <button class="amt is-active" data-amount="1">×1</button>
+          <button class="amt" data-amount="10">×10</button>
+          <button class="amt" data-amount="max">Max</button>
+        </div>
+        <div class="list" id="worker-list"></div>
+      </section>
+
+      <section class="tab-page" id="page-upgrades" role="tabpanel" hidden>
+        <div class="list" id="upgrade-list"></div>
+        <h3 class="list-heading" id="owned-heading" hidden>Already installed</h3>
+        <div class="owned-grid" id="owned-upgrades"></div>
+      </section>
+
+      <section class="tab-page" id="page-achievements" role="tabpanel" hidden>
+        <div class="ach-progress"><span id="ach-progress-text">0 / 0</span> collected</div>
+        <div class="ach-grid" id="achievement-list"></div>
+      </section>
+
+      <section class="tab-page" id="page-stats" role="tabpanel" hidden>
+        <div class="stats" id="stats-list"></div>
+      </section>
+
+      <section class="tab-page" id="page-leaderboard" role="tabpanel" hidden>
+        <div class="board-switch" id="board-switch" role="group" aria-label="Leaderboard"></div>
+        <div class="board-you">
+          <div class="board-you-name">Playing as <strong id="board-name">not set</strong></div>
+          <div class="board-you-rank" id="board-rank"></div>
+          <div class="board-actions">
+            <button class="btn btn-small" id="btn-board-name">Set name</button>
+            <button class="btn btn-small btn-primary" id="btn-board-submit">Submit score</button>
+            <button class="btn btn-small" id="btn-board-refresh">Refresh</button>
+          </div>
+        </div>
+        <p class="board-status" id="board-status"></p>
+        <ol class="board-list" id="board-list"></ol>
+        <p class="board-note" id="board-note"></p>
+      </section>
+    </div>
+  </aside>
+</main>
+
+<!-- ------------------------------------------------------------- overlays -->
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="modal" id="modal-offline" hidden>
+  <div class="modal-card">
+    <h2>While you were away…</h2>
+    <p class="modal-lead" id="offline-text">Your crew kept working.</p>
+    <div class="offline-amount" id="offline-amount">0</div>
+    <p class="modal-sub" id="offline-sub"></p>
+    <button class="btn btn-primary" id="offline-collect">Collect Durians</button>
+  </div>
+</div>
+
+<div class="modal" id="modal-settings" hidden>
+  <div class="modal-card modal-card-wide">
+    <button class="modal-close" data-close="modal-settings" aria-label="Close settings">×</button>
+    <h2>Settings</h2>
+
+    <div class="setting-row">
+      <label for="volume-slider-2">Volume</label>
+      <input type="range" id="volume-slider-2" min="0" max="100" value="60">
+      <button class="btn btn-ghost" id="btn-mute-2">Mute</button>
+    </div>
+
+    <div class="setting-actions">
+      <button class="btn" id="btn-save">Save game</button>
+      <button class="btn" id="btn-export">Export save</button>
+      <button class="btn" id="btn-download">Download save file</button>
+      <button class="btn btn-danger" id="btn-reset">Reset save</button>
+    </div>
+
+    <label class="setting-label" for="save-box">Save code — copy this out, or paste one in and import.</label>
+    <textarea id="save-box" spellcheck="false" placeholder="Your save code appears here when you export."></textarea>
+    <div class="setting-actions">
+      <button class="btn" id="btn-copy">Copy to clipboard</button>
+      <button class="btn btn-primary" id="btn-import">Import save</button>
+    </div>
+    <p class="setting-note" id="settings-note">Progress saves automatically every few seconds.</p>
+  </div>
+</div>
+
+<div class="modal" id="modal-name" hidden>
+  <div class="modal-card">
+    <button class="modal-close" data-close="modal-name" aria-label="Close">×</button>
+    <h2>Pick a name</h2>
+    <p class="modal-lead">This is what shows on the leaderboard. Change it whenever you like.</p>
+    <input type="text" id="name-input" maxlength="20" placeholder="Your name" autocomplete="off" spellcheck="false">
+    <p class="modal-sub" id="name-error"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" data-close="modal-name">Cancel</button>
+      <button class="btn btn-primary" id="name-save">Save name</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-confirm" hidden>
+  <div class="modal-card">
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p class="modal-lead" id="confirm-text"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Yes, do it</button>
+    </div>
+  </div>
+</div>
+
+<div class="debug" id="debug-panel" hidden>
+  <div class="debug-head">
+    <strong>Debug</strong>
+    <button class="icon-btn" id="debug-close" aria-label="Close debug panel">×</button>
+  </div>
+  <div class="debug-body" id="debug-body"></div>
+</div>
+
+<!-- Load order matters: data → maths → state → systems → interface. -->
+<script src="js/config.js"></script>
+<script src="js/numbers.js"></script>
+<script src="js/game.js"></script>
+<script src="js/workers.js"></script>
+<script src="js/upgrades.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/save.js"></script>
+<script src="js/offline.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
