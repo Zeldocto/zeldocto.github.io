@@ -16,4 +16,4 @@ Simple tool that adds together the sum of world segments of the standard any% ro
 
 <h2>Games</h2><br>  
 <a href="https://zeldocto.github.io/durian-clicker/"><b>Durian Clicker</b></a><br>
-Completely vibecoded cookie clicker rip off based off Super Mario Sunshine<br>  
+Completely vibecoded cookie clicker rip off based on Super Mario Sunshine<br>  
