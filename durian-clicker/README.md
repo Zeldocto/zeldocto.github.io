@@ -453,7 +453,10 @@ directly: `DC.Game.state`, `DC.Workers.buy('noki', 10)`, `DC.N.format(DC.Game.de
   every worker count, upgrade and achievement intact, and the new content simply
   unlocked and waiting. There is a dedicated migration suite that asserts this
   against a realistic veteran save.
-- **Tested headlessly** — four suites. Logic (number precision at 10^100+, cost
+- **Tested headlessly** — six suites, including one that buys every upgrade in
+  isolation and asserts it changes the number it claims to by the exact factor
+  claimed, and one that checks every asset path in config and content resolves
+  to a file that actually exists. Logic (number precision at 10^100+, cost
   curves, max-buy correctness, unlock gating, offline capping), jsdom against the
   real DOM (clicking, buying, tab switching, save round-trip, offline popup, reset
   confirmation, debug panel, leaderboard name flow and HTML escaping), and the
