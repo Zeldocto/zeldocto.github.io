@@ -38,15 +38,25 @@
    * log10 for sorting (a double is precise enough to rank by) and a formatted
    * string for display.
    */
+  /**
+   * log10(0) is -Infinity, and JSON.stringify turns that into null — which a
+   * not-null numeric column rejects outright. Values below 1 are also negative,
+   * which trips the >= 0 check constraint. Floor both at 0.
+   */
+  function safeLog(value) {
+    var l = N.log10(value);
+    return (isFinite(l) && l > 0) ? l : 0;
+  }
+
   function snapshot() {
     var s = DC.Game.state, d = DC.Game.derived;
     return {
       player_id: s.player.id,          // row key — never selected back
       public_id: s.player.publicId,    // safe to publish; identifies your row
       name: s.player.name,
-      total_log: N.log10(s.totalEarned),
+      total_log: safeLog(s.totalEarned),
       total_display: N.format(s.totalEarned),
-      dps_log: N.log10(d.dps),
+      dps_log: safeLog(d.dps),
       dps_display: N.formatRate(d.dps),
       play_time: Math.round(s.playTime),
       total_clicks: s.totalClicks,
@@ -54,6 +64,14 @@
       achievements: d.achievementsEarned,
       updated_at: new Date().toISOString()
     };
+  }
+
+  /** Last line of defence: NaN/Infinity serialise to null and break inserts. */
+  function sanitize(entry) {
+    Object.keys(entry).forEach(function (k) {
+      if (typeof entry[k] === 'number' && !isFinite(entry[k])) entry[k] = 0;
+    });
+    return entry;
   }
 
   /* ------------------------------------------------------------ providers */
@@ -133,7 +151,13 @@
         headers: this.headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
         body: JSON.stringify(entry)
       }).then(function (res) {
-        if (!res.ok) return res.text().then(function (t) { throw new Error(t || ('HTTP ' + res.status)); });
+        if (!res.ok) return res.text().then(function (t) {
+          // Tag it so the caller can tell a server rejection from a dropped
+          // connection — the two need different messages.
+          var err = new Error(t || ('HTTP ' + res.status));
+          err.serverStatus = res.status;
+          throw err;
+        });
         return { ok: true };
       });
     },
@@ -221,6 +245,19 @@
     return name;
   }
 
+  /** Pulls the human-readable line out of a PostgREST error body, if there is one. */
+  function serverMessage(err) {
+    if (!err || !err.serverStatus) return '';   // no HTTP response = not a rejection
+    var text = err.message;
+    if (!text) return '';
+    try {
+      var body = JSON.parse(text);
+      return body.message || body.hint || body.details || '';
+    } catch (e) {
+      return text.length > 160 ? '' : text;
+    }
+  }
+
   function setStatus(status, message) {
     state.status = status;
     state.message = message || '';
@@ -253,7 +290,7 @@
     }
 
     setStatus('submitting', 'Sending your score…');
-    var entry = snapshot();
+    var entry = sanitize(snapshot());
 
     return Promise.resolve(provider().submit(entry)).then(function () {
       DC.Game.state.player.lastSubmit = Date.now();
@@ -262,8 +299,11 @@
       return { ok: true };
     }).catch(function (err) {
       console.error('Leaderboard submit failed:', err);
-      setStatus('error', "Couldn't reach the leaderboard. Your progress is safe — try again later.");
-      return { ok: false, reason: 'network', error: err };
+      var detail = serverMessage(err);
+      setStatus('error', detail
+        ? 'Leaderboard rejected the score: ' + detail
+        : "Couldn't reach the leaderboard. Your progress is safe — try again later.");
+      return { ok: false, reason: detail ? 'rejected' : 'network', error: err, detail: detail };
     });
   }
 
