@@ -124,6 +124,17 @@
   /* ------------------------------------------------------------ formatting */
 
   // Short-scale suffixes. Beyond the list we fall back to scientific notation.
+  // Long-scale words for the 'shortened' display mode.
+  var WORDS = [
+    '', 'thousand', 'million', 'billion', 'trillion',
+    'quadrillion', 'quintillion', 'sextillion', 'septillion', 'octillion', 'nonillion',
+    'decillion', 'undecillion', 'duodecillion', 'tredecillion', 'quattuordecillion',
+    'quindecillion', 'sexdecillion', 'septendecillion', 'octodecillion', 'novemdecillion',
+    'vigintillion', 'unvigintillion', 'duovigintillion', 'trevigintillion',
+    'quattuorvigintillion', 'quinvigintillion', 'sexvigintillion', 'septenvigintillion',
+    'octovigintillion', 'novemvigintillion', 'trigintillion'
+  ];
+
   var SUFFIXES = [
     '', 'K', 'M', 'B', 'T',
     'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No',
@@ -144,15 +155,47 @@
    *   opts.threshold  — below this, print with commas instead of a suffix.
    *                     Defaults to CONFIG.formatting.suffixThreshold.
    */
+  /**
+   * Which display style to use. The player picks this in Settings; it is stored
+   * on the save so it survives a reload.
+   *   'abbreviated' — 1.25M      (default)
+   *   'shortened'   — 1.25 million
+   *   'full'        — 1,250,000
+   */
+  function mode() {
+    var s = DC.Game && DC.Game.state;
+    var m = s && s.settings && s.settings.numberFormat;
+    if (m === 'full' || m === 'shortened' || m === 'abbreviated') return m;
+    var cfg = (DC.CONFIG && DC.CONFIG.formatting) || {};
+    return cfg.defaultMode || 'abbreviated';
+  }
+
+  /** Writes every digit out with thousands separators. */
+  function formatFull(v) {
+    if (v.e > 60) return format(v, { mode: 'abbreviated' });   // beyond readable
+    var digits = v.m.toFixed(15).replace('.', '');
+    var out;
+    if (v.e >= 0) {
+      out = digits.slice(0, v.e + 1);
+      while (out.length < v.e + 1) out += '0';
+    } else {
+      return toNumber(v).toFixed(Math.min(20, -v.e + 2));
+    }
+    return out.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
   function format(value, opts) {
     opts = opts || {};
     var v = big(value);
     var cfg = (DC.CONFIG && DC.CONFIG.formatting) || {};
+    var style = opts.mode || mode();
     var threshold = opts.threshold !== undefined ? opts.threshold
       : (cfg.suffixThreshold !== undefined ? cfg.suffixThreshold : 1000);
 
     if (v.m === 0) return '0';
     if (v.m < 0) return '-' + format(neg(v), opts);
+
+    if (style === 'full') return formatFull(v);
 
     var n = toNumber(v);
     if (n < threshold) {
@@ -167,6 +210,11 @@
     if (mantissa >= 999.995) { mantissa /= 1000; tier += 1; }
 
     var dec = mantissa < 10 ? 2 : (mantissa < 100 ? 1 : 0);
+
+    if (style === 'shortened') {
+      if (tier < WORDS.length) return mantissa.toFixed(dec) + ' ' + WORDS[tier];
+      return v.m.toFixed(3) + ' \u00D7 10^' + v.e;
+    }
     if (tier < SUFFIXES.length) return mantissa.toFixed(dec) + SUFFIXES[tier];
     return v.m.toFixed(3) + 'e' + v.e;
   }
@@ -203,6 +251,7 @@
     toNumber: toNumber,
     serialize: serialize, deserialize: deserialize,
     format: format, formatRate: formatRate, formatDuration: formatDuration,
+    mode: mode, WORDS: WORDS, SUFFIXES: SUFFIXES,
     withCommas: withCommas
   };
 })(window.DC = window.DC || {});

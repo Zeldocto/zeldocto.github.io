@@ -65,6 +65,7 @@
     });
 
     if (data.settings) Object.assign(state.settings, data.settings);
+    if (!state.settings.numberFormat) state.settings.numberFormat = 'abbreviated';
     if (data.player) Object.assign(state.player, data.player);
     // Update 2 additions. Absent in v1 saves, which is fine — they default.
     if (Array.isArray(data.buffs)) state.buffs = data.buffs.filter(function (b) {

@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,
-    debugEnabled: true,        // set false for a production build (hides Ctrl+`)
+    debugEnabled: false,       // set true to re-enable the Ctrl+` developer panel
 
     /* ------------------------------------------------------------ balance */
     balance: {
@@ -26,7 +26,8 @@
     formatting: {
       // Values below this print as "12,345"; at or above it they print as
       // "1.25K", "2.40M", ... Raise to 1e6 if you prefer commas for longer.
-      suffixThreshold: 1000
+      suffixThreshold: 1000,
+      defaultMode: 'abbreviated'    // players can change this in Settings
     },
 
     autosave: {
@@ -124,6 +125,18 @@
         unlock: { type: 'always' }
       },
       {
+        id: 'fruitlady',
+        name: 'Fruit Lady',
+        plural: 'Fruit Ladies',
+        description: 'Runs a fruit stall in the Plaza and knows exactly which durians are ready.',
+        flavor: 'She has been doing this longer than anyone. She will tell you so.',
+        baseCost: 40,
+        baseProduction: 3,
+        costMultiplier: 1.15,
+        image: 'assets/placeholder-fruitlady.png',
+        unlock: { type: 'totalEarned', amount: 90 }
+      },
+      {
         id: 'noki',
         name: 'Noki',
         plural: 'Nokis',
@@ -160,6 +173,18 @@
         unlock: { type: 'totalEarned', amount: 30000 }
       },
       {
+        id: 'mushroompianta',
+        name: 'Mushroom Dealer Pianta',
+        plural: 'Mushroom Dealers',
+        description: 'Sells mushrooms. Accepts durians. The exchange rate is his own invention.',
+        flavor: 'Everything about the stall is slightly too casual.',
+        baseCost: 45000,
+        baseProduction: 650,
+        costMultiplier: 1.15,
+        image: 'assets/placeholder-mushroompianta.png',
+        unlock: { type: 'totalEarned', amount: 120000 }
+      },
+      {
         id: 'piantissimo',
         name: 'Il Piantissimo',
         plural: 'Piantissimos',
@@ -172,6 +197,18 @@
         unlock: { type: 'totalEarned', amount: 300000 }
       },
       {
+        id: 'tanooki',
+        name: 'Tanooki',
+        plural: 'Tanookis',
+        description: 'Turns into a durian tree, waits to be harvested, then does it again.',
+        flavor: 'Nobody has explained why this works. It works.',
+        baseCost: 480000,
+        baseProduction: 3400,
+        costMultiplier: 1.15,
+        image: 'assets/placeholder-tanooki.png',
+        unlock: { type: 'totalEarned', amount: 1200000 }
+      },
+      {
         id: 'shadowmario',
         name: 'Shadow Mario',
         plural: 'Shadow Marios',
@@ -182,6 +219,18 @@
         costMultiplier: 1.15,
         image: 'assets/placeholder-shadowmario.png',
         unlock: { type: 'totalEarned', amount: 3000000 }
+      },
+      {
+        id: 'chuckster',
+        name: 'Chuckster',
+        plural: 'Chucksters',
+        description: 'Throws durians an unreasonable distance. Also throws you, if you stand too close.',
+        flavor: 'CHUCKSTER.',
+        baseCost: 16000000,
+        baseProduction: 44000,
+        costMultiplier: 1.15,
+        image: 'assets/placeholder-chuckster.png',
+        unlock: { type: 'totalEarned', amount: 32000000 }
       }
     ],
 
@@ -199,7 +248,7 @@
       maxIntervalSeconds: 900,      // ...scaled by any eventChance upgrades
       minBankForSetbacks: 10000,    // never take Durians below this
       showBanner: true,
-      bannerSeconds: 8
+      bannerSeconds: 10
     }
   };
 

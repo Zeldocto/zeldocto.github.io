@@ -50,7 +50,8 @@
       settings: {
         volume: CONFIG.audio.defaultVolume,
         muted: CONFIG.audio.defaultMuted,
-        buyAmount: 1                // 1 | 10 | 'max'
+        buyAmount: 1,               // 1 | 10 | 'max'
+        numberFormat: 'abbreviated' // 'abbreviated' | 'shortened' | 'full'
       },
       player: {
         // Two ids on purpose. `id` is the row key and is never published, so
@@ -268,10 +269,14 @@
     d.buffProd = buffProd;
     d.buffClick = buffClick;
 
-    d.clickPower = N.add(
-      N.mul(N.big(CONFIG.balance.baseClickPower + clickAdd + clickFromWorkers * totalWorkers),
-            clickMult * buffClick),
-      N.mul(dps, clickFromDps)
+    // Multipliers apply to the WHOLE click, flat portion and the DPS-derived
+    // portion together. Multiplying only the flat part made late-game ×3 and
+    // ×15 multipliers feel like they did nothing, because the DPS share
+    // dominates once Hover/Turbo nozzles are in play.
+    var clickFlat = N.big(CONFIG.balance.baseClickPower + clickAdd + clickFromWorkers * totalWorkers);
+    d.clickPower = N.mul(
+      N.add(clickFlat, N.mul(dps, clickFromDps)),
+      clickMult * buffClick
     );
 
     Events.emit('recalc');

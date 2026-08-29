@@ -29,7 +29,7 @@
      'board-rank', 'board-note', 'btn-board-name', 'btn-board-submit', 'btn-board-refresh',
      'name-input', 'name-error', 'upgrade-search', 'upgrade-count', 'upgrade-more',
      'owned-details', 'owned-count', 'buff-bar', 'event-banner', 'event-icon',
-     'event-title', 'event-text', 'event-amount'
+     'event-title', 'event-text', 'event-amount', 'tip', 'number-format'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
@@ -280,10 +280,18 @@
     var owned = CONFIG.upgrades.filter(function (u) { return DC.Upgrades.owned(u.id); });
     el['owned-details'].hidden = owned.length === 0;
     el['owned-count'].textContent = owned.length;
-    el['owned-upgrades'].innerHTML = owned.map(function (u) {
-      return '<div class="owned-upgrade" title="' + escapeHtml(u.name + ' \u2014 ' + u.description) + '">' +
-             '<img src="' + (u.icon || CONFIG.assets.upgradeDefault) + '" alt="' + escapeHtml(u.name) + '"></div>';
-    }).join('');
+    el['owned-upgrades'].innerHTML = '';
+    owned.forEach(function (u) {
+      var node = document.createElement('div');
+      node.className = 'owned-upgrade';
+      node.tabIndex = 0;
+      node.innerHTML = '<img src="' + (u.icon || CONFIG.assets.upgradeDefault) +
+                       '" alt="' + escapeHtml(u.name) + '">';
+      bindTip(node, function () {
+        return tipHtml(u.name, u.description, DC.Upgrades.describeEffects(u) || 'Purchased');
+      });
+      el['owned-upgrades'].appendChild(node);
+    });
   }
 
   function refreshUpgrades() {
@@ -312,12 +320,31 @@
 
   function buildAchievements() {
     el['ach-progress-text'].textContent = DC.Achievements.progressText();
-    el['achievement-list'].innerHTML = DC.Achievements.list().map(function (a) {
-      var title = a.earned ? a.def.name + ' — ' + a.def.description : 'Locked — ' + a.def.description;
-      return '<div class="ach' + (a.earned ? ' earned' : '') + '" title="' + title + '">' +
-             '<img src="' + CONFIG.assets.shine + '" alt="">' +
-             '<div class="ach-name">' + (a.earned ? a.def.name : '???') + '</div></div>';
-    }).join('');
+    var list = el['achievement-list'];
+    list.innerHTML = '';
+
+    DC.Achievements.list().forEach(function (a) {
+      var node = document.createElement('div');
+      node.className = 'ach' + (a.earned ? ' earned' : '');
+      node.tabIndex = 0;
+      node.innerHTML = '<img src="' + CONFIG.assets.shine + '" alt="">' +
+                       '<div class="ach-name">' + escapeHtml(a.earned ? a.def.name : '???') + '</div>';
+
+      bindTip(node, function () {
+        var note;
+        if (a.earned) {
+          note = a.earnedAt
+            ? 'Earned ' + new Date(a.earnedAt).toLocaleDateString() + ' at ' +
+              new Date(a.earnedAt).toLocaleTimeString()
+            : 'Earned';
+        } else {
+          note = 'Not yet earned';
+        }
+        return tipHtml(a.earned ? a.def.name : 'Locked Shine', a.def.description, note);
+      });
+
+      list.appendChild(node);
+    });
   }
 
   /* ---------------------------------------------------------------- stats */
@@ -386,6 +413,68 @@
   function refreshStats() {
     if (currentTab !== 'stats') return;
     statRefs.forEach(function (ref) { ref.node.textContent = ref.get(); });
+  }
+
+  /* -------------------------------------------------------------- tooltip */
+
+  /* Native title= tooltips wait about a second, sit wherever the OS decides and
+   * ignore our styling, and never appear on touch at all. This replaces them:
+   * shows instantly, tracks the pointer, and taps open a pinned version. */
+
+  var tipPinned = false;
+
+  function tipHtml(title, body, note) {
+    return '<strong>' + escapeHtml(title) + '</strong>' +
+           (body ? '<span>' + escapeHtml(body) + '</span>' : '') +
+           (note ? '<em>' + escapeHtml(note) + '</em>' : '');
+  }
+
+  function moveTip(x, y) {
+    var tip = el['tip'];
+    var pad = 14;
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = x + pad, top = y + pad;
+    if (left + w > window.innerWidth - 8) left = x - w - pad;
+    if (left < 8) left = 8;
+    if (top + h > window.innerHeight - 8) top = y - h - pad;
+    if (top < 8) top = 8;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+
+  function showTip(html, x, y, pinned) {
+    var tip = el['tip'];
+    tip.innerHTML = html;
+    tip.hidden = false;
+    tip.classList.toggle('is-pinned', !!pinned);
+    tipPinned = !!pinned;
+    moveTip(x, y);
+  }
+
+  function hideTip(force) {
+    if (tipPinned && !force) return;
+    tipPinned = false;
+    el['tip'].hidden = true;
+  }
+
+  /** Attaches tooltip behaviour to an element. Data comes from a getter so the
+   *  text can reflect current state at the moment it's shown. */
+  function bindTip(node, getContent) {
+    node.addEventListener('pointerenter', function (e) {
+      if (e.pointerType === 'touch') return;      // touch uses tap instead
+      showTip(getContent(), e.clientX, e.clientY, false);
+    });
+    node.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch' || tipPinned) return;
+      moveTip(e.clientX, e.clientY);
+    });
+    node.addEventListener('pointerleave', function () { hideTip(); });
+    node.addEventListener('click', function (e) {
+      // Tap (or click) pins it open so mobile players can read it.
+      e.stopPropagation();
+      var rect = node.getBoundingClientRect();
+      showTip(getContent(), rect.left + rect.width / 2, rect.bottom, true);
+    });
   }
 
   /* ------------------------------------------------------- buffs + events */
@@ -570,13 +659,15 @@
 
   /* --------------------------------------------------------------- toasts */
 
+  var TOAST_MS = 6000;      // was 4000 — several testers found it too quick to read
+
   function toast(title, subtitle, kind, icon) {
     var t = document.createElement('div');
     t.className = 'toast' + (kind ? ' ' + kind : '');
     t.innerHTML = '<img src="' + (icon || CONFIG.assets.shine) + '" alt="">' +
                   '<div><strong>' + title + '</strong><span>' + (subtitle || '') + '</span></div>';
     el['toasts'].appendChild(t);
-    setTimeout(function () { t.remove(); }, 4000);
+    setTimeout(function () { t.remove(); }, TOAST_MS);
   }
 
   /* --------------------------------------------------------------- modals */
@@ -754,6 +845,18 @@
       refreshUpgrades();
     });
 
+    // Tapping anywhere else closes a pinned tooltip.
+    document.addEventListener('click', function () { hideTip(true); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(true); });
+    window.addEventListener('scroll', function () { hideTip(true); }, true);
+
+    el['number-format'].addEventListener('change', function () {
+      Game.state.settings.numberFormat = el['number-format'].value;
+      DC.Save.save(true);
+      rebuildAll();
+      note('Number display updated.');
+    });
+
     $('event-close').addEventListener('click', hideEvent);
     DC.Events.on('islandEvent', showEvent);
     DC.Events.on('buffsChanged', refreshBuffs);
@@ -831,6 +934,11 @@
     refreshUpgrades();
     refreshStats();
     syncBuyAmountButtons();
+    syncSettingsControls();
+  }
+
+  function syncSettingsControls() {
+    el['number-format'].value = Game.state.settings.numberFormat || 'abbreviated';
   }
 
   function syncBuyAmountButtons() {

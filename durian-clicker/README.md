@@ -36,8 +36,8 @@ durian-clicker/
 ├── js/
 │   ├── config.js       balance numbers, asset paths, workers, settings
 │   ├── content/        ← game content, split out in Update 2
-│   │   ├── upgrades.js     166 upgrades
-│   │   ├── achievements.js 64 achievements
+│   │   ├── upgrades.js     217 upgrades
+│   │   ├── achievements.js 72 achievements
 │   │   └── events.js       random island events
 │   ├── events.js       the random-event engine, buffs and timers
 │   ├── numbers.js      big-number type + display formatting
@@ -257,6 +257,31 @@ survive a save and reload, and expired ones are dropped on load.
 Debug the whole system with Ctrl + ` — there's a dropdown to fire any specific
 event and a button for a random one.
 
+## Number display
+
+Players choose between three styles in Settings, saved with their progress:
+
+| Mode | 1,250,000 renders as |
+|---|---|
+| Abbreviated (default) | `1.25M` |
+| Shortened | `1.25 million` |
+| Full number | `1,250,000` |
+
+Set the default for new players with `CONFIG.formatting.defaultMode`. Full mode
+falls back to abbreviated past 10^60, where writing every digit stops being
+readable.
+
+## Tooltips
+
+Hovering an achievement or a purchased upgrade shows a styled panel that appears
+instantly and tracks the cursor — native `title=` tooltips wait about a second,
+ignore the game's styling, and never appear on touch at all. Tapping pins the
+panel open so mobile players can read it; tapping elsewhere, pressing Escape or
+scrolling dismisses it.
+
+To add one to something new, call `bindTip(node, getContentFn)` in `ui.js`. The
+getter runs at display time, so the text can reflect current state.
+
 ## Numbers
 
 Currency is never a plain JS number. `numbers.js` stores every value as a normalised
@@ -393,7 +418,12 @@ cruder automatic version of the same idea.
 
 ## Debug mode
 
-**Ctrl + `** opens the developer panel: add Durians (1K / 1M / 1Qa / ×1000), unlock
+**Disabled in this build.** `debugEnabled: false` in `config.js` — the panel is
+removed from the DOM and Ctrl + ` does nothing. Set it back to `true` while
+developing.
+
+
+When enabled, **Ctrl + `** opens the developer panel: add Durians (1K / 1M / 1Qa / ×1000), unlock
 everything, grant all upgrades or achievements, set any worker count directly,
 simulate an offline absence of N seconds, submit to the leaderboard, force a save or
 reload, hard reset, and dump the game state to the console.

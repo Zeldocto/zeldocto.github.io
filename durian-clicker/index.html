@@ -126,6 +126,8 @@
 </main>
 
 <!-- ------------------------------------------------------------- overlays -->
+<div class="tip" id="tip" hidden></div>
+
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
 <div class="event-banner" id="event-banner" hidden aria-live="polite">
@@ -152,6 +154,15 @@
   <div class="modal-card modal-card-wide">
     <button class="modal-close" data-close="modal-settings" aria-label="Close settings">×</button>
     <h2>Settings</h2>
+
+    <div class="setting-row">
+      <label for="number-format">Numbers</label>
+      <select id="number-format">
+        <option value="abbreviated">Abbreviated — 1.25M</option>
+        <option value="shortened">Shortened — 1.25 million</option>
+        <option value="full">Full number — 1,250,000</option>
+      </select>
+    </div>
 
     <div class="setting-row">
       <label for="volume-slider-2">Volume</label>
