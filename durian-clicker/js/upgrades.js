@@ -37,6 +37,11 @@
     return true;
   }
 
+  function pct(v) { return String(Math.round(v * 1000) / 10); }
+  function targetLabel(t) {
+    return t === 'all' ? 'All workers' : DC.Game.workerName(t, 2);
+  }
+
   /** Plain-language summary of what an upgrade does, built from its effects. */
   function describeEffects(def) {
     return (def.effects || []).map(function (fx) {
@@ -46,6 +51,19 @@
         case 'clickFromDps': return '+' + (fx.value * 100).toFixed(0) + '% of your DPS per click';
         case 'globalMult':   return '+' + Math.round((fx.value - 1) * 100) + '% to all workers';
         case 'workerMult':   return '×' + fx.value + ' ' + DC.Game.workerName(fx.target, 2) + ' output';
+        case 'clickFromWorkers': return '+' + N.format(fx.value) + ' per click, per worker';
+        case 'workerScaling':
+          return targetLabel(fx.target) + ' +' + pct(fx.value) + '% per ' + fx.per + ' owned';
+        case 'workerSynergy':
+          return targetLabel(fx.target) + ' +' + pct(fx.value) + '% per ' +
+                 (fx.source === 'all' ? 'worker' : DC.Game.workerName(fx.source, 1));
+        case 'achievementBonus': return '+' + pct(fx.value) + '% per achievement';
+        case 'eventChance':  return 'Island events ×' + fx.value + ' as often';
+        case 'eventGain':    return 'Good events pay ×' + fx.value;
+        case 'eventLoss':    return 'Bad events cost ×' + fx.value;
+        case 'buffDuration': return 'Buffs last ×' + fx.value + ' longer';
+        case 'offlineEfficiency': return '+' + pct(fx.value) + '% offline production';
+        case 'offlineHours': return '+' + fx.value + 'h offline cap';
         default:             return '';
       }
     }).filter(Boolean).join(' · ');

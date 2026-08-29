@@ -6,14 +6,7 @@
 <meta name="theme-color" content="#0E86B8">
 <title>Durian Clicker</title>
 <meta name="description" content="An Isle Delfino incremental game. Shake the tree, hire the island, drown in fruit.">
-<meta property="og:image" content="https://zeldocto.github.io/durian-clicker/assets/placeholder-durian.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
-<meta property="og:image:alt" content="Durian">
-<meta name="twitter:image" content="..durian-clicker/assets/icons/placeholder-durian.png">
-<link rel="icon" type="image/x-icon" href="https://zeldocto.github.io/durian-clicker/assets/favicon.ico">
-<link rel="icon" type="image/x-icon" href="..durian-clicker/assets/icons/placeholder-durian.png">
-<link rel="icon" href="..durian-clicker/assets/placeholder-durian.png">
+<link rel="icon" href="assets/placeholder-durian.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -49,6 +42,7 @@
       <div class="count" id="durian-count">0</div>
       <div class="count-label">Durians</div>
       <div class="rate" id="dps-line">0 per second</div>
+      <div class="buffs" id="buff-bar"></div>
     </div>
 
     <div class="clicker">
@@ -89,9 +83,18 @@
       </section>
 
       <section class="tab-page" id="page-upgrades" role="tabpanel" hidden>
+        <div class="filter-bar">
+          <input type="search" id="upgrade-search" placeholder="Search upgrades…" autocomplete="off">
+          <button class="amt is-active" id="filter-all" data-filter="all">All</button>
+          <button class="amt" id="filter-afford" data-filter="afford">Affordable</button>
+        </div>
+        <p class="list-count" id="upgrade-count"></p>
         <div class="list" id="upgrade-list"></div>
-        <h3 class="list-heading" id="owned-heading" hidden>Already installed</h3>
-        <div class="owned-grid" id="owned-upgrades"></div>
+        <button class="btn btn-small show-more" id="upgrade-more" hidden>Show more</button>
+        <details class="owned-details" id="owned-details" hidden>
+          <summary>Already installed (<span id="owned-count">0</span>)</summary>
+          <div class="owned-grid" id="owned-upgrades"></div>
+        </details>
       </section>
 
       <section class="tab-page" id="page-achievements" role="tabpanel" hidden>
@@ -124,6 +127,16 @@
 
 <!-- ------------------------------------------------------------- overlays -->
 <div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="event-banner" id="event-banner" hidden aria-live="polite">
+  <img class="event-icon" id="event-icon" alt="">
+  <div class="event-body">
+    <strong id="event-title"></strong>
+    <span id="event-text"></span>
+    <span class="event-amount" id="event-amount"></span>
+  </div>
+  <button class="event-close" id="event-close" aria-label="Dismiss">×</button>
+</div>
 
 <div class="modal" id="modal-offline" hidden>
   <div class="modal-card">
@@ -198,6 +211,9 @@
 
 <!-- Load order matters: data → maths → state → systems → interface. -->
 <script src="js/config.js"></script>
+<script src="js/content/upgrades.js"></script>
+<script src="js/content/achievements.js"></script>
+<script src="js/content/events.js"></script>
 <script src="js/numbers.js"></script>
 <script src="js/game.js"></script>
 <script src="js/workers.js"></script>
@@ -205,6 +221,7 @@
 <script src="js/achievements.js"></script>
 <script src="js/save.js"></script>
 <script src="js/offline.js"></script>
+<script src="js/events.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/ui.js"></script>

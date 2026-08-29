@@ -55,27 +55,82 @@ revoke all on public.durian_scores from anon;
 grant select (public_id, name, total_log, total_display, dps_log, dps_display,
               play_time, total_clicks, workers, achievements, updated_at)
   on public.durian_scores to anon;
-grant insert, update on public.durian_scores to anon;
+-- Deliberately NO insert/update grant: writes go through the function below.
 
 drop policy if exists "anyone can read scores" on public.durian_scores;
 create policy "anyone can read scores"
   on public.durian_scores for select
   using (true);
 
-drop policy if exists "anyone can post a score" on public.durian_scores;
-create policy "anyone can post a score"
-  on public.durian_scores for insert
-  with check (true);
+-- No insert/update/delete policies. The only way to write a score is the
+-- security-definer function below, which runs as its owner. That keeps anon
+-- from touching rows directly and sidesteps needing any privilege on the
+-- private player_id column.
 
--- Required for upsert. Safe because a client can only target a row whose
--- player_id it already knows, and player_id is never readable.
-drop policy if exists "players can update their own row" on public.durian_scores;
-create policy "players can update their own row"
-  on public.durian_scores for update
-  using (true)
-  with check (true);
+-- --------------------------------------------------------- the write path --
 
--- No delete policy, so nobody can clear the board.
+create or replace function public.submit_durian_score(
+  p_player_id     text,
+  p_public_id     text,
+  p_name          text,
+  p_total_log     double precision,
+  p_total_display text,
+  p_dps_log       double precision,
+  p_dps_display   text,
+  p_play_time     integer,
+  p_total_clicks  bigint,
+  p_workers       integer,
+  p_achievements  integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_player_id is null or char_length(p_player_id) < 8 then
+    raise exception 'Bad player id';
+  end if;
+  if p_name is null or char_length(btrim(p_name)) < 2 or char_length(p_name) > 20 then
+    raise exception 'Name must be 2 to 20 characters';
+  end if;
+
+  insert into public.durian_scores (
+    player_id, public_id, name,
+    total_log, total_display, dps_log, dps_display,
+    play_time, total_clicks, workers, achievements, updated_at
+  ) values (
+    p_player_id, p_public_id, btrim(p_name),
+    greatest(coalesce(p_total_log, 0), 0), coalesce(p_total_display, '0'),
+    greatest(coalesce(p_dps_log, 0), 0), coalesce(p_dps_display, '0'),
+    greatest(coalesce(p_play_time, 0), 0), greatest(coalesce(p_total_clicks, 0), 0),
+    greatest(coalesce(p_workers, 0), 0), greatest(coalesce(p_achievements, 0), 0),
+    now()
+  )
+  on conflict (player_id) do update set
+    public_id     = excluded.public_id,
+    name          = excluded.name,
+    total_log     = excluded.total_log,
+    total_display = excluded.total_display,
+    dps_log       = excluded.dps_log,
+    dps_display   = excluded.dps_display,
+    play_time     = excluded.play_time,
+    total_clicks  = excluded.total_clicks,
+    workers       = excluded.workers,
+    achievements  = excluded.achievements,
+    updated_at    = now();
+end;
+$$;
+
+revoke all on function public.submit_durian_score(
+  text, text, text, double precision, text, double precision, text,
+  integer, bigint, integer, integer) from public;
+
+grant execute on function public.submit_durian_score(
+  text, text, text, double precision, text, double precision, text,
+  integer, bigint, integer, integer) to anon;
+
+notify pgrst, 'reload schema';
 
 -- ------------------------------------------------------ optional: plausibility
 

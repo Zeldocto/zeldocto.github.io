@@ -20,14 +20,18 @@
     var seconds = (Date.now() - savedAt) / 1000;
     if (seconds < CONFIG.offline.minSeconds) return null;
 
-    var capped = Math.min(seconds, CONFIG.offline.maxSeconds);
-    var amount = N.mul(DC.Game.derived.dps, capped * CONFIG.offline.efficiency);
+    var maxSeconds = DC.Game.derived.offlineMaxSeconds || CONFIG.offline.maxSeconds;
+    var efficiency = DC.Game.derived.offlineEfficiency !== undefined
+      ? DC.Game.derived.offlineEfficiency : CONFIG.offline.efficiency;
+    var capped = Math.min(seconds, maxSeconds);
+    var amount = N.mul(DC.Game.derived.dps, capped * efficiency);
     if (amount.m <= 0) return null;
 
     pending = {
       seconds: seconds,
       cappedSeconds: capped,
-      wasCapped: seconds > CONFIG.offline.maxSeconds,
+      wasCapped: seconds > maxSeconds,
+      maxSeconds: maxSeconds,
       amount: amount
     };
     DC.Events.emit('offlineEarnings', pending);
@@ -40,6 +44,7 @@
     var reward = pending;
     pending = null;
     DC.Game.addDurians(reward.amount, 'worker');
+    DC.Game.state.offlineEarned = N.add(DC.Game.state.offlineEarned || N.ZERO, reward.amount);
     DC.Game.checkProgress();
     DC.Events.emit('offlineCollected', reward);
     return reward;

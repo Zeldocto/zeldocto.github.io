@@ -18,8 +18,18 @@
     DC.UI.init();
     DC.Debug.init();
 
+    // A save from before a content update can qualify for new achievements the
+    // moment it loads. Check now that the UI is listening, so the player
+    // actually sees what they just earned.
+    DC.Game.checkProgress();
+
     // Offline earnings need the UI in place to show the popup.
     if (saved) DC.Offline.evaluate(saved.lastSaved);
+
+    // Events resume from the save; a fresh or expired timer gets a new roll.
+    if (!DC.Game.state.events.nextAt || DC.Game.state.events.nextAt < Date.now()) {
+      DC.IslandEvents.schedule();
+    }
 
     DC.Save.startAutosave();
     DC.Leaderboard.startAutoSubmit();

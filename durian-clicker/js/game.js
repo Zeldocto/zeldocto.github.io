@@ -61,6 +61,10 @@
         name: '',                   // asked for the first time they submit a score
         lastSubmit: 0
       },
+      buffs: [],                    // temporary event multipliers
+      events: { seen: {}, total: 0, nextAt: 0 },
+      lost: N.ZERO,                 // durians taken by setback events
+      offlineEarned: N.ZERO,
       playTime: 0,
       startedAt: Date.now(),
       lastSaved: Date.now()
@@ -105,6 +109,10 @@
       case 'upgradesBought': return d.upgradesBought >= req.count;
       case 'achievement':    return !!s.achievements[req.id];
       case 'playTime':       return s.playTime >= req.seconds;
+      case 'achievementCount': return d.achievementsEarned >= req.count;
+      case 'eventsSeen':     return (s.events.total || 0) >= req.count;
+      case 'eventTypeSeen':  return (s.events.seen[req.id] || 0) >= req.count;
+      case 'offlineEarned':  return N.gte(s.offlineEarned, req.amount);
       default:
         console.warn('Unknown requirement type:', req.type);
         return false;
@@ -126,6 +134,10 @@
       case 'upgradesBought': return 'Unlocks after ' + req.count + ' upgrades';
       case 'achievement':    return 'Unlocks with an achievement';
       case 'playTime':       return 'Unlocks after ' + N.formatDuration(req.seconds) + ' played';
+      case 'achievementCount': return 'Unlocks with ' + req.count + ' achievements';
+      case 'eventsSeen':     return 'Unlocks after ' + req.count + ' island events';
+      case 'eventTypeSeen':  return 'Unlocks after ' + req.count + ' of a certain island event';
+      case 'offlineEarned':  return 'Unlocks after collecting ' + N.format(req.amount) + ' offline';
       default:               return 'Locked';
     }
   }
@@ -154,9 +166,15 @@
   function recalc() {
     var s = Game.state, d = Game.derived;
 
-    var clickAdd = 0, clickMult = 1, clickFromDps = 0;
+    var clickAdd = 0, clickMult = 1, clickFromDps = 0, clickFromWorkers = 0;
     var globalMult = 1;
     var workerMult = {};
+    var workerScaling = {};     // id -> [{ per, value }]
+    var workerSynergy = [];     // { target, source, value }
+    var achievementBonus = CONFIG.achievementBonusPer;
+    var eventChance = 1, eventGain = 1, eventLoss = 1, buffDuration = 1;
+    var offlineEfficiency = CONFIG.offline.efficiency;
+    var offlineHours = 0;
     var bought = 0;
 
     CONFIG.upgrades.forEach(function (u) {
@@ -167,11 +185,22 @@
       (u.effects || []).forEach(function (fx) {
         for (var i = 0; i < stacks; i++) {
           switch (fx.type) {
-            case 'clickAdd':     clickAdd += fx.value; break;
-            case 'clickMult':    clickMult *= fx.value; break;
-            case 'clickFromDps': clickFromDps += fx.value; break;
-            case 'globalMult':   globalMult *= fx.value; break;
-            case 'workerMult':   workerMult[fx.target] = (workerMult[fx.target] || 1) * fx.value; break;
+            case 'clickAdd':          clickAdd += fx.value; break;
+            case 'clickMult':         clickMult *= fx.value; break;
+            case 'clickFromDps':      clickFromDps += fx.value; break;
+            case 'clickFromWorkers':  clickFromWorkers += fx.value; break;
+            case 'globalMult':        globalMult *= fx.value; break;
+            case 'workerMult':        workerMult[fx.target] = (workerMult[fx.target] || 1) * fx.value; break;
+            case 'workerScaling':
+              (workerScaling[fx.target] || (workerScaling[fx.target] = [])).push(fx); break;
+            case 'workerSynergy':     workerSynergy.push(fx); break;
+            case 'achievementBonus':  achievementBonus += fx.value; break;
+            case 'eventChance':       eventChance *= fx.value; break;
+            case 'eventGain':         eventGain *= fx.value; break;
+            case 'eventLoss':         eventLoss *= fx.value; break;
+            case 'buffDuration':      buffDuration *= fx.value; break;
+            case 'offlineEfficiency': offlineEfficiency += fx.value; break;
+            case 'offlineHours':      offlineHours += fx.value; break;
             default: console.warn('Unknown effect type:', fx.type);
           }
         }
@@ -179,16 +208,46 @@
     });
 
     var achievements = Object.keys(s.achievements).length;
-    globalMult *= (1 + achievements * CONFIG.achievementBonusPer);
+    globalMult *= (1 + achievements * achievementBonus);
 
-    var dps = N.ZERO, totalWorkers = 0;
+    // Temporary event buffs multiply everything.
+    var buffProd = 1, buffClick = 1, now = Date.now();
+    for (var bi = 0; bi < s.buffs.length; bi++) {
+      if (s.buffs[bi].endsAt > now) {
+        buffProd *= (s.buffs[bi].prod !== undefined ? s.buffs[bi].prod : 1);
+        buffClick *= (s.buffs[bi].click !== undefined ? s.buffs[bi].click : 1);
+      }
+    }
+    globalMult *= buffProd;
+
+    // Worker counts are needed before production, because synergies read them.
+    var counts = {}, totalWorkers = 0;
+    CONFIG.workers.forEach(function (w) {
+      counts[w.id] = s.workers[w.id] || 0;
+      totalWorkers += counts[w.id];
+    });
+
+    var dps = N.ZERO;
     d.perWorker = {};
     d.workerDps = {};
 
     CONFIG.workers.forEach(function (w) {
-      var count = s.workers[w.id] || 0;
-      totalWorkers += count;
-      var each = N.mul(N.big(w.baseProduction), (workerMult[w.id] || 1) * globalMult);
+      var count = counts[w.id];
+      var mult = (workerMult[w.id] || 1) * globalMult;
+
+      // Self-scaling: +value for every `per` of this worker owned.
+      (workerScaling[w.id] || []).forEach(function (fx) {
+        mult *= (1 + fx.value * Math.floor(count / fx.per));
+      });
+
+      // Cross-worker synergies, including the 'all' wildcard on either side.
+      workerSynergy.forEach(function (fx) {
+        if (fx.target !== 'all' && fx.target !== w.id) return;
+        var sourceCount = fx.source === 'all' ? totalWorkers : (counts[fx.source] || 0);
+        mult *= (1 + fx.value * sourceCount);
+      });
+
+      var each = N.mul(N.big(w.baseProduction), mult);
       d.perWorker[w.id] = each;
       var total = N.mul(each, count);
       d.workerDps[w.id] = total;
@@ -200,8 +259,18 @@
     d.totalWorkers = totalWorkers;
     d.upgradesBought = bought;
     d.achievementsEarned = achievements;
+    d.eventChance = eventChance;
+    d.eventGain = eventGain;
+    d.eventLoss = eventLoss;
+    d.buffDuration = buffDuration;
+    d.offlineEfficiency = offlineEfficiency;
+    d.offlineMaxSeconds = CONFIG.offline.maxSeconds + offlineHours * 3600;
+    d.buffProd = buffProd;
+    d.buffClick = buffClick;
+
     d.clickPower = N.add(
-      N.mul(N.big(CONFIG.balance.baseClickPower + clickAdd), clickMult),
+      N.mul(N.big(CONFIG.balance.baseClickPower + clickAdd + clickFromWorkers * totalWorkers),
+            clickMult * buffClick),
       N.mul(dps, clickFromDps)
     );
 
@@ -316,6 +385,7 @@
     s.playTime += dt;
     var produced = N.mul(Game.derived.dps, dt);
     if (produced.m > 0) addDurians(produced, 'worker');
+    if (DC.IslandEvents) DC.IslandEvents.update();
     Events.emit('tick', { dt: dt });
   }
 

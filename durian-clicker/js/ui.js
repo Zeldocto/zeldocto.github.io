@@ -27,7 +27,9 @@
      'btn-mute-2', 'save-box', 'settings-note', 'offline-text', 'offline-amount', 'offline-sub',
      'confirm-title', 'confirm-text', 'board-switch', 'board-list', 'board-status', 'board-name',
      'board-rank', 'board-note', 'btn-board-name', 'btn-board-submit', 'btn-board-refresh',
-     'name-input', 'name-error'
+     'name-input', 'name-error', 'upgrade-search', 'upgrade-count', 'upgrade-more',
+     'owned-details', 'owned-count', 'buff-bar', 'event-banner', 'event-icon',
+     'event-title', 'event-text', 'event-amount'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
@@ -195,35 +197,63 @@
 
   /* ------------------------------------------------------------ upgrades */
 
+  var upgradeFilter = 'all';
+  var upgradeSearch = '';
+  var upgradeLimit = 40;          // 166 upgrades in one list is unreadable
+
+  function matchesSearch(def) {
+    if (!upgradeSearch) return true;
+    var q = upgradeSearch.toLowerCase();
+    return def.name.toLowerCase().indexOf(q) !== -1 ||
+           def.description.toLowerCase().indexOf(q) !== -1;
+  }
+
   function buildUpgrades() {
     var list = el['upgrade-list'];
     list.innerHTML = '';
     upgradeRows = {};
 
     var available = CONFIG.upgrades.filter(function (u) {
-      return Game.state.unlocked[u.id] && (!DC.Upgrades.owned(u.id) || u.repeatable);
+      if (!Game.state.unlocked[u.id]) return false;
+      if (DC.Upgrades.owned(u.id) && !u.repeatable) return false;
+      if (!matchesSearch(u)) return false;
+      if (upgradeFilter === 'afford' && !N.gte(Game.state.durians, DC.Upgrades.costOf(u))) return false;
+      return true;
     });
-    var lockedTeaser = CONFIG.upgrades.filter(function (u) { return !Game.state.unlocked[u.id]; })[0];
-
-    if (!available.length && !lockedTeaser) {
-      list.innerHTML = '<p class="empty-note">Every upgrade on the island is yours. Astonishing.</p>';
-    }
-    if (!available.length && lockedTeaser) {
-      list.innerHTML = '<p class="empty-note">No upgrades on the shelf right now. Keep clicking and hiring — more show up as you go.</p>';
-    }
-
     available.sort(function (a, b) { return N.cmp(DC.Upgrades.costOf(a), DC.Upgrades.costOf(b)); });
 
-    available.forEach(function (def) {
+    var lockedTeaser = (!upgradeSearch && upgradeFilter === 'all')
+      ? CONFIG.upgrades.filter(function (u) { return !Game.state.unlocked[u.id]; })[0]
+      : null;
+
+    var shown = available.slice(0, upgradeLimit);
+
+    el['upgrade-count'].textContent = available.length
+      ? (available.length > shown.length
+          ? 'Showing ' + shown.length + ' of ' + available.length + ' available'
+          : available.length + ' available')
+      : '';
+    el['upgrade-more'].hidden = available.length <= shown.length;
+
+    if (!available.length) {
+      list.innerHTML = '<p class="empty-note">' + (
+        upgradeSearch ? 'Nothing matches that search.'
+        : upgradeFilter === 'afford' ? "Nothing you can afford just yet. Keep harvesting."
+        : lockedTeaser ? 'No upgrades on the shelf right now. Keep clicking and hiring — more show up as you go.'
+        : 'Every upgrade on the island is yours. Astonishing.'
+      ) + '</p>';
+    }
+
+    shown.forEach(function (def) {
       var row = document.createElement('button');
       row.className = 'item';
       row.type = 'button';
       row.innerHTML =
         '<img class="item-icon" src="' + (def.icon || CONFIG.assets.upgradeDefault) + '" alt="">' +
         '<div>' +
-          '<span class="item-name">' + def.name + '</span>' +
-          '<span class="item-desc">' + def.description + '</span>' +
-          '<span class="item-meta">' + DC.Upgrades.describeEffects(def) + '</span>' +
+          '<span class="item-name">' + escapeHtml(def.name) + '</span>' +
+          '<span class="item-desc">' + escapeHtml(def.description) + '</span>' +
+          '<span class="item-meta">' + escapeHtml(DC.Upgrades.describeEffects(def)) + '</span>' +
         '</div>' +
         '<div class="item-buy"><div class="item-cost" data-cost></div><div class="item-qty">Durians</div></div>';
 
@@ -235,28 +265,28 @@
       upgradeRows[def.id] = { row: row, cost: row.querySelector('[data-cost]') };
     });
 
-    if (lockedTeaser) {
+    if (lockedTeaser && shown.length === available.length) {
       var locked = document.createElement('div');
       locked.className = 'item locked';
       locked.innerHTML =
         '<img class="item-icon" src="' + (lockedTeaser.icon || CONFIG.assets.upgradeDefault) + '" alt="">' +
         '<div><span class="item-name">???</span>' +
-        '<span class="item-lock">🔒 ' + Game.describeRequirement(lockedTeaser.unlock) + '</span></div>' +
+        '<span class="item-lock">\u{1F512} ' + Game.describeRequirement(lockedTeaser.unlock) + '</span></div>' +
         '<div class="item-buy"></div>';
       list.appendChild(locked);
     }
 
-    // Purchased upgrades collapse into a small trophy grid.
+    // Purchased upgrades collapse into a trophy grid so they don't swamp the tab.
     var owned = CONFIG.upgrades.filter(function (u) { return DC.Upgrades.owned(u.id); });
-    el['owned-heading'].hidden = owned.length === 0;
+    el['owned-details'].hidden = owned.length === 0;
+    el['owned-count'].textContent = owned.length;
     el['owned-upgrades'].innerHTML = owned.map(function (u) {
-      return '<div class="owned-upgrade" title="' + u.name + ' — ' + u.description + '">' +
-             '<img src="' + (u.icon || CONFIG.assets.upgradeDefault) + '" alt="' + u.name + '"></div>';
+      return '<div class="owned-upgrade" title="' + escapeHtml(u.name + ' \u2014 ' + u.description) + '">' +
+             '<img src="' + (u.icon || CONFIG.assets.upgradeDefault) + '" alt="' + escapeHtml(u.name) + '"></div>';
     }).join('');
   }
 
   function refreshUpgrades() {
-    var anyAffordable = false;
     Object.keys(upgradeRows).forEach(function (id) {
       var def = Game.upgradeDef(id);
       var ref = upgradeRows[id];
@@ -265,8 +295,16 @@
       ref.row.classList.toggle('affordable', v.canAfford);
       ref.row.classList.toggle('broke', !v.canAfford);
       ref.row.disabled = !v.canAfford;
-      if (v.canAfford) anyAffordable = true;
     });
+
+    // The pip has to consider every unlocked upgrade, not only the visible page.
+    var anyAffordable = false;
+    for (var i = 0; i < CONFIG.upgrades.length; i++) {
+      var u = CONFIG.upgrades[i];
+      if (!Game.state.unlocked[u.id]) continue;
+      if (DC.Upgrades.owned(u.id) && !u.repeatable) continue;
+      if (N.gte(Game.state.durians, DC.Upgrades.costOf(u))) { anyAffordable = true; break; }
+    }
     el['pip-upgrades'].hidden = !anyAffordable;
   }
 
@@ -349,6 +387,61 @@
     if (currentTab !== 'stats') return;
     statRefs.forEach(function (ref) { ref.node.textContent = ref.get(); });
   }
+
+  /* ------------------------------------------------------- buffs + events */
+
+  function refreshBuffs() {
+    var buffs = DC.IslandEvents ? DC.IslandEvents.activeBuffs() : [];
+    var bar = el['buff-bar'];
+    if (!buffs.length) { bar.innerHTML = ''; return; }
+    var now = Date.now();
+    bar.innerHTML = buffs.map(function (b) {
+      var left = Math.max(0, Math.ceil((b.endsAt - now) / 1000));
+      var bad = (b.prod !== undefined && b.prod < 1);
+      return '<span class="buff' + (bad ? ' buff-bad' : '') + '">' +
+             escapeHtml(b.label) + ' <em>' + left + 's</em></span>';
+    }).join('');
+  }
+
+  var eventTimer = null;
+
+  function showEvent(result) {
+    var def = result.def;
+    el['event-icon'].src = def.icon || CONFIG.assets.shine;
+    el['event-title'].textContent = def.title || def.name;
+    el['event-text'].textContent = result.text || '';
+
+    var amount = el['event-amount'];
+    amount.className = 'event-amount';
+    if (result.direction === 'gain') {
+      amount.textContent = '+' + N.format(result.amount) + ' Durians';
+      amount.classList.add('is-gain');
+    } else if (result.direction === 'loss') {
+      amount.textContent = '-' + N.format(result.amount) + ' Durians';
+      amount.classList.add('is-loss');
+    } else if (result.seconds) {
+      amount.textContent = Math.round(result.seconds) + ' seconds';
+      amount.classList.add(result.direction === 'debuff' ? 'is-loss' : 'is-gain');
+    } else {
+      amount.textContent = '';
+    }
+
+    var banner = el['event-banner'];
+    banner.classList.toggle('is-bad', result.direction === 'loss' || result.direction === 'debuff');
+    banner.hidden = false;
+    banner.classList.remove('pop');
+    void banner.offsetWidth;
+    banner.classList.add('pop');
+
+    DC.Audio.play(result.direction === 'loss' || result.direction === 'debuff' ? 'unlock' : 'achievement');
+
+    clearTimeout(eventTimer);
+    eventTimer = setTimeout(hideEvent, (CONFIG.events_settings.bannerSeconds || 8) * 1000);
+    refreshBuffs();
+    refreshCounters();
+  }
+
+  function hideEvent() { el['event-banner'].hidden = true; }
 
   /* ---------------------------------------------------------- leaderboard */
 
@@ -638,6 +731,33 @@
     });
     el['btn-board-refresh'].addEventListener('click', function () { DC.Leaderboard.load(); });
 
+    el['upgrade-search'].addEventListener('input', function () {
+      upgradeSearch = el['upgrade-search'].value.trim();
+      upgradeLimit = 40;
+      buildUpgrades();
+      refreshUpgrades();
+    });
+    document.querySelectorAll('[data-filter]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        upgradeFilter = b.dataset.filter;
+        upgradeLimit = 40;
+        document.querySelectorAll('[data-filter]').forEach(function (x) {
+          x.classList.toggle('is-active', x === b);
+        });
+        buildUpgrades();
+        refreshUpgrades();
+      });
+    });
+    el['upgrade-more'].addEventListener('click', function () {
+      upgradeLimit += 60;
+      buildUpgrades();
+      refreshUpgrades();
+    });
+
+    $('event-close').addEventListener('click', hideEvent);
+    DC.Events.on('islandEvent', showEvent);
+    DC.Events.on('buffsChanged', refreshBuffs);
+
     DC.Events.on('leaderboardLoaded', renderBoard);
     DC.Events.on('leaderboardStatus', function () {
       if (currentTab === 'leaderboard') refreshBoardHeader();
@@ -655,24 +775,35 @@
       refreshWorkers();
       refreshUpgrades();
       refreshStats();
+      refreshBuffs();
     });
     DC.Events.on('unlock', function (opened) {
       buildWorkers();
       buildUpgrades();
       buildStats();
       DC.Audio.play('unlock');
-      opened.forEach(function (o) {
+      // A returning player can unlock dozens at once after a content update.
+      // Show a few, then summarise, rather than burying the screen in toasts.
+      var MAX_TOASTS = 3;
+      opened.slice(0, MAX_TOASTS).forEach(function (o) {
         var isWorker = o.kind === 'worker';
         toast(isWorker ? o.item.name + ' available!' : 'New upgrade: ' + o.item.name,
               isWorker ? o.item.flavor || o.item.description : o.item.description,
               'unlock',
               isWorker ? o.item.image : (o.item.icon || CONFIG.assets.upgradeDefault));
       });
+      if (opened.length > MAX_TOASTS) {
+        toast((opened.length - MAX_TOASTS) + ' more unlocked',
+              'Check the Upgrades tab.', 'unlock');
+      }
     });
     DC.Events.on('achievement', function (list) {
       buildAchievements();
       DC.Audio.play('achievement');
-      list.forEach(function (a) { toast('Shine get: ' + a.name, a.description); });
+      list.slice(0, 3).forEach(function (a) { toast('Shine get: ' + a.name, a.description); });
+      if (list.length > 3) {
+        toast((list.length - 3) + ' more Shines earned', 'Check the Shines tab.');
+      }
     });
     DC.Events.on('buyWorker', function () { buildUpgrades(); refreshWorkers(); });
     DC.Events.on('buyUpgrade', function () { buildUpgrades(); buildWorkers(); });

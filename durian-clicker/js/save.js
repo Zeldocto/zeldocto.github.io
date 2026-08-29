@@ -9,7 +9,8 @@
   var N = DC.N;
   var CONFIG = DC.CONFIG;
 
-  var BIG_FIELDS = ['durians', 'totalEarned', 'clickEarned', 'workerEarned', 'spent'];
+  var BIG_FIELDS = ['durians', 'totalEarned', 'clickEarned', 'workerEarned', 'spent',
+                    'lost', 'offlineEarned'];
 
   /* ------------------------------------------------------- (de)serialising */
 
@@ -23,6 +24,9 @@
       unlocked: Object.assign({}, state.unlocked),
       settings: Object.assign({}, state.settings),
       player: Object.assign({}, state.player),
+      buffs: state.buffs.slice(),
+      events: { seen: Object.assign({}, state.events.seen),
+                total: state.events.total, nextAt: state.events.nextAt },
       playTime: state.playTime,
       startedAt: state.startedAt,
       lastSaved: Date.now()
@@ -62,6 +66,15 @@
 
     if (data.settings) Object.assign(state.settings, data.settings);
     if (data.player) Object.assign(state.player, data.player);
+    // Update 2 additions. Absent in v1 saves, which is fine — they default.
+    if (Array.isArray(data.buffs)) state.buffs = data.buffs.filter(function (b) {
+      return b && typeof b.endsAt === 'number' && b.endsAt > Date.now();
+    });
+    if (data.events) {
+      if (data.events.seen) state.events.seen = Object.assign({}, data.events.seen);
+      if (typeof data.events.total === 'number') state.events.total = data.events.total;
+      if (typeof data.events.nextAt === 'number') state.events.nextAt = data.events.nextAt;
+    }
     // Saves made before public ids existed still need one.
     if (!state.player.publicId) state.player.publicId = DC.Game.makePlayerId();
     return state;

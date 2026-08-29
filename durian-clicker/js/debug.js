@@ -99,6 +99,25 @@
       if (!DC.Offline.simulate(s)) alert('No offline earnings — hire some workers first.');
     })]);
 
+    var evSelect = document.createElement('select');
+    evSelect.style.flex = '1';
+    CONFIG.events.forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = e.id; o.textContent = e.title || e.name;
+      evSelect.appendChild(o);
+    });
+    row([evSelect, smallButton('Fire', function () {
+      if (!DC.IslandEvents.trigger(evSelect.value)) alert('Event not eligible right now.');
+      refreshUI();
+    })]);
+    button('Fire a random event', function () {
+      if (!DC.IslandEvents.trigger()) alert('No eligible events — hire some workers first.');
+      refreshUI();
+    });
+    button('Clear all buffs', function () {
+      DC.Game.state.buffs.length = 0; refreshUI();
+    });
+
     button('Submit to leaderboard', function () {
       DC.Leaderboard.submit({ force: true, ignoreThrottle: true }).then(function (r) {
         console.log('[Durian Clicker] leaderboard submit', r);

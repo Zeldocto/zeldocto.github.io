@@ -2,8 +2,6 @@
 
 An Isle Delfino incremental game. Click the durian, hire the island, drown in fruit.
 
-A for-fun vibecoded web game.
-
 Vanilla JavaScript, no build step, no dependencies. Every image and sound in here is a
 placeholder meant to be thrown away — swapping in your own artwork never requires
 touching game code.
@@ -36,8 +34,12 @@ durian-clicker/
 ├── index.html          markup only — no game logic
 ├── css/style.css       all styling and animation
 ├── js/
-│   ├── config.js       ← ALL game content. Workers, upgrades, achievements,
-│   │                     balance numbers, asset paths. Start here.
+│   ├── config.js       balance numbers, asset paths, workers, settings
+│   ├── content/        ← game content, split out in Update 2
+│   │   ├── upgrades.js     166 upgrades
+│   │   ├── achievements.js 64 achievements
+│   │   └── events.js       random island events
+│   ├── events.js       the random-event engine, buffs and timers
 │   ├── numbers.js      big-number type + display formatting
 │   ├── game.js         state, production maths, tick loop, event bus
 │   ├── workers.js      cost scaling and purchasing
@@ -118,6 +120,9 @@ automatically.
 
 ### A new upgrade
 
+Upgrades live in `js/content/upgrades.js` now — there are 166 of them, and
+`config.js` was getting unreadable.
+
 ```js
 {
   id: 'rocket_nozzle',
@@ -142,6 +147,20 @@ Upgrades are one-time purchases unless you add `repeatable: true` (and optionall
 | `clickFromDps` | `value` | adds `value × DPS` to each click |
 | `workerMult` | `target`, `value` | multiplies one worker's output |
 | `globalMult` | `value` | multiplies all worker output |
+| `clickFromWorkers` | `value` | adds `value` per click for each worker owned |
+| `workerScaling` | `target`, `per`, `value` | target gains `value` per `per` of itself owned |
+| `workerSynergy` | `target`, `source`, `value` | target gains `value` per `source` owned; either side may be `'all'` |
+| `achievementBonus` | `value` | raises the per-achievement production bonus |
+| `eventChance` | `value` | island events fire more often |
+| `eventGain` | `value` | good events pay more |
+| `eventLoss` | `value` | bad events cost less (use a value below 1) |
+| `buffDuration` | `value` | event buffs last longer |
+| `offlineEfficiency` | `value` | added to the offline production rate |
+| `offlineHours` | `value` | extends the offline cap, in hours |
+
+`workerScaling` and `workerSynergy` are what keep Piantas and Nokis relevant in
+the late game — they scale off worker counts rather than being flat doublers,
+so a starting crew of 300 Piantas is still worth something at 10^18 Durians.
 
 An upgrade can list several effects. To invent a new one, add a `case` to the switch
 in `recalc()` in `game.js`.
@@ -163,6 +182,7 @@ you can gate the other with:
 
 `always` · `totalEarned` · `durians` · `clickEarned` · `clicks` · `workerCount`
 · `totalWorkers` · `dps` · `upgrade` · `upgradesBought` · `achievement` · `playTime`
+· `achievementCount` · `eventsSeen` · `eventTypeSeen` · `offlineEarned`
 
 Adding a new one means a `case` in `meetsRequirement()` and a matching line in
 `describeRequirement()` (which writes the "🔒 Unlocks at …" text) — both in `game.js`.
@@ -190,13 +210,52 @@ achievementBonusPer: 0.01
 
 `offline.efficiency: 0.5` would make workers idle at half rate while you're away.
 
-**On current pacing:** a focused session unlocks all six workers in roughly fifteen
-minutes and exhausts the upgrade list around the ninety-minute mark, with the
-1-trillion achievement still well out of reach. That's what six buildings buys you —
-Cookie Clicker has twenty. Adding three or four more workers stretches the curve
-naturally without touching any other numbers.
+**On current pacing (Update 2):** simulating a veteran save — the state a player
+reaches at the end of Update 1 — through sixty days of continuous optimal play
+buys about 118 of the 166 upgrades, with the last one landing around day 31 and
+roughly 48 upgrades plus 23 achievements still ahead. Casual play stretches that
+considerably.
+
+Worker tier upgrades are gated on counts up to 275 rather than 500, because
+worker cost scales at 1.15^n while upgrades only double — counts past ~300 are
+unreachable in practice, and gating content there would have made it dead.
+Late-game pacing is carried by cost instead.
+
+End-game output share across the crew lands near: Nokis 69%, Piantas 19%,
+Shadow Marios 8%, and the middle three a few percent between them. The starting
+crew staying dominant is deliberate — that was the balance ask — but if you want
+a flatter spread, raise the `value` on the `workerScaling` entries for Yoshi,
+Toad and Il Piantissimo in `js/content/upgrades.js`. Nothing else needs to change.
 
 ---
+
+## Random island events
+
+Every few minutes an event fires: King Boo hands over a pile of fruit or helps
+himself to some, the Sirena Beach Hotel presents a bill nobody remembers
+incurring, a Shine Sprite drifts past and multiplies production sevenfold for a
+minute. Content lives in `js/content/events.js`, the engine in `js/events.js`.
+
+Each event is one entry. Effect types:
+
+| type | fields | does |
+|---|---|---|
+| `gainSeconds` | `min`, `max` | pays out N seconds of your current DPS |
+| `gainFlat` | `min`, `max` | pays out a flat amount |
+| `losePercent` | `min`, `max` | takes a share of your banked Durians |
+| `loseSeconds` | `min`, `max` | takes N seconds of production |
+| `buff` | `prod`, `click`, `seconds`, `label` | a temporary multiplier |
+
+`weight` sets relative frequency, `good: false` marks a setback, and `require`
+gates an event behind any requirement type. Timing and safety rails are in
+`CONFIG.events_settings` — the gap between events, and `minBankForSetbacks`,
+which stops the game taking Durians from someone who has barely any.
+
+Buffs live in `state.buffs` and fold into production through `recalc()`. They
+survive a save and reload, and expired ones are dropped on load.
+
+Debug the whole system with Ctrl + ` — there's a dropdown to fire any specific
+event and a button for a random one.
 
 ## Numbers
 
@@ -247,8 +306,13 @@ phones home.
 Free tier, no server to run, about ten minutes of setup:
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open the SQL editor, paste in `leaderboard-setup.sql`, run it.
-3. In **Project Settings → API**, copy your project URL and the `anon` public key.
+2. Open the SQL editor, paste in `leaderboard-setup.sql`, run it. Watch for a red
+   error box — the editor runs the script as one transaction, so a single failing
+   statement rolls back everything including the table.
+3. In **Project Settings → API Keys**, copy your project URL and your **publishable**
+   key (`sb_publishable_...`). The older `anon` JWT key from the Legacy tab also works.
+   Never use a `sb_secret_...` or `service_role` key here — those bypass RLS, and the
+   game refuses to run with one.
 4. Fill them into `js/config.js`:
 
 ```js
@@ -256,13 +320,19 @@ leaderboard: {
   provider: 'supabase',
   supabase: {
     url: 'https://YOUR-PROJECT.supabase.co',
-    anonKey: 'eyJhbGci...',      // the public anon key — safe to commit
+    anonKey: 'sb_publishable_...',   // publishable or legacy anon — safe to commit
     table: 'durian_scores'
   }
 }
 ```
 
 That's the whole change. Push, and the board is live.
+
+A note on key formats, because it bites: the newer `sb_publishable_` keys are not
+JWTs. They go in the `apikey` header only — putting one in `Authorization: Bearer`
+makes Supabase's gateway try to parse it as a JWT and return 401 on every request.
+Legacy `eyJ...` keys are JWTs and are sent in both headers. `leaderboard.js` detects
+which kind you pasted and sets the headers accordingly, so either works.
 
 ### Using something else
 
@@ -285,6 +355,11 @@ is never granted for select — so nobody can discover it and overwrite your sco
 `public_id` comes back with the results and only tells your client which row is
 yours. The SQL enforces this with column-level grants, so even a hand-written
 `?select=player_id` request is refused.
+
+Writes go through a `security definer` function (`submit_durian_score`) rather than
+straight at the table, so the `anon` role holds no insert, update or delete
+privilege at all. It can read the public columns and call that one function.
+Nothing else.
 
 Auto-submits every five minutes while playing and once when the tab closes, with a
 30-second floor on manual submits.
@@ -343,7 +418,12 @@ directly: `DC.Game.state`, `DC.Workers.buy('noki', 10)`, `DC.N.format(DC.Game.de
 - **Responsive** at 1920×1080, 1366×768, and mobile portrait and landscape. Keyboard
   focus is visible, the durian is reachable with Enter/Space, and
   `prefers-reduced-motion` is respected.
-- **Tested headlessly** — three suites. Logic (number precision at 10^100+, cost
+- **Save compatibility.** Update 2 adds no required save fields. A save from
+  Update 1 loads with `buffs`, `events`, `lost` and `offlineEarned` defaulted,
+  every worker count, upgrade and achievement intact, and the new content simply
+  unlocked and waiting. There is a dedicated migration suite that asserts this
+  against a realistic veteran save.
+- **Tested headlessly** — four suites. Logic (number precision at 10^100+, cost
   curves, max-buy correctness, unlock gating, offline capping), jsdom against the
   real DOM (clicking, buying, tab switching, save round-trip, offline popup, reset
   confirmation, debug panel, leaderboard name flow and HTML escaping), and the

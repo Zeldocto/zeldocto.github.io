@@ -78,7 +78,7 @@
      */
     leaderboard: {
       enabled: true,
-      provider: 'supabase',              // 'local' | 'supabase' | 'custom'
+      provider: 'supabase',           // 'local' | 'supabase' | 'custom'
       maxEntries: 100,
       submitIntervalSeconds: 300,     // auto-submit while playing
       minSubmitIntervalSeconds: 30,   // floor on manual submits
@@ -86,8 +86,8 @@
       nameMaxLength: 20,
 
       supabase: {
-        url: 'https://fiedmihcarlernixzlps.supabase.co',                      // https://YOUR-PROJECT.supabase.co
-        anonKey: 'sb_publishable_NAkqrWI96qG43ALKHhQDxg_p7q395cA',                  // the public anon key — safe to ship
+        url: 'https://fiedmihcarlernixzlps.supabase.co',
+        anonKey: 'sb_publishable_NAkqrWI96qG43ALKHhQDxg_p7q395cA',   // publishable key — safe to ship
         table: 'durian_scores'
       },
 
@@ -185,149 +185,22 @@
       }
     ],
 
-    /* ------------------------------------------------------------ upgrades */
-    /* effect types:
-     *   clickAdd      { value }            flat durians per click
-     *   clickMult     { value }            multiplies click power
-     *   clickFromDps  { value }            adds value * DPS to each click
-     *   workerMult    { target, value }    multiplies one worker's output
-     *   globalMult    { value }            multiplies all worker output
-     * An upgrade may list several effects. `repeatable: true` allows re-buying.
-     */
-    upgrades: [
-      {
-        id: 'gloves',
-        name: 'Better Durian Gloves',
-        description: '+1 Durian per click.',
-        cost: 100,
-        icon: 'assets/placeholder-upgrade.png',
-        effects: [{ type: 'clickAdd', value: 1 }],
-        unlock: { type: 'clicks', count: 15 }
-      },
-      {
-        id: 'gloves2',
-        name: 'Reinforced Gloves',
-        description: '+5 Durians per click. The spikes stop being a problem.',
-        cost: 1500,
-        icon: 'assets/placeholder-upgrade.png',
-        effects: [{ type: 'clickAdd', value: 5 }],
-        unlock: { type: 'upgrade', id: 'gloves' }
-      },
-      {
-        id: 'fludd_squirt',
-        name: 'FLUDD Squirt Nozzle',
-        description: 'Blast durians off the branch. Doubles Durians per click.',
-        cost: 6000,
-        icon: 'assets/placeholder-upgrade.png',
-        effects: [{ type: 'clickMult', value: 2 }],
-        unlock: { type: 'clicks', count: 150 }
-      },
-      {
-        id: 'fludd_hover',
-        name: 'Hover Nozzle',
-        description: 'Each click also earns 1% of your Durians per second.',
-        cost: 60000,
-        icon: 'assets/placeholder-upgrade.png',
-        effects: [{ type: 'clickFromDps', value: 0.01 }],
-        unlock: { type: 'upgrade', id: 'fludd_squirt' }
-      },
-      {
-        id: 'fludd_turbo',
-        name: 'Turbo Nozzle',
-        description: 'Each click earns a further 4% of your Durians per second.',
-        cost: 2000000,
-        icon: 'assets/placeholder-upgrade.png',
-        effects: [{ type: 'clickFromDps', value: 0.04 }],
-        unlock: { type: 'upgrade', id: 'fludd_hover' }
-      },
+    /* --------------------------------------------- content (see js/content/) */
+    // Filled by js/content/upgrades.js, achievements.js and events.js so this
+    // file stays readable. Order of <script> tags in index.html matters.
+    upgrades: [],
+    achievements: [],
+    events: [],
 
-      { id: 'pianta_training', name: 'Pianta Training', description: 'Piantas produce 2x as many Durians.',
-        cost: 500, icon: 'assets/placeholder-pianta.png',
-        effects: [{ type: 'workerMult', target: 'pianta', value: 2 }],
-        unlock: { type: 'workerCount', id: 'pianta', count: 5 } },
-
-      { id: 'pianta_festival', name: 'Festival Overtime', description: 'Piantas produce 2x as many Durians.',
-        cost: 9000, icon: 'assets/placeholder-pianta.png',
-        effects: [{ type: 'workerMult', target: 'pianta', value: 2 }],
-        unlock: { type: 'workerCount', id: 'pianta', count: 25 } },
-
-      { id: 'noki_logistics', name: 'Noki Logistics', description: 'Nokis produce 2x as many Durians.',
-        cost: 2500, icon: 'assets/placeholder-noki.png',
-        effects: [{ type: 'workerMult', target: 'noki', value: 2 }],
-        unlock: { type: 'workerCount', id: 'noki', count: 5 } },
-
-      { id: 'noki_shells', name: 'Bigger Shells', description: 'Nokis produce 2x as many Durians.',
-        cost: 40000, icon: 'assets/placeholder-noki.png',
-        effects: [{ type: 'workerMult', target: 'noki', value: 2 }],
-        unlock: { type: 'workerCount', id: 'noki', count: 25 } },
-
-      { id: 'yoshi_juice', name: 'Endless Juice', description: 'Yoshis produce 2x as many Durians.',
-        cost: 25000, icon: 'assets/placeholder-yoshi.png',
-        effects: [{ type: 'workerMult', target: 'yoshi', value: 2 }],
-        unlock: { type: 'workerCount', id: 'yoshi', count: 5 } },
-
-      { id: 'toad_brigade', name: 'Toad Brigade', description: 'Toads produce 2x as many Durians.',
-        cost: 300000, icon: 'assets/placeholder-toad.png',
-        effects: [{ type: 'workerMult', target: 'toad', value: 2 }],
-        unlock: { type: 'workerCount', id: 'toad', count: 5 } },
-
-      { id: 'piantissimo_shoes', name: 'Suspicious Running Shoes', description: 'Il Piantissimo produces 2x as many Durians.',
-        cost: 3000000, icon: 'assets/placeholder-piantissimo.png',
-        effects: [{ type: 'workerMult', target: 'piantissimo', value: 2 }],
-        unlock: { type: 'workerCount', id: 'piantissimo', count: 5 } },
-
-      { id: 'shadow_brush', name: 'Magic Paintbrush', description: 'Shadow Marios produce 2x as many Durians.',
-        cost: 30000000, icon: 'assets/placeholder-shadowmario.png',
-        effects: [{ type: 'workerMult', target: 'shadowmario', value: 2 }],
-        unlock: { type: 'workerCount', id: 'shadowmario', count: 5 } },
-
-      { id: 'farming', name: 'Durian Farming Techniques', description: 'All workers produce +10% Durians.',
-        cost: 10000, icon: 'assets/placeholder-shine.png',
-        effects: [{ type: 'globalMult', value: 1.10 }],
-        unlock: { type: 'totalWorkers', count: 20 } },
-
-      { id: 'irrigation', name: 'Delfino Irrigation', description: 'All workers produce +15% Durians.',
-        cost: 400000, icon: 'assets/placeholder-shine.png',
-        effects: [{ type: 'globalMult', value: 1.15 }],
-        unlock: { type: 'totalWorkers', count: 75 } },
-
-      { id: 'shine_blessing', name: 'Blessing of the Shine Sprites', description: 'All workers produce +25% Durians.',
-        cost: 12000000, icon: 'assets/placeholder-shine.png',
-        effects: [{ type: 'globalMult', value: 1.25 }],
-        unlock: { type: 'totalWorkers', count: 150 } }
-    ],
-
-    /* -------------------------------------------------------- achievements */
-    achievements: [
-      { id: 'first_durian', name: 'First Durian', description: 'Click the Durian for the first time.',
-        condition: { type: 'clicks', count: 1 } },
-      { id: 'blistered', name: 'Blistered', description: 'Click the Durian 100 times.',
-        condition: { type: 'clicks', count: 100 } },
-      { id: 'enthusiast', name: 'Durian Enthusiast', description: 'Collect 1,000 Durians.',
-        condition: { type: 'totalEarned', amount: 1000 } },
-      { id: 'hoarder', name: 'Durian Hoarder', description: 'Collect 1,000,000 Durians.',
-        condition: { type: 'totalEarned', amount: 1e6 } },
-      { id: 'a_lot_of_fruit', name: "That's a Lot of Fruit", description: 'Collect 1 billion Durians.',
-        condition: { type: 'totalEarned', amount: 1e9 } },
-      { id: 'smells_like_home', name: 'Smells Like Home', description: 'Collect 1 trillion Durians.',
-        condition: { type: 'totalEarned', amount: 1e12 } },
-      { id: 'pianta_workforce', name: 'Pianta Workforce', description: 'Hire 10 Piantas.',
-        condition: { type: 'workerCount', id: 'pianta', count: 10 } },
-      { id: 'pianta_union', name: 'Pianta Union', description: 'Hire 50 Piantas.',
-        condition: { type: 'workerCount', id: 'pianta', count: 50 } },
-      { id: 'noki_workforce', name: 'Noki Workforce', description: 'Hire 10 Nokis.',
-        condition: { type: 'workerCount', id: 'noki', count: 10 } },
-      { id: 'yoshi_workforce', name: 'Yoshi Ranch', description: 'Hire 10 Yoshis.',
-        condition: { type: 'workerCount', id: 'yoshi', count: 10 } },
-      { id: 'staffed_up', name: 'Fully Staffed', description: 'Hire 100 workers in total.',
-        condition: { type: 'totalWorkers', count: 100 } },
-      { id: 'plaza_economy', name: 'Plaza Economy', description: 'Reach 1,000 Durians per second.',
-        condition: { type: 'dps', amount: 1000 } },
-      { id: 'shine_get', name: 'Shine Get!', description: 'Buy 10 upgrades.',
-        condition: { type: 'upgradesBought', count: 10 } },
-      { id: 'manual_labor', name: 'Manual Labor', description: 'Earn 100,000 Durians by clicking alone.',
-        condition: { type: 'clickEarned', amount: 1e5 } }
-    ]
+    /* ------------------------------------------------------ island events */
+    events_settings: {
+      enabled: true,
+      minIntervalSeconds: 240,      // random gap between events...
+      maxIntervalSeconds: 900,      // ...scaled by any eventChance upgrades
+      minBankForSetbacks: 10000,    // never take Durians below this
+      showBanner: true,
+      bannerSeconds: 8
+    }
   };
 
   DC.CONFIG = CONFIG;
