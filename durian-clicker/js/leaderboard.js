@@ -145,11 +145,28 @@
     },
 
     submit: function (entry) {
-      // Upsert on player_id so a player keeps one row rather than spamming.
-      return fetch(this.base() + '?on_conflict=player_id', {
+      // Writes go through a security-definer function rather than straight at
+      // the table. The function owner does the insert, so `anon` needs nothing
+      // but EXECUTE — no insert/update grants, no privileges on player_id, and
+      // no way to write arbitrary rows or delete anyone.
+      var fn = cfg.supabase.submitFunction || 'submit_durian_score';
+      var url = cfg.supabase.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn;
+      return fetch(url, {
         method: 'POST',
-        headers: this.headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-        body: JSON.stringify(entry)
+        headers: this.headers({ Prefer: 'return=minimal' }),
+        body: JSON.stringify({
+          p_player_id: entry.player_id,
+          p_public_id: entry.public_id,
+          p_name: entry.name,
+          p_total_log: entry.total_log,
+          p_total_display: entry.total_display,
+          p_dps_log: entry.dps_log,
+          p_dps_display: entry.dps_display,
+          p_play_time: entry.play_time,
+          p_total_clicks: entry.total_clicks,
+          p_workers: entry.workers,
+          p_achievements: entry.achievements
+        })
       }).then(function (res) {
         if (!res.ok) return res.text().then(function (t) {
           // Tag it so the caller can tell a server rejection from a dropped
