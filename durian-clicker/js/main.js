@@ -32,6 +32,7 @@
     }
 
     DC.Save.startAutosave();
+    DC.Updates.start();
     DC.Leaderboard.startAutoSubmit();
     DC.Audio.unlockOnFirstGesture();
     DC.Game.start();

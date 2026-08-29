@@ -8,6 +8,18 @@ touching game code.
 
 ---
 
+## Deploying an update
+
+Bump **two** values to the same string and push:
+
+- `CONFIG.buildId` in `js/config.js`
+- `"build"` in `version.json`
+
+Anyone mid-session polls `version.json` every 5 minutes (and whenever they
+refocus the tab). When the build id differs from the one they loaded, the game
+saves their progress and shows a banner telling them to press Ctrl + Shift + R.
+Without this they keep running cached JS until they happen to reload.
+
 ## Running it
 
 **Locally:** double-click `index.html`. That's it. The scripts are plain
@@ -40,6 +52,7 @@ durian-clicker/
 │   │   ├── achievements.js 72 achievements
 │   │   └── events.js       random island events
 │   ├── events.js       the random-event engine, buffs and timers
+│   ├── updates.js      polls version.json and prompts a refresh on deploy
 │   ├── numbers.js      big-number type + display formatting
 │   ├── game.js         state, production maths, tick loop, event bus
 │   ├── workers.js      cost scaling and purchasing

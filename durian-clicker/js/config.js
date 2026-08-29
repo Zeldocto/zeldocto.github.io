@@ -11,6 +11,15 @@
   var CONFIG = {
 
     /* --------------------------------------------------------------- meta */
+    // Bump this AND version.json on every deploy. Anyone mid-session gets a
+    // "refresh for the update" prompt instead of silently running old code.
+    buildId: '2026-08-29-update3',
+    updateCheck: {
+      enabled: true,
+      url: 'version.json',
+      intervalSeconds: 300
+    },
+
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,
     debugEnabled: false,       // set true to re-enable the Ctrl+` developer panel
@@ -221,6 +230,18 @@
         unlock: { type: 'totalEarned', amount: 3000000 }
       },
       {
+        id: 'riccoconverter',
+        name: 'Ricco Fruit Converter',
+        plural: 'Ricco Converters',
+        description: 'Used to convert other fruits on the island into more durians.',
+        flavor: 'Perfect RNG, everytime.',
+        baseCost: 7000000,
+        baseProduction: 19000,
+        costMultiplier: 1.10,
+        image: 'assets/placeholder-riccoconverter.png',
+        unlock: { type: 'totalEarned', amount: 14000000 }
+      },
+      {
         id: 'chuckster',
         name: 'Chuckster',
         plural: 'Chucksters',
@@ -231,6 +252,18 @@
         costMultiplier: 1.10,
         image: 'assets/placeholder-chuckster.png',
         unlock: { type: 'totalEarned', amount: 32000000 }
+      },
+      {
+        id: 'giantpiantatree',
+        name: 'Giant Pianta Tree',
+        plural: 'Giant Pianta Trees',
+        description: 'The vast tree at the centre of Pianta Village, bursting with Durians all through Spring.',
+        flavor: 'The whole village is built around it. So is the whole economy.',
+        baseCost: 320000000,
+        baseProduction: 260000,
+        costMultiplier: 1.10,
+        image: 'assets/placeholder-giantpiantatree.png',
+        unlock: { type: 'totalEarned', amount: 640000000 }
       }
     ],
 

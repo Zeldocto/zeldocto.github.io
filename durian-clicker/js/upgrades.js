@@ -60,8 +60,8 @@
         case 'achievementBonus': return '+' + pct(fx.value) + '% per achievement';
         case 'eventChance':  return 'Island events ×' + fx.value + ' as often';
         case 'eventGain':    return 'Good events pay ×' + fx.value;
-        case 'eventLoss':    return 'Bad events cost ×' + fx.value;
-        case 'buffDuration': return 'Buffs last ×' + fx.value + ' longer';
+        case 'eventLoss':    return 'Bad events cost ×' + fx.value + ' (and bad buffs are shorter)';
+        case 'buffDuration': return 'Good buffs last ×' + fx.value + ' longer';
         case 'offlineEfficiency': return '+' + pct(fx.value) + '% offline production';
         case 'offlineHours': return '+' + fx.value + 'h offline cap';
         default:             return '';

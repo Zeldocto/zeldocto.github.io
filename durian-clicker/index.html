@@ -130,6 +130,16 @@
 </main>
 
 <!-- ------------------------------------------------------------- overlays -->
+<div class="update-bar" id="update-bar" hidden role="status">
+  <img class="update-icon" id="update-icon" alt="">
+  <div class="update-body">
+    <strong>A new update is out!</strong>
+    <span>Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to refresh and play it.</span>
+    <span class="update-sub">Your progress is saved.</span>
+  </div>
+  <button class="update-close" id="update-close" aria-label="Dismiss">×</button>
+</div>
+
 <div class="tip" id="tip" hidden></div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -237,6 +247,7 @@
 <script src="js/save.js"></script>
 <script src="js/offline.js"></script>
 <script src="js/events.js"></script>
+<script src="js/updates.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/ui.js"></script>

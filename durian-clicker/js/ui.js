@@ -29,7 +29,8 @@
      'board-rank', 'board-note', 'btn-board-name', 'btn-board-submit', 'btn-board-refresh',
      'name-input', 'name-error', 'upgrade-search', 'upgrade-count', 'upgrade-more',
      'owned-details', 'owned-count', 'buff-bar', 'event-banner', 'event-icon',
-     'event-title', 'event-text', 'event-amount', 'tip', 'number-format'
+     'event-title', 'event-text', 'event-amount', 'tip', 'number-format',
+     'update-bar', 'update-icon'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
@@ -898,6 +899,15 @@
       DC.Save.save(true);
       rebuildAll();
       note('Number display updated.');
+    });
+
+    $('update-close').addEventListener('click', function () {
+      el['update-bar'].hidden = true;
+    });
+    DC.Events.on('updateAvailable', function () {
+      el['update-icon'].src = CONFIG.assets.shine;
+      el['update-bar'].hidden = false;
+      DC.Audio.play('unlock');
     });
 
     $('event-close').addEventListener('click', hideEvent);

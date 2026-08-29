@@ -106,7 +106,11 @@
         break;
       }
       case 'buff': {
-        var duration = fx.seconds * (d.buffDuration || 1);
+        // Duration modifiers are side-specific. buffDuration upgrades ("Bottled
+        // Sunshine") only extend good buffs — extending a Goop outbreak would
+        // be a punishment for buying them. Conversely eventLoss upgrades
+        // ("Hotel Haggling") shorten bad buffs, and never touch good ones.
+        var duration = fx.seconds * (def.good ? (d.buffDuration || 1) : lossMult);
         addBuff({
           id: def.id,
           label: fx.label || def.name,
