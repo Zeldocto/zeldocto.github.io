@@ -134,6 +134,14 @@
     c.coinsSpent = (c.coinsSpent || 0) + cfg().coinSpinCost;
     c.wagered = N.add(c.wagered || N.ZERO, stake);
     c.won = N.add(c.won || N.ZERO, payout);
+    if (outcome.kind === 'none') {
+      c.streak = (c.streak || 0) + 1;
+      if (c.streak > (c.worstStreak || 0)) c.worstStreak = c.streak;
+    } else {
+      c.wins = (c.wins || 0) + 1;
+      c.streak = 0;
+      if (N.gte(payout, c.biggestWin || N.ZERO)) c.biggestWin = payout;
+    }
     if (outcome.kind === 'triple') c.triples = (c.triples || 0) + 1;
     if (outcome.symbol && outcome.symbol.id === 'coin' && outcome.kind === 'triple') {
       c.jackpots = (c.jackpots || 0) + 1;

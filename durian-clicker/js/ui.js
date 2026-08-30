@@ -35,7 +35,7 @@
      'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'slots-hint', 'slots-payout', 'slots-outcome',
-     'btn-dark', 'dark-toggle'
+     'btn-dark', 'dark-toggle', 'buy-custom'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
@@ -122,7 +122,7 @@
 
     var text = document.createElement('div');
     text.className = 'float-text';
-    text.textContent = '+' + N.format(amount);
+    text.textContent = '+' + N.formatMenu(amount);
     text.style.left = x + 'px';
     text.style.top = y + 'px';
     layer.appendChild(text);
@@ -180,7 +180,7 @@
     var now = performance.now();
     if (now - lastTitleUpdate > 1000) {
       lastTitleUpdate = now;
-      document.title = N.format(s.durians) + ' Durians — Durian Clicker';
+      document.title = N.formatMenu(s.durians) + ' Durians — Durian Clicker';
     }
   }
 
@@ -257,7 +257,7 @@
       ref.meta.textContent = v.owned
         ? N.formatRate(v.each) + '/sec each · ' + N.formatRate(v.total) + '/sec total'
         : N.formatRate(v.each) + '/sec each';
-      ref.cost.textContent = N.format(v.cost);
+      ref.cost.textContent = N.formatMenu(v.cost);
       ref.qty.textContent = v.amount > 1 ? 'buy ' + N.withCommas(v.amount) : 'Durians';
       ref.row.classList.toggle('affordable', v.canAfford);
       ref.row.classList.toggle('broke', !v.canAfford);
@@ -369,7 +369,7 @@
       var def = Game.upgradeDef(id);
       var ref = upgradeRows[id];
       var v = DC.Upgrades.view(def);
-      ref.cost.textContent = N.format(v.cost);
+      ref.cost.textContent = N.formatMenu(v.cost);
       ref.row.classList.toggle('affordable', v.canAfford);
       ref.row.classList.toggle('broke', !v.canAfford);
       ref.row.disabled = !v.canAfford;
@@ -468,14 +468,14 @@
 
     return [
       { title: 'Durians', open: true, rows: [
-        ['bank', 'In the bank', function () { return N.format(Game.state.durians); }],
-        ['alltime', 'Earned all-time', function () { return N.format(Game.state.totalEarned); }],
-        ['byclick', 'Earned by clicking', function () { return N.format(Game.state.clickEarned); }],
-        ['bycrew', 'Earned by your crew', function () { return N.format(Game.state.workerEarned); }],
-        ['spent', 'Spent', function () { return N.format(Game.state.spent); }]
+        ['bank', 'In the bank', function () { return N.formatMenu(Game.state.durians); }],
+        ['alltime', 'Earned all-time', function () { return N.formatMenu(Game.state.totalEarned); }],
+        ['byclick', 'Earned by clicking', function () { return N.formatMenu(Game.state.clickEarned); }],
+        ['bycrew', 'Earned by your crew', function () { return N.formatMenu(Game.state.workerEarned); }],
+        ['spent', 'Spent', function () { return N.formatMenu(Game.state.spent); }]
       ] },
       { title: 'Production', open: true, rows: [
-        ['perclick', 'Durians per click', function () { return N.format(Game.derived.clickPower); }],
+        ['perclick', 'Durians per click', function () { return N.formatMenu(Game.derived.clickPower); }],
         ['persec', 'Durians per second', function () {
           var d = Game.derived;
           var boosted = N.toNumber(d.dps), base = N.toNumber(d.baseDps);
@@ -492,8 +492,8 @@
       ]) },
       { title: 'Island events', open: true, rows: [
         ['ev_total', 'Events witnessed', function () { return N.withCommas(Game.state.events.total || 0); }],
-        ['ev_gained', 'Gained from events', function () { return N.format(Game.state.eventGained || N.ZERO); }],
-        ['ev_lost', 'Lost to setbacks', function () { return N.format(Game.state.lost || N.ZERO); }],
+        ['ev_gained', 'Gained from events', function () { return N.formatMenu(Game.state.eventGained || N.ZERO); }],
+        ['ev_lost', 'Lost to setbacks', function () { return N.formatMenu(Game.state.lost || N.ZERO); }],
         ['ev_buffs', 'Active effects', function () {
           if (!DC.IslandEvents) return 'none';
           var b = DC.IslandEvents.activeBuffs();
@@ -506,6 +506,42 @@
           return t === null ? '—' : N.formatDuration(t);
         }]
       ].concat(eventBreakdown()) },
+      { title: 'Blue Coins', open: false, rows: [
+        ['coin_have', 'Blue Coins held', function () { return N.withCommas(DC.Coins.count()); }],
+        ['coin_found', 'Blue Coins collected', function () { return N.withCommas(Game.state.coins.collected || 0); }],
+        ['coin_spent', 'Spent at the slots', function () { return N.withCommas(Game.state.casino.coinsSpent || 0); }],
+        ['skins_owned', 'Skins owned', function () { return DC.Store.ownedCount() + '/' + DC.Store.all().length; }]
+      ] },
+      { title: 'Gambling', open: false, rows: [
+        ['g_spins', 'Spins played', function () { return N.withCommas(Game.state.casino.spins || 0); }],
+        ['g_wins', 'Spins won', function () { return N.withCommas(Game.state.casino.wins || 0); }],
+        ['g_losses', 'Spins lost', function () {
+          var c = Game.state.casino;
+          return N.withCommas(Math.max(0, (c.spins || 0) - (c.wins || 0)));
+        }],
+        ['g_rate', 'Win rate', function () {
+          var c = Game.state.casino;
+          return c.spins ? (c.wins / c.spins * 100).toFixed(1) + '%' : '\u2014';
+        }],
+        ['g_wagered', 'Total wagered', function () { return N.formatMenu(Game.state.casino.wagered || N.ZERO); }],
+        ['g_won', 'Total won back', function () { return N.formatMenu(Game.state.casino.won || N.ZERO); }],
+        ['g_net', 'Net result', function () {
+          var net = N.sub(Game.state.casino.won || N.ZERO, Game.state.casino.wagered || N.ZERO);
+          return (net.m < 0 ? '\u2212' : '+') + N.formatMenu(net.m < 0 ? N.neg(net) : net);
+        }],
+        ['g_return', 'Return on stake', function () {
+          var c = Game.state.casino;
+          if (!c.wagered || c.wagered.m === 0) return '\u2014';
+          return (N.toNumber(N.div(c.won || N.ZERO, c.wagered)) * 100).toFixed(1) + '%';
+        }],
+        ['g_biggest', 'Biggest single win', function () { return N.formatMenu(Game.state.casino.biggestWin || N.ZERO); }],
+        ['g_triples', 'Three of a kind', function () { return N.withCommas(Game.state.casino.triples || 0); }],
+        ['g_jack', 'Blue Coin jackpots', function () { return N.withCommas(Game.state.casino.jackpots || 0); }],
+        ['g_streak', 'Longest losing streak', function () { return N.withCommas(Game.state.casino.worstStreak || 0); }],
+        ['g_house', 'House edge by design', function () {
+          return DC.Casino ? (100 - DC.Casino.expectedReturn() * 100).toFixed(1) + '%' : '\u2014';
+        }]
+      ] },
       { title: 'Progress', open: false, rows: [
         ['upgrades', 'Upgrades purchased', function () { return Game.derived.upgradesBought + ' / ' + CONFIG.upgrades.length; }],
         ['achievements', 'Achievements', function () { return DC.Achievements.progressText(); }],
@@ -658,7 +694,7 @@
     var bet = DC.Casino.betFor(f);
     var blocked = DC.Casino.blockedReason(f);
 
-    el['btn-spin'].textContent = '\u25B6 Spin \u00B7 1 coin + ' + N.format(bet);
+    el['btn-spin'].textContent = '\u25B6 Spin \u00B7 1 coin + ' + N.formatMenu(bet);
     el['btn-spin'].disabled = spinning || !!blocked;
     el['coin-balance'].textContent = DC.Coins.count();
 
@@ -690,16 +726,16 @@
     var won = result.kind !== 'none';
 
     if (!won) {
-      line.textContent = 'No match \u2014 ' + N.format(result.stake) +
+      line.textContent = 'No match \u2014 ' + N.formatMenu(result.stake) +
                          ' Durians and a Blue Coin gone.';
-      payout.textContent = '\u2212' + N.format(result.stake);
+      payout.textContent = '\u2212' + N.formatMenu(result.stake);
     } else if (result.kind === 'triple') {
       line.textContent = 'Three ' + result.symbol.name + 's!' +
                          (result.coins ? ' And ' + result.coins + ' Blue Coins.' : '');
-      payout.textContent = '+' + N.format(result.payout);
+      payout.textContent = '+' + N.formatMenu(result.payout);
     } else {
       line.textContent = 'Two matching \u2014 your stake comes back.';
-      payout.textContent = '+' + N.format(result.payout);
+      payout.textContent = '+' + N.formatMenu(result.payout);
     }
 
     line.className = 'slots-result ' + (won ? 'is-win' : 'is-loss');
@@ -860,7 +896,7 @@
   /* ---------------------------------------------------------- Tanooki Store */
 
   function buildStore() {
-    el['store-balance'].textContent = N.format(Game.state.durians);
+    el['store-balance'].textContent = N.formatMenu(Game.state.durians);
     el['store-owned'].textContent = DC.Store.ownedCount() + '/' + DC.Store.all().length;
 
     var list = el['store-list'];
@@ -892,7 +928,7 @@
           '<span class="store-item-cost">' +
             (have ? (DC.Store.activeId() === skin.id ? 'Equipped' : 'Owned')
                   : (reward ? '\u{1F512} ' + escapeHtml(skin.requirementText || 'Earned')
-                            : N.format(skin.cost))) + '</span>';
+                            : N.formatMenu(skin.cost))) + '</span>';
 
         card.addEventListener('click', function () {
           if (have) { DC.Store.equip(skin.id); DC.Audio.play('buyUpgrade'); buildStore(); return; }
@@ -1009,10 +1045,10 @@
     var amount = el['event-amount'];
     amount.className = 'event-amount';
     if (result.direction === 'gain') {
-      amount.textContent = '+' + N.format(result.amount) + ' Durians';
+      amount.textContent = '+' + N.formatMenu(result.amount) + ' Durians';
       amount.classList.add('is-gain');
     } else if (result.direction === 'loss') {
-      amount.textContent = '-' + N.format(result.amount) + ' Durians';
+      amount.textContent = '-' + N.formatMenu(result.amount) + ' Durians';
       amount.classList.add('is-loss');
     } else if (result.seconds) {
       amount.textContent = Math.round(result.seconds) + ' seconds';
@@ -1090,7 +1126,7 @@
     var log = entry[board.sortKey];
     if (typeof log === 'number' && isFinite(log)) {
       if (log <= 0) return '0';
-      return N.format(N.pow10(log));
+      return N.formatMenu(N.pow10(log));
     }
     return entry[board.displayKey] || '—';     // pre-log rows, if any
   }
@@ -1211,7 +1247,7 @@
 
   function showOffline(info) {
     el['offline-text'].textContent = 'Your crew kept working for ' + N.formatDuration(info.cappedSeconds) + '.';
-    el['offline-amount'].textContent = N.format(info.amount) + ' Durians';
+    el['offline-amount'].textContent = N.formatMenu(info.amount) + ' Durians';
     el['offline-sub'].textContent = info.wasCapped
       ? 'Offline earnings are capped at ' + N.formatDuration(CONFIG.offline.maxSeconds) + '.'
       : '';
@@ -1244,9 +1280,21 @@
       if (!btn) return;
       var raw = btn.dataset.amount;
       Game.state.settings.buyAmount = raw === 'max' ? 'max' : parseInt(raw, 10);
-      document.querySelectorAll('.amt').forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+      syncBuyAmountButtons();
       refreshWorkers();
     });
+
+    function applyCustomAmount() {
+      var n = parseInt(el['buy-custom'].value, 10);
+      if (!n || n < 1) return;                  // empty or nonsense: ignore
+      n = Math.min(n, 100000);                  // matches the bulk-buy cap
+      if (String(n) !== el['buy-custom'].value) el['buy-custom'].value = n;
+      Game.state.settings.buyAmount = n;
+      syncBuyAmountButtons();
+      refreshWorkers();
+    }
+    el['buy-custom'].addEventListener('input', applyCustomAmount);
+    el['buy-custom'].addEventListener('focus', applyCustomAmount);
 
     // volume + mute (two copies: topbar and settings modal)
     [el['volume-slider'], el['volume-slider-2']].forEach(function (slider) {
@@ -1543,11 +1591,16 @@
     applyDarkMode();
   }
 
+  var PRESET_AMOUNTS = ['1', '10', '100', 'max'];
+
   function syncBuyAmountButtons() {
     var amount = String(Game.state.settings.buyAmount);
+    var isPreset = PRESET_AMOUNTS.indexOf(amount) !== -1;
     document.querySelectorAll('.amt').forEach(function (b) {
-      b.classList.toggle('is-active', b.dataset.amount === amount);
+      b.classList.toggle('is-active', isPreset && b.dataset.amount === amount);
     });
+    el['buy-custom'].classList.toggle('is-active', !isPreset);
+    if (!isPreset && el['buy-custom'].value !== amount) el['buy-custom'].value = amount;
   }
 
   /** Hides any control whose backing module is absent. */

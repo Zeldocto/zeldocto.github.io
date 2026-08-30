@@ -212,7 +212,9 @@
     // Rounding can push 999.97 to 1000 — bump the tier if it does.
     if (mantissa >= 999.995) { mantissa /= 1000; tier += 1; }
 
-    var dec = mantissa < 10 ? 2 : (mantissa < 100 ? 1 : 0);
+    // Always two decimals: 1.23 / 12.34 / 123.45. The old sliding 2/1/0 threw
+    // away precision exactly as the numbers got interesting.
+    var dec = 2;
 
     if (style === 'shortened') {
       if (tier < WORDS.length) return mantissa.toFixed(dec) + ' ' + WORDS[tier];
@@ -220,6 +222,19 @@
     }
     if (tier < SUFFIXES.length) return mantissa.toFixed(dec) + SUFFIXES[tier];
     return v.m.toFixed(3) + 'e' + v.e;
+  }
+
+  /**
+   * Formatting for panels, lists and modals. Full-number mode suits the big
+   * counter but is unusable in a table — a 30-digit price squeezes the name
+   * column down to one letter a line — so menus fall back to abbreviated.
+   * 'shortened' is kept as-is, since word forms stay readable at any width.
+   */
+  function formatMenu(value, opts) {
+    var style = mode();
+    return format(value, Object.assign({}, opts || {}, {
+      mode: style === 'full' ? 'abbreviated' : style
+    }));
   }
 
   /** Rate display: "12.4/sec" style values keep a decimal while small. */
@@ -253,7 +268,7 @@
     cmp: cmp, gte: gte, lt: lt, max: max, clampMin: clampMin, ceil: ceil,
     toNumber: toNumber,
     serialize: serialize, deserialize: deserialize,
-    format: format, formatRate: formatRate, formatDuration: formatDuration,
+    format: format, formatMenu: formatMenu, formatRate: formatRate, formatDuration: formatDuration,
     mode: mode, WORDS: WORDS, SUFFIXES: SUFFIXES,
     withCommas: withCommas
   };

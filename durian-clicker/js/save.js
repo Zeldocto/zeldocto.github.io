@@ -28,7 +28,8 @@
       coins: Object.assign({}, state.coins),
       casino: Object.assign({}, state.casino, {
         wagered: N.serialize(state.casino.wagered || N.ZERO),
-        won: N.serialize(state.casino.won || N.ZERO)
+        won: N.serialize(state.casino.won || N.ZERO),
+        biggestWin: N.serialize(state.casino.biggestWin || N.ZERO)
       }),
       skins: { owned: Object.assign({}, state.skins.owned), active: state.skins.active },
       buffs: state.buffs.slice(),
@@ -82,6 +83,7 @@
       Object.assign(state.casino, data.casino);
       state.casino.wagered = N.deserialize(data.casino.wagered || 0);
       state.casino.won = N.deserialize(data.casino.won || 0);
+      state.casino.biggestWin = N.deserialize(data.casino.biggestWin || 0);
     }
     if (data.skins) {
       // Only keep skins that still exist in the catalogue.

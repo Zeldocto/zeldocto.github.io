@@ -197,7 +197,9 @@ input[type="range"] {
 .counter { position: relative; z-index: 3; line-height: 1; }
 
 .count {
-  font-family: var(--font-display);
+  /* The Durian count alone uses the Sunshine face. Everything else stays on
+     the UI font so numbers keep their tabular alignment. */
+  font-family: 'SMS Script', var(--font-display);
   font-weight: 700;
   font-size: clamp(2.1rem, 6.2vw, 4rem);
   color: #FFF;
@@ -456,6 +458,33 @@ input[type="range"] {
   background: var(--sea);
   border-color: var(--sea-deep);
   color: #FFF;
+}
+
+.amt-custom {
+  width: 64px;
+  border: 2px solid var(--sand-line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 5px 7px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.amt-custom::-webkit-outer-spin-button,
+.amt-custom::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amt-custom.is-active {
+  background: var(--sea);
+  border-color: var(--sea-deep);
+  color: #FFF;
+}
+.amt-custom.is-active::placeholder { color: rgba(255, 255, 255, 0.75); }
+body.dark .amt-custom { color: var(--ink); }
+
+@media (max-width: 480px) {
+  .buy-amount { flex-wrap: wrap; }
+  .amt-custom { width: 56px; }
 }
 
 /* ------------------------------------------------------------- shop items */

@@ -9,7 +9,11 @@
  *   gainFlat     { min, max }        pays out a flat amount
  *   losePercent  { min, max }        takes a % of your banked Durians
  *   loseSeconds  { min, max }        takes N seconds of production
- *   buff         { prod, click, seconds }   temporary multiplier
+ *   buff         { prod, click, seconds, secondsMax }  temporary multiplier.
+ *                Both bounds gives a random duration in that range; `seconds`
+ *                alone is jittered by about a third either way. Buffs never
+ *                multiply each other — the strongest bonus of each kind
+ *                applies, and any penalty applies alongside it.
  *
  * `good: false` marks an event as a setback — those are scaled down by
  * eventLoss upgrades, while good ones are scaled up by eventGain.
@@ -76,7 +80,7 @@
       icon: 'assets/placeholder-shine.png',
       title: 'A Shine Sprite drifts overhead',
       text: 'Everything is warmer, brighter, and inexplicably more productive.',
-      effect: { type: 'buff', prod: 7, click: 1, seconds: 60, label: 'Shine Blessing ×7' }
+      effect: { type: 'buff', prod: 7, click: 1, seconds: 35, secondsMax: 95, label: 'Shine Blessing ×7' }
     },
     {
       id: 'shine_swarm',
@@ -86,7 +90,7 @@
       icon: 'assets/placeholder-shine.png',
       title: 'A whole swarm of Shine Sprites',
       text: 'The sky fills with them. The orchard has never been this loud.',
-      effect: { type: 'buff', prod: 25, click: 5, seconds: 45, label: 'Shine Swarm ×25' },
+      effect: { type: 'buff', prod: 25, click: 5, seconds: 20, secondsMax: 70, label: 'Shine Swarm ×25' },
       require: { type: 'totalEarned', amount: 1e9 }
     },
 
@@ -99,7 +103,7 @@
       icon: 'assets/placeholder-shadowmario.png',
       title: 'Goop everywhere',
       text: 'Somebody has been painting again. Half the crew are cleaning instead of picking.',
-      effect: { type: 'buff', prod: 0.5, click: 1, seconds: 45, label: 'Goop ×0.5' },
+      effect: { type: 'buff', prod: 0.5, click: 1, seconds: 25, secondsMax: 70, label: 'Goop ×0.5' },
       require: { type: 'totalEarned', amount: 50000 }
     },
 
@@ -112,7 +116,7 @@
       icon: 'assets/placeholder-yoshi.png',
       title: 'A Yoshi knocks over the juice',
       text: 'It soaks into everything. Your hands will not stop working.',
-      effect: { type: 'buff', prod: 1, click: 15, seconds: 40, label: 'Sticky Hands ×15 clicks' }
+      effect: { type: 'buff', prod: 1, click: 15, seconds: 20, secondsMax: 65, label: 'Sticky Hands ×15 clicks' }
     },
 
     /* --------------------------------------------------- Piantissimo -- */

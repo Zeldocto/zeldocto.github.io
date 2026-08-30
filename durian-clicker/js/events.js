@@ -72,8 +72,10 @@
 
     switch (fx.type) {
       case 'gainSeconds': {
+        // baseDps: a buff must not inflate an event payout on top of already
+        // multiplying production.
         var secs = between(fx.min, fx.max) * gainMult;
-        var amount = N.mul(d.dps, secs);
+        var amount = N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, secs);
         DC.Game.addDurians(amount, 'worker');
         s.eventGained = N.add(s.eventGained || N.ZERO, amount);
         result.amount = amount;
@@ -99,7 +101,7 @@
       }
       case 'loseSeconds': {
         var lsecs = between(fx.min, fx.max) * lossMult;
-        var loss = N.max(N.mul(d.dps, lsecs), N.ZERO);
+        var loss = N.max(N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, lsecs), N.ZERO);
         if (N.gte(loss, s.durians)) loss = s.durians;   // never go negative
         s.durians = N.sub(s.durians, loss);
         s.lost = N.add(s.lost || N.ZERO, loss);
@@ -112,7 +114,13 @@
         // Sunshine") only extend good buffs — extending a Goop outbreak would
         // be a punishment for buying them. Conversely eventLoss upgrades
         // ("Hotel Haggling") shorten bad buffs, and never touch good ones.
-        var duration = fx.seconds * (def.good ? (d.buffDuration || 1) : lossMult);
+        // Durations are rolled per occurrence, so a Shine Sprite is sometimes
+        // a shrug and sometimes memorable. Production multipliers play no part
+        // in it; only the duration upgrades do.
+        var rolled = fx.secondsMax !== undefined
+          ? between(fx.seconds, fx.secondsMax)
+          : fx.seconds * (0.65 + Math.random() * 0.7);
+        var duration = rolled * (def.good ? (d.buffDuration || 1) : lossMult);
         addBuff({
           id: def.id,
           label: fx.label || def.name,

@@ -65,8 +65,9 @@
       },
       blueCoins: 0,
       coins: { nextAt: 0, spawned: 0, collected: 0 },
-      casino: { spins: 0, coinSpins: 0, triples: 0, jackpots: 0,
-                wagered: N.ZERO, won: N.ZERO },
+      casino: { spins: 0, wins: 0, coinSpins: 0, coinsSpent: 0, triples: 0,
+                jackpots: 0, streak: 0, worstStreak: 0,
+                wagered: N.ZERO, won: N.ZERO, biggestWin: N.ZERO },
       skins: { owned: { classic: true }, active: 'classic' },
       buffs: [],                    // temporary event multipliers
       events: { seen: {}, total: 0, nextAt: 0 },
@@ -229,13 +230,24 @@
     globalMult *= (1 + achievements * achievementBonus);
 
     // Temporary event buffs multiply everything.
-    var buffProd = 1, buffClick = 1, now = Date.now();
+    // Buffs do NOT multiply each other. A Shine Sprite (x7) landing while a
+    // Shine Swarm (x25) is running used to give x175, which simply ended the
+    // game for a minute. The strongest of each kind applies, and a penalty
+    // (below 1) still bites even while a bonus is up.
+    var now = Date.now();
+    var bestProdUp = 1, worstProdDown = 1, bestClickUp = 1, worstClickDown = 1;
     for (var bi = 0; bi < s.buffs.length; bi++) {
-      if (s.buffs[bi].endsAt > now) {
-        buffProd *= (s.buffs[bi].prod !== undefined ? s.buffs[bi].prod : 1);
-        buffClick *= (s.buffs[bi].click !== undefined ? s.buffs[bi].click : 1);
-      }
+      var b = s.buffs[bi];
+      if (b.endsAt <= now) continue;
+      var bp = b.prod !== undefined ? b.prod : 1;
+      var bc = b.click !== undefined ? b.click : 1;
+      if (bp >= 1) { if (bp > bestProdUp) bestProdUp = bp; }
+      else if (bp < worstProdDown) worstProdDown = bp;
+      if (bc >= 1) { if (bc > bestClickUp) bestClickUp = bc; }
+      else if (bc < worstClickDown) worstClickDown = bc;
     }
+    var buffProd = bestProdUp * worstProdDown;
+    var buffClick = bestClickUp * worstClickDown;
     // Keep the un-buffed multiplier: leaderboards and stats should reflect the
     // economy you actually built, not whether a Shine Sprite happened to be
     // overhead when you submitted.
