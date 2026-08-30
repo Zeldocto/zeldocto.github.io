@@ -2,8 +2,6 @@
 
 An Isle Delfino incremental game. Click the durian, hire the island, drown in fruit.
 
-Vibecoded brainrot slop.
-
 Vanilla JavaScript, no build step, no dependencies. Every image and sound in here is a
 placeholder meant to be thrown away — swapping in your own artwork never requires
 touching game code.

@@ -484,7 +484,7 @@
     condition: { type: 'upgradesBought', count: 400 } },
   { id: 'u_all', name: 'Bought The Shop', description: 'Buy every upgrade in the game.',
     group: 'Upgrades',
-    condition: { type: 'upgradesBought', count: 441 } },
+    condition: { type: 'upgradesBought', count: 541 } },
   { id: 'event_first', name: 'Something Happened', description: 'Witness your first island event.',
     group: 'Island events',
     condition: { type: 'eventsSeen', count: 1 } },
