@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-01',
+    buildId: '2026-09-02',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -285,6 +285,30 @@
         costMultiplier: 1.10,
         image: 'assets/placeholder-giantpiantatree.png',
         unlock: { type: 'totalEarned', amount: 640000000 }
+      },
+      {
+        id: 'coronamountain',
+        name: 'Corona Mountain',
+        plural: 'Corona Mountains',
+        description: 'Erupts Durians constantly now, as well as randomly.',
+        flavor: 'The geologists left. The harvest crews moved in.',
+        baseCost: 4500000000,
+        baseProduction: 4000000,
+        costMultiplier: 1.10,
+        image: 'assets/placeholder-coronamountain.png',
+        unlock: { type: 'totalEarned', amount: 9000000000 }
+      },
+      {
+        id: 'piantajudge',
+        name: 'Pianta Judge',
+        plural: 'Pianta Judges',
+        description: 'He has the power to grant you nearly unlimited Durians, taxed from the locals.',
+        flavor: 'The ruling was unanimous. He was the only one voting.',
+        baseCost: 65000000000,
+        baseProduction: 40000000,
+        costMultiplier: 1.10,
+        image: 'assets/placeholder-piantajudge.png',
+        unlock: { type: 'totalEarned', amount: 130000000000 }
       }
     ],
 

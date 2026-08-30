@@ -16,6 +16,16 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2026-09-02',
+      title: 'Corona Mountain and the Pianta Judge',
+      notes: [
+        'Two new endgame crew: Corona Mountain, then the Pianta Judge',
+        '150 new upgrades between them, plus achievements for both',
+        'Crew balance pass — every worker now pulls its weight',
+        'Synergy upgrades topped up across the roster so no crew is left behind'
+      ]
+    },
+    {
       version: '2026-09-01',
       title: 'Clicking, events and a pile of fixes',
       notes: [
