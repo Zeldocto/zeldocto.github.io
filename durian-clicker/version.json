@@ -1,4 +1,4 @@
 {
-  "build": "2026-08-29-update4c",
-  "notes": "Slot spins now cost a Blue Coin."
+  "build": "2026-08-30-update5",
+  "notes": "Skins rebuilt as filter chains; boot survives a partial deploy."
 }

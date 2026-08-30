@@ -1,16 +1,21 @@
 /* =============================================================================
- * content/skins.js — Durian skins sold in the Tanooki Store.
+ * content/skins.js - Durian skins sold in the Tanooki Store.
  * -----------------------------------------------------------------------------
- * Skins are pure CSS, not artwork: a filter on the durian image plus an
- * optional tinted overlay masked to the durian's own silhouette. That means
- * every skin automatically works with whatever art you put in
- * CONFIG.assets.durian — replace the durian and all 18 skins still fit it.
+ * A skin is a CSS filter chain applied straight to the durian image:
  *
- *   filter     applied to the image
- *   overlay    a background painted over the fruit shape only
- *   blend      how the overlay mixes (color / overlay / hue / screen)
- *   animation  CSS animation shorthand, for the moving ones
- *   size       background-size for animated gradients (needs room to travel)
+ *     grayscale(1) sepia(1) saturate(sat) hue-rotate(hue) brightness() contrast()
+ *
+ * grayscale flattens the fruit's own colour, sepia lays a warm base down,
+ * saturate pushes it hard and hue-rotate swings it to the target colour. This
+ * replaced an approach using mix-blend-mode over a masked overlay, which was
+ * far too subtle in practice - the durian just looked grey.
+ *
+ * Because it is one filter on one image it works with whatever art sits in
+ * CONFIG.assets.durian, needs no blending support, and cannot be defeated by a
+ * stacking context.
+ *
+ * `animated: true` cycles the hue continuously.
+ * `swatch` is the flat colour shown in the store and picker.
  *
  * IDS ARE SAVE KEYS. Never rename one after release.
  * ========================================================================== */
@@ -19,101 +24,81 @@
   var CONFIG = DC.CONFIG;
 
   CONFIG.skins = CONFIG.skins.concat([
-
-    /* ------------------------------------------------------------ free -- */
     { id: 'classic', name: 'Classic Durian', tier: 'Standard', cost: 0,
+      swatch: '#8FBF3F',
       description: 'The original. Spiky, pungent, dependable.',
       css: {} },
-
-    /* ----------------------------------------------------- simple tints -- */
     { id: 'sunset', name: 'Sunset Ripe', tier: 'Tints', cost: 250000,
+      swatch: '#FF6B2B',
       description: 'Picked at golden hour, when the whole island turns orange.',
-      css: { filter: 'saturate(1.3)', overlay: 'linear-gradient(160deg,#FF9E3D,#FF5F4D)', blend: 'color' } },
-
+      css: { hue: -22, sat: 4.0, bright: 1.02, contrast: 1.05 } },
     { id: 'bianco', name: 'Bianco Blue', tier: 'Tints', cost: 900000,
+      swatch: '#2E8FE0',
       description: 'The exact blue of the water below the windmill.',
-      css: { overlay: 'linear-gradient(160deg,#63D4FF,#1E6FC4)', blend: 'color' } },
-
+      css: { hue: 165, sat: 4.5, bright: 1.0, contrast: 1.1 } },
     { id: 'noki', name: 'Noki Shell', tier: 'Tints', cost: 3500000,
+      swatch: '#E86BC4',
       description: 'Pearlescent, faintly iridescent, smells no better for it.',
-      css: { filter: 'brightness(1.08)', overlay: 'linear-gradient(150deg,#FFE9F2,#B79BE0,#8FD9E8)', blend: 'color' } },
-
+      css: { hue: -85, sat: 3.5, bright: 1.08, contrast: 1.05 } },
     { id: 'goop', name: 'Graffiti Goop', tier: 'Tints', cost: 12000000,
+      swatch: '#8A3FD6',
       description: 'Somebody painted it. Nobody has admitted to it.',
-      css: { filter: 'contrast(1.15)', overlay: 'radial-gradient(circle at 35% 30%,#B662E8,#4B1E7A)', blend: 'color' } },
-
+      css: { hue: -122, sat: 5.0, bright: 0.95, contrast: 1.2 } },
     { id: 'watermelon', name: 'Watermelon Mix-Up', tier: 'Tints', cost: 45000000,
+      swatch: '#35C64B',
       description: 'Botanically incorrect. Nobody on the island minds.',
-      css: { overlay: 'linear-gradient(150deg,#6FD96F 0%,#6FD96F 45%,#FF6B7E 46%,#FF3355 100%)', blend: 'color' } },
-
-    /* -------------------------------------------------------- gradients -- */
-    { id: 'sherbet', name: 'Delfino Sherbet', tier: 'Gradients', cost: 2e8,
+      css: { hue: 95, sat: 5.0, bright: 1.05, contrast: 1.1 } },
+    { id: 'sherbet', name: 'Delfino Sherbet', tier: 'Gradients', cost: 200000000,
+      swatch: '#FF5FA8',
       description: 'Three flavours, one fruit, no explanation.',
-      css: { filter: 'saturate(1.2)', overlay: 'linear-gradient(135deg,#FF9CC4,#FFD86F,#7BE0C6)', blend: 'color' } },
-
-    { id: 'sunrise', name: 'Airstrip Sunrise', tier: 'Gradients', cost: 9e8,
+      css: { hue: -70, sat: 4.0, bright: 1.12, contrast: 1.0 } },
+    { id: 'sunrise', name: 'Airstrip Sunrise', tier: 'Gradients', cost: 900000000,
+      swatch: '#F0345E',
       description: 'The view from the runway at five in the morning.',
-      css: { overlay: 'linear-gradient(180deg,#2B2A6E 0%,#C94E8C 45%,#FFB65C 100%)', blend: 'color' } },
-
-    { id: 'corona', name: 'Corona Magma', tier: 'Gradients', cost: 4e9,
+      css: { hue: -50, sat: 4.5, bright: 1.05, contrast: 1.15 } },
+    { id: 'corona', name: 'Corona Magma', tier: 'Gradients', cost: 4000000000,
+      swatch: '#FF3B0A',
       description: 'Still warm. Handle with the gloves you bought earlier.',
-      css: { filter: 'brightness(1.1) contrast(1.2)',
-             overlay: 'radial-gradient(circle at 45% 65%,#FFE066 0%,#FF7A18 35%,#8C1A00 100%)', blend: 'color' } },
-
-    { id: 'abyss', name: 'Noki Bay Abyss', tier: 'Gradients', cost: 2e10,
+      css: { hue: -32, sat: 6.0, bright: 1.1, contrast: 1.3 } },
+    { id: 'abyss', name: 'Noki Bay Abyss', tier: 'Gradients', cost: 20000000000,
+      swatch: '#0FA0B8',
       description: 'Grown at a depth the surveys never reached.',
-      css: { filter: 'brightness(0.92)',
-             overlay: 'radial-gradient(circle at 40% 30%,#3BE0D0 0%,#12518F 45%,#050B33 100%)', blend: 'color' } },
-
-    /* --------------------------------------------------------- animated -- */
-    { id: 'shimmer', name: 'Shine Shimmer', tier: 'Animated', cost: 1e11,
+      css: { hue: 148, sat: 5.0, bright: 0.85, contrast: 1.25 } },
+    { id: 'shimmer', name: 'Shine Shimmer', tier: 'Animated', cost: 100000000000,
+      swatch: '#FFC400',
       description: 'A Shine Sprite got a little too close and it never wore off.',
-      css: { overlay: 'linear-gradient(110deg,#FFD429,#FFF6C2,#FFB03A,#FFD429)',
-             blend: 'color', size: '300% 300%', animation: 'skinDrift 6s linear infinite' } },
-
-    { id: 'tide', name: 'Rolling Tide', tier: 'Animated', cost: 6e11,
+      css: { hue: 10, sat: 5.0, bright: 1.15, contrast: 1.05, animated: true } },
+    { id: 'tide', name: 'Rolling Tide', tier: 'Animated', cost: 600000000000,
+      swatch: '#00B4D8',
       description: 'The colours move like water because, technically, they are water.',
-      css: { overlay: 'linear-gradient(100deg,#0FA5C9,#8FE3F6,#2FB3DE,#0FA5C9)',
-             blend: 'color', size: '300% 300%', animation: 'skinDrift 8s linear infinite' } },
-
-    { id: 'festival', name: 'Festival Lights', tier: 'Animated', cost: 3e12,
+      css: { hue: 152, sat: 4.5, bright: 1.05, contrast: 1.1, animated: true } },
+    { id: 'festival', name: 'Festival Lights', tier: 'Animated', cost: 3000000000000,
+      swatch: '#FF2D8A',
       description: 'The Plaza strings lanterns all along the harbour for this one.',
-      css: { overlay: 'linear-gradient(90deg,#FF5F6D,#FFC371,#42E695,#3BB2B8,#FF5F6D)',
-             blend: 'color', size: '400% 400%', animation: 'skinDrift 5s linear infinite' } },
-
-    { id: 'shadow', name: 'Shadow Paint', tier: 'Animated', cost: 2e13,
+      css: { hue: -82, sat: 5.5, bright: 1.1, contrast: 1.15, animated: true } },
+    { id: 'shadow', name: 'Shadow Paint', tier: 'Animated', cost: 20000000000000,
+      swatch: '#7B2DD6',
       description: 'It keeps shifting when you are not looking directly at it.',
-      css: { filter: 'contrast(1.2)',
-             overlay: 'linear-gradient(120deg,#2B1B57,#7A3FBF,#1E1140,#7A3FBF)',
-             blend: 'color', size: '300% 300%', animation: 'skinDrift 4s linear infinite' } },
-
-    /* --------------------------------------------------------- patterns -- */
-    { id: 'tiles', name: 'Roof Tiles', tier: 'Patterns', cost: 1e14,
-      description: 'Every roof in Delfino Plaza, rendered on a single fruit.',
-      css: { overlay: 'repeating-linear-gradient(45deg,#E2563B 0 12px,#B93C24 12px 24px)', blend: 'color' } },
-
-    { id: 'stripes', name: 'Beach Umbrella', tier: 'Patterns', cost: 8e14,
+      css: { hue: -132, sat: 5.0, bright: 0.9, contrast: 1.35, animated: true } },
+    { id: 'tiles', name: 'Roof Tiles', tier: 'Patterns', cost: 100000000000000,
+      swatch: '#D93A18',
+      description: 'Every roof in Delfino Plaza, fired into one husk.',
+      css: { hue: -28, sat: 5.5, bright: 0.95, contrast: 1.45 } },
+    { id: 'stripes', name: 'Beach Umbrella', tier: 'Patterns', cost: 800000000000000,
+      swatch: '#FF1744',
       description: 'Gelato Beach standard issue. Sold separately from the umbrella.',
-      css: { overlay: 'repeating-linear-gradient(0deg,#FF5F6D 0 14px,#FFF6E0 14px 28px)', blend: 'color' } },
-
-    { id: 'circuit', name: 'FLUDD Schematic', tier: 'Patterns', cost: 5e15,
+      css: { hue: -48, sat: 6.0, bright: 1.15, contrast: 1.5 } },
+    { id: 'circuit', name: 'FLUDD Schematic', tier: 'Patterns', cost: 5000000000000000,
+      swatch: '#00C8E8',
       description: 'Technical drawings, printed directly onto the husk.',
-      css: { filter: 'brightness(1.05)',
-             overlay: 'repeating-linear-gradient(90deg,#0FA5C9 0 3px,transparent 3px 18px),' +
-                      'repeating-linear-gradient(0deg,#0FA5C9 0 3px,transparent 3px 18px)',
-             blend: 'overlay' } },
-
-    /* ------------------------------------------------------------ prize -- */
-    { id: 'goldleaf', name: 'Gold Leaf', tier: 'Prestige', cost: 4e16,
+      css: { hue: 150, sat: 6.0, bright: 1.2, contrast: 1.6 } },
+    { id: 'goldleaf', name: 'Gold Leaf', tier: 'Prestige', cost: 40000000000000000,
+      swatch: '#FFD11A',
       description: 'Edible, allegedly. Nobody has been brave enough to check.',
-      css: { filter: 'brightness(1.15) contrast(1.1)',
-             overlay: 'linear-gradient(135deg,#8A6510,#FFE9A3,#D79806,#FFF6D0,#8A6510)',
-             blend: 'color', size: '300% 300%', animation: 'skinDrift 7s linear infinite' } },
-
-    { id: 'bluecoin', name: 'Blue Coin Finish', tier: 'Prestige', cost: 2e17,
+      css: { hue: 6, sat: 6.0, bright: 1.25, contrast: 1.2, animated: true } },
+    { id: 'bluecoin', name: 'Blue Coin Finish', tier: 'Prestige', cost: 200000000000000000,
+      swatch: '#1E90FF',
       description: 'The colour of the thing you were supposed to be collecting.',
-      css: { filter: 'brightness(1.1)',
-             overlay: 'radial-gradient(circle at 38% 32%,#BFF0FF 0%,#46A5F0 40%,#0B4FA8 100%)',
-             blend: 'color' } }
+      css: { hue: 172, sat: 6.0, bright: 1.15, contrast: 1.3, animated: true } }
   ]);
 })(window.DC = window.DC || {});

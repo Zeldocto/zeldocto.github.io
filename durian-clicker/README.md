@@ -10,6 +10,13 @@ touching game code.
 
 ## Deploying an update
 
+**Upload every file, not a subset.** The JS modules reference each other, and a
+half-finished upload used to leave a blank page. That specific failure is now
+handled — a missing optional module hides its own feature and the game plays on,
+and a missing required module shows a panel naming the file instead of a blank
+screen — but a full upload is still the only supported deploy.
+
+
 Bump **two** values to the same string and push:
 
 - `CONFIG.buildId` in `js/config.js`

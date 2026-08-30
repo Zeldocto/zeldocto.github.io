@@ -137,8 +137,10 @@
     el['click-power'].textContent = N.format(d.clickPower);
     el['mini-total'].textContent = N.format(s.totalEarned);
     el['mini-shines'].textContent = DC.Achievements.earnedCount() + '/' + DC.Achievements.total();
-    el['mini-coins'].textContent = N.withCommas(DC.Coins.count());
-    el['coin-balance'].textContent = DC.Coins.count();
+    if (DC.Coins) {
+      el['mini-coins'].textContent = N.withCommas(DC.Coins.count());
+      el['coin-balance'].textContent = DC.Coins.count();
+    }
 
     var now = performance.now();
     if (now - lastTitleUpdate > 1000) {
@@ -458,11 +460,13 @@
         ['ev_gained', 'Gained from events', function () { return N.format(Game.state.eventGained || N.ZERO); }],
         ['ev_lost', 'Lost to setbacks', function () { return N.format(Game.state.lost || N.ZERO); }],
         ['ev_buffs', 'Active effects', function () {
+          if (!DC.IslandEvents) return 'none';
           var b = DC.IslandEvents.activeBuffs();
           if (!b.length) return 'none';
           return b.map(function (x) { return x.label; }).join(', ');
         }],
         ['ev_next', 'Next event in', function () {
+          if (!DC.IslandEvents) return '\u2014';
           var t = DC.IslandEvents.timeUntilNext();
           return t === null ? '—' : N.formatDuration(t);
         }]
@@ -688,28 +692,43 @@
   /* ---------------------------------------------------------------- skins */
 
   /** Skins are CSS variables on the durian button, so any art works. */
+  /** Builds the filter chain for a skin. Empty string means the stock durian. */
+  function skinFilter(skin) {
+    var c = (skin && skin.css) || {};
+    if (c.hue === undefined) return '';
+    return 'grayscale(1) sepia(1)' +
+           ' saturate(' + c.sat + ')' +
+           ' hue-rotate(' + c.hue + 'deg)' +
+           ' brightness(' + c.bright + ')' +
+           ' contrast(' + c.contrast + ')';
+  }
+
+  /**
+   * Skins are one filter on the durian image. The earlier version layered a
+   * masked, colour-blended overlay on top, which rendered as barely-tinted grey
+   * in practice; a filter chain has no blending or stacking-context failure.
+   */
   function applySkin() {
+    if (!DC.Store) return;
     var skin = DC.Store.active();
     var btn = el['durian-button'];
-    var css = skin.css || {};
-    btn.style.setProperty('--skin-filter', css.filter || 'none');
-    btn.style.setProperty('--skin-overlay', css.overlay || 'none');
-    btn.style.setProperty('--skin-blend', css.blend || 'normal');
-    btn.style.setProperty('--skin-size', css.size || 'auto');
-    btn.style.setProperty('--skin-animation', css.animation || 'none');
-    // The overlay is masked to the durian's own silhouette.
-    btn.style.setProperty('--skin-mask', 'url("' + CONFIG.assets.durian + '")');
-    btn.classList.toggle('has-skin', !!css.overlay);
+    var img = el['durian-img'];
+    var chain = skinFilter(skin);
+    var shadow = 'drop-shadow(0 12px 16px rgba(6, 48, 70, 0.42))';
+
+    img.style.filter = chain ? chain + ' ' + shadow : shadow;
+    btn.classList.toggle('has-skin', !!chain);
+    btn.classList.toggle('skin-animated', !!(skin.css && skin.css.animated));
+
+    var c = (skin && skin.css) || {};
+    img.style.setProperty('--skin-sat', c.sat !== undefined ? c.sat : 1);
+    img.style.setProperty('--skin-hue', (c.hue !== undefined ? c.hue : 0) + 'deg');
+    img.style.setProperty('--skin-bright', c.bright !== undefined ? c.bright : 1);
+    img.style.setProperty('--skin-contrast', c.contrast !== undefined ? c.contrast : 1);
   }
 
   function skinPreviewStyle(skin) {
-    var css = skin.css || {};
-    if (css.overlay) {
-      return 'background:' + css.overlay + ';' +
-             (css.size ? 'background-size:' + css.size + ';' : '') +
-             (css.animation ? 'animation:' + css.animation + ';' : '');
-    }
-    return 'background:linear-gradient(160deg,#B7D96A,#7FB03A);';
+    return 'background:' + (skin.swatch || '#8FBF3F') + ';';
   }
 
   function buildSkinGrid() {
@@ -1267,11 +1286,11 @@
       setDarkMode(el['dark-toggle'].value === 'dark');
     });
 
-    $('btn-store').addEventListener('click', function () {
+    if (DC.Store) $('btn-store').addEventListener('click', function () {
       buildStore();
       openModal('modal-store');
     });
-    $('btn-casino').addEventListener('click', function () {
+    if (DC.Casino) $('btn-casino').addEventListener('click', function () {
       buildBetRow();
       buildPaytable();
       setReels(DC.Casino.roll());
@@ -1280,13 +1299,13 @@
       refreshCasino();
       openModal('modal-casino');
     });
-    $('btn-skins').addEventListener('click', function () {
+    if (DC.Store) $('btn-skins').addEventListener('click', function () {
       buildSkinGrid();
       openModal('modal-skins');
     });
-    el['btn-spin'].addEventListener('click', doSpin);
+    if (DC.Casino) el['btn-spin'].addEventListener('click', doSpin);
 
-    bindTip(el['coin-chip'], function () {
+    if (DC.Coins) bindTip(el['coin-chip'], function () {
       return tipHtml('Blue Coins',
         'Rare finds. A coin or an airplane shows up on screen every few minutes \u2014 click it before it goes.',
         'Spend them in the Casino for a premium spin.');
@@ -1378,17 +1397,23 @@
 
   /* --------------------------------------------------------------- public */
 
+  /** Runs a build step, logging rather than letting one failure blank the UI. */
+  function step(name, fn) {
+    try { fn(); }
+    catch (err) { console.error('[Durian Clicker] UI step "' + name + '" failed:', err); }
+  }
+
   function rebuildAll() {
-    buildWorkers();
-    buildUpgrades();
-    buildAchievements();
-    buildStats();
-    refreshCounters();
-    refreshWorkers();
-    refreshUpgrades();
-    refreshStats();
-    syncBuyAmountButtons();
-    syncSettingsControls();
+    step('workers', buildWorkers);
+    step('upgrades', buildUpgrades);
+    step('achievements', buildAchievements);
+    step('stats', buildStats);
+    step('counters', refreshCounters);
+    step('worker values', refreshWorkers);
+    step('upgrade values', refreshUpgrades);
+    step('stat values', refreshStats);
+    step('buy buttons', syncBuyAmountButtons);
+    step('settings', syncSettingsControls);
   }
 
   function syncSettingsControls() {
@@ -1403,9 +1428,26 @@
     });
   }
 
+  /** Hides any control whose backing module is absent. */
+  function hideUnavailableFeatures() {
+    var pairs = [
+      [DC.Store,  ['btn-store', 'btn-skins']],
+      [DC.Casino, ['btn-casino']],
+      [DC.Coins,  ['coin-chip']]
+    ];
+    pairs.forEach(function (pair) {
+      if (pair[0]) return;
+      pair[1].forEach(function (id) {
+        var node = $(id);
+        if (node) node.hidden = true;
+      });
+    });
+  }
+
   function init() {
     cache();
     applyAssets();
+    hideUnavailableFeatures();
     bindEvents();
     rebuildAll();
     selectTab('workers');
