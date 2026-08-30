@@ -1412,6 +1412,42 @@ input[type="range"] {
   }
 }
 
+/* Worn accessories: art drawn ON the durian at full size, so a hat sits at the
+   top of the canvas and a moustache across the middle. Sharing the image box
+   with the fruit means it tracks the idle bob, the click squash and the skin
+   filters without any extra bookkeeping. */
+.durian-btn.skin-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--skin-image);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: var(--skin-image-opacity, 1);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 8px rgba(6, 48, 70, 0.35));
+}
+
+/* The accessory squashes with the fruit on a click, or it would float free of
+   it for the length of the animation. */
+.durian-btn.squash.skin-image::after { animation: squash 0.18s ease; }
+
+.store-item.reward-locked {
+  border-style: dashed;
+  background: var(--surface-2);
+  cursor: default;
+  opacity: 0.85;
+}
+.store-item.reward-locked .store-item-cost {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  white-space: normal;
+  text-align: right;
+  max-width: 9em;
+}
+body.dark .store-item.reward-locked { background: #172937; }
+
 /* --------------------------------------------------------- boot failure -- */
 
 .boot-error {

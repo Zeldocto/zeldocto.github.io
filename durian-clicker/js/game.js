@@ -376,6 +376,7 @@
   function checkProgress() {
     checkUnlocks();
     checkAchievements();
+    if (DC.Store) DC.Store.checkRewards();
   }
 
   /* ------------------------------------------------------------- the loop */

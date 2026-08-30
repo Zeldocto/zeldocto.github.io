@@ -80,7 +80,7 @@
     document.body.classList.toggle('dark', on);
     el['btn-dark'].textContent = on ? '☀' : '🌙';
     el['btn-dark'].setAttribute('aria-pressed', on ? 'true' : 'false');
-    el['btn-dark'].title = on ? 'Switch to bright island' : 'Switch to dark mode';
+    el['btn-dark'].title = on ? 'Switch to Bright Island' : 'Switch to Eclipsed';
     el['dark-toggle'].value = on ? 'dark' : 'light';
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', on ? '#0A2334' : '#0E86B8');
@@ -811,9 +811,23 @@
     img.style.setProperty('--skin-bright2', c.bright2 !== undefined ? c.bright2 : (c.bright || 1));
     img.style.setProperty('--skin-contrast2', c.contrast2 !== undefined ? c.contrast2 : (c.contrast || 1));
     img.style.setProperty('--skin-secs', (c.secs || 7) + 's');
+
+    // Worn accessories sit on the fruit rather than tinting it: the art is
+    // drawn over the durian at full size and inherits its movement.
+    var worn = c.image ? CONFIG.assets[c.image] : null;
+    btn.classList.toggle('skin-image', !!worn);
+    btn.style.setProperty('--skin-image', worn ? 'url("' + worn + '")' : 'none');
+    btn.style.setProperty('--skin-image-opacity',
+      c.opacity !== undefined ? c.opacity : 1);
   }
 
   function skinPreviewStyle(skin) {
+    var css = skin.css || {};
+    if (css.image && CONFIG.assets[css.image]) {
+      return 'background:' + (skin.swatch || '#8FBF3F') +
+             ';background-image:url("' + CONFIG.assets[css.image] +
+             '");background-size:contain;background-position:center;background-repeat:no-repeat;';
+    }
     return 'background:' + (skin.swatch || '#8FBF3F') + ';';
   }
 
@@ -829,6 +843,9 @@
       node.disabled = !have;
       node.innerHTML = '<span class="skin-swatch" style="' + skinPreviewStyle(skin) + '"></span>' +
                        '<span class="skin-name">' + escapeHtml(have ? skin.name : 'Locked') + '</span>';
+      if (!have && skin.reward && skin.requirementText) {
+        node.title = skin.requirementText;
+      }
       if (have) {
         node.addEventListener('click', function () {
           DC.Store.equip(skin.id);
@@ -861,9 +878,11 @@
       group.skins.forEach(function (skin) {
         var have = DC.Store.owned(skin.id);
         var afford = DC.Store.canBuy(skin.id);
+        var reward = DC.Store.isReward(skin.id);
         var card = document.createElement('button');
         card.type = 'button';
-        card.className = 'store-item' + (have ? ' owned' : (afford ? ' affordable' : ' broke'));
+        card.className = 'store-item' +
+          (have ? ' owned' : (reward ? ' reward-locked' : (afford ? ' affordable' : ' broke')));
         card.innerHTML =
           '<span class="skin-swatch big" style="' + skinPreviewStyle(skin) + '"></span>' +
           '<span class="store-item-body">' +
@@ -872,7 +891,8 @@
           '</span>' +
           '<span class="store-item-cost">' +
             (have ? (DC.Store.activeId() === skin.id ? 'Equipped' : 'Owned')
-                  : N.format(skin.cost)) + '</span>';
+                  : (reward ? '\u{1F512} ' + escapeHtml(skin.requirementText || 'Earned')
+                            : N.format(skin.cost))) + '</span>';
 
         card.addEventListener('click', function () {
           if (have) { DC.Store.equip(skin.id); DC.Audio.play('buyUpgrade'); buildStore(); return; }
@@ -1405,6 +1425,12 @@
     DC.Events.on('blueCoinsChanged', function () { refreshCounters(); });
     DC.Events.on('skinChanged', applySkin);
     DC.Events.on('skinBought', applySkin);
+    DC.Events.on('skinUnlocked', function (list) {
+      list.forEach(function (skin) {
+        toast('Skin unlocked: ' + skin.name, skin.description, 'unlock');
+      });
+      DC.Audio.play('achievement');
+    });
 
     $('update-close').addEventListener('click', function () {
       // Dismiss also cancels the automatic reload — nobody should be yanked

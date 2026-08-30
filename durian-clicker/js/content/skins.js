@@ -15,6 +15,13 @@
  * stacking context.
  *
  * `animated: true` cycles the hue continuously.
+ *
+ * A skin may instead WEAR an image (`css.image` names a key in CONFIG.assets):
+ * art drawn on top of the fruit at full size, so a hat lands on the top and a
+ * moustache across the middle. It tracks every wobble, bounce and squash the
+ * durian does. `css.opacity` is there if you want it see-through, but defaults
+ * to solid. Reward skins carry `reward: true` and a `requires` condition
+ * instead of a cost — they cannot be bought at any price.
  * `swatch` is the flat colour shown in the store and picker.
  *
  * IDS ARE SAVE KEYS. Never rename one after release.
@@ -99,6 +106,13 @@
     { id: 'bluecoin', name: 'Blue Coin Finish', tier: 'Prestige', cost: 200000000000000000,
       swatch: '#1E90FF',
       description: 'The colour of the thing you were supposed to be collecting.',
-      css: { hue: 172, sat: 6.0, bright: 0.85, contrast: 1.35, hue2: 156, sat2: 3.5, bright2: 1.5, contrast2: 1.0, secs: 2.6 } }
+      css: { hue: 172, sat: 6.0, bright: 0.85, contrast: 1.35, hue2: 156, sat2: 3.5, bright2: 1.5, contrast2: 1.0, secs: 2.6 } },
+    { id: 'mario', name: 'The Man Himself', tier: 'Earned', cost: null,
+      swatch: '#DC322D',
+      description: 'A year on Isle Delfino. Somebody lent it the hat.',
+      reward: true,
+      requires: { type: 'playTime', seconds: 31536000 },
+      requirementText: 'Play for 365 days',
+      css: { image: 'marioFace', opacity: 1.0 } }
   ]);
 })(window.DC = window.DC || {});

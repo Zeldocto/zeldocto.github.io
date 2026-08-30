@@ -1,5 +1,5 @@
 {
-  "build": "2026-08-30-update8",
-  "notes": "Forced reload is now opt-in per deploy.",
+  "build": "2026-08-30-update10",
+  "notes": "Mario skin is now worn art, not a translucent overlay.",
   "force": false
 }

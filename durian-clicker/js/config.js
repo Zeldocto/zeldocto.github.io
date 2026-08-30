@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-30-update8',
+    buildId: '2026-08-30-update10',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -67,7 +67,8 @@
       blueCoin: 'assets/placeholder-bluecoin.png',
       airplane: 'assets/placeholder-airplane.png',
       slots: 'assets/placeholder-slots.png',
-      store: 'assets/placeholder-store.png'
+      store: 'assets/placeholder-store.png',
+      marioFace: 'assets/placeholder-marioface.png'
     },
 
     sounds: {

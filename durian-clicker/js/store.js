@@ -23,18 +23,39 @@
     return id === 'classic' || !!DC.Game.state.skins.owned[id];
   }
 
+  /** Reward skins are earned by meeting a condition, never bought. */
+  function isReward(id) { return !!def(id).reward; }
+
+  /**
+   * Grants any reward skin whose condition is now met. Called from
+   * Game.checkProgress, so it keeps up without polling.
+   */
+  function checkRewards() {
+    var granted = [];
+    all().forEach(function (skin) {
+      if (!skin.reward || owned(skin.id)) return;
+      if (skin.requires && DC.Game.meetsRequirement(skin.requires)) {
+        DC.Game.state.skins.owned[skin.id] = true;
+        granted.push(skin);
+      }
+    });
+    if (granted.length) DC.Events.emit('skinUnlocked', granted);
+    return granted;
+  }
+
   function activeId() { return DC.Game.state.skins.active || 'classic'; }
   function active() { return def(activeId()); }
 
   function canBuy(id) {
     var d = def(id);
     if (!d || owned(id)) return false;
+    if (d.reward) return false;              // earned, not for sale
     return N.gte(DC.Game.state.durians, N.big(d.cost));
   }
 
   function buy(id) {
     var d = def(id);
-    if (!d || owned(id)) return false;
+    if (!d || owned(id) || d.reward) return false;
     if (!DC.Game.spendDurians(N.big(d.cost))) return false;
     DC.Game.state.skins.owned[id] = true;
     DC.Game.checkProgress();
@@ -73,6 +94,8 @@
     activeId: activeId,
     active: active,
     canBuy: canBuy,
+    isReward: isReward,
+    checkRewards: checkRewards,
     buy: buy,
     equip: equip,
     byTier: byTier
