@@ -26,16 +26,10 @@
 
 <header class="topbar">
   <div class="brand">
-    <button class="store-btn" id="btn-store" title="Tanooki Store">
-      <img id="store-icon" alt="Tanooki Store">
-    </button>
     <img class="brand-shine" id="brand-shine" alt="" aria-hidden="true">
     <h1>Durian<span>Clicker</span></h1>
   </div>
   <div class="topbar-actions">
-    <button class="icon-btn casino-btn" id="btn-casino" title="Casino">
-      <img id="casino-icon" alt="Casino">
-    </button>
     <div class="volume-wrap">
       <button class="icon-btn" id="btn-mute" aria-pressed="false" title="Mute sound">🔊</button>
       <input type="range" id="volume-slider" min="0" max="100" value="60" aria-label="Volume">
@@ -49,6 +43,17 @@
 
   <!-- ------------------------------------------------------------- stage -->
   <section class="stage">
+    <div class="stage-tools">
+      <button class="stage-tool" id="btn-store" title="Tanooki Store">
+        <img id="store-icon" alt="">
+        <span>Store</span>
+      </button>
+      <button class="stage-tool" id="btn-casino" title="Casino">
+        <img id="casino-icon" alt="">
+        <span>Slots</span>
+      </button>
+    </div>
+
     <div class="counter">
       <div class="count" id="durian-count">0</div>
       <div class="count-label">Durians</div>
@@ -187,7 +192,11 @@
       <div class="reel"><img class="reel-img" alt=""></div>
       <div class="reel"><img class="reel-img" alt=""></div>
     </div>
-    <p class="slots-result" id="slots-result">Place a bet to spin.</p>
+    <div class="slots-outcome" id="slots-outcome">
+      <p class="slots-result" id="slots-result">Place a bet to spin.</p>
+      <div class="slots-payout" id="slots-payout"></div>
+    </div>
+    <p class="slots-hint" id="slots-hint"></p>
 
     <div class="bet-row" id="bet-row" role="group" aria-label="Bet size"></div>
     <p class="coin-purse">You have <img class="inline-coin" id="spin-coin-icon" alt="">

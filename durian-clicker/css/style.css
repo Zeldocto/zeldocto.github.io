@@ -171,6 +171,7 @@ input[type="range"] {
 /* ------------------------------------------------------------------ stage */
 
 .stage {
+  position: relative;
   min-height: 0;
   overflow: hidden;
   isolation: isolate;
@@ -834,6 +835,10 @@ input[type="range"] {
     gap: 10px;
   }
   .stage { gap: 10px; padding-top: 4px; }
+  .stage-tools { flex-direction: row; gap: 6px; }
+  .stage-tool { width: 56px; padding: 5px 3px 4px; }
+  .stage-tool img { width: 26px; height: 26px; }
+  .stage-tool span { font-size: 0.6rem; }
   .clicker { width: clamp(160px, 30vh, 250px); }
   .toasts { left: 14px; right: 14px; align-items: center; }
 }
@@ -1251,20 +1256,43 @@ input[type="range"] {
 
 /* ============================================ Blue Coins, Casino, Store === */
 
-.store-btn {
-  border: 2px solid var(--sand-line);
-  background: var(--card);
-  border-radius: 12px;
-  width: 42px; height: 42px;
-  padding: 4px;
-  cursor: pointer;
-  box-shadow: 0 2px 0 var(--sand-line);
-  flex-shrink: 0;
+/* Store and Slots sit in the top-left of the durian's own area, under the
+   header rather than crowding the logo. */
+.stage-tools {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.store-btn:hover { background: var(--surface-hi); }
-.store-btn:active { transform: translateY(2px); box-shadow: none; }
-.store-btn img, .casino-btn img { width: 100%; height: 100%; object-fit: contain; }
-.casino-btn { padding: 5px; }
+
+.stage-tool {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  gap: 2px;
+  width: 66px;
+  padding: 7px 4px 5px;
+  border: 2px solid var(--sand-line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.stage-tool img { width: 34px; height: 34px; object-fit: contain; }
+.stage-tool span {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+.stage-tool:hover { background: var(--surface-hi); transform: translateY(-2px); }
+.stage-tool:active { transform: translateY(1px); box-shadow: none; }
+.stage-tool[hidden] { display: none; }
 
 /* --------------------------------------------------------------- coin chip */
 
@@ -1428,9 +1456,101 @@ input[type="range"] {
   50% { border-color: #7FD8FF; box-shadow: 0 0 26px #7FD8FF; }
 }
 
-.slots-result { font-weight: 700; font-size: 0.9rem; min-height: 2.6em; margin: 0 0 12px; color: var(--ink-soft); }
+.slots-outcome {
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.slots-outcome.won {
+  border-color: var(--shine-dark);
+  background: linear-gradient(180deg, rgba(255, 214, 90, 0.28), rgba(255, 190, 40, 0.12));
+  animation: slotWin 0.7s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.slots-outcome.jackpot-win {
+  border-color: #3FA9F5;
+  background: linear-gradient(180deg, rgba(91, 184, 245, 0.35), rgba(30, 110, 200, 0.15));
+  animation: slotJackpot 0.5s ease 4;
+}
+.slots-outcome.lost {
+  border-color: var(--danger);
+  background: rgba(212, 72, 59, 0.10);
+  animation: slotLose 0.5s ease;
+}
+
+@keyframes slotWin {
+  0%   { transform: scale(0.94); }
+  55%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes slotJackpot {
+  0%, 100% { box-shadow: 0 0 0 rgba(91, 184, 245, 0); }
+  50%      { box-shadow: 0 0 26px rgba(91, 184, 245, 0.85); }
+}
+@keyframes slotLose {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  45%      { transform: translateX(7px); }
+  70%      { transform: translateX(-4px); }
+}
+
+.slots-result { font-weight: 700; font-size: 0.9rem; min-height: 2.4em; margin: 0; color: var(--ink-soft); }
 .slots-result.is-win { color: #1E7F3C; }
 .slots-result.is-loss { color: var(--danger); }
+body.dark .slots-result.is-win { color: #5FE08A; }
+
+.slots-payout {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 5vw, 1.9rem);
+  line-height: 1.1;
+  min-height: 1.1em;
+}
+.slots-payout.is-win { color: #1E7F3C; animation: payoutPop 0.55s cubic-bezier(0.2, 1.5, 0.4, 1); }
+.slots-payout.is-loss { color: var(--danger); opacity: 0.85; animation: payoutDrop 0.55s ease; }
+body.dark .slots-payout.is-win { color: #5FE08A; }
+
+@keyframes payoutPop {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.6); }
+  60%  { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes payoutDrop {
+  0%   { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 0.85; transform: translateY(0); }
+}
+
+.slots-hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  min-height: 1.2em;
+  margin: 0 0 10px;
+}
+
+.reels.win { animation: reelsWin 0.6s ease; }
+.reels.lose { animation: reelsLose 0.45s ease; }
+@keyframes reelsWin {
+  0%, 100% { border-color: var(--shine-dark); }
+  50%      { border-color: #FFF0A8; box-shadow: 0 0 28px rgba(255, 201, 60, 0.7); }
+}
+@keyframes reelsLose {
+  0%, 100% { border-color: var(--shine-dark); filter: none; }
+  50%      { border-color: #6B4A44; filter: saturate(0.4) brightness(0.85); }
+}
+
+.slot-confetti {
+  position: fixed;
+  z-index: 97;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: confettiFly 1.2s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+@keyframes confettiFly {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(0.4); }
+}
 .bet-row { display: flex; align-items: center; gap: 6px; justify-content: center; margin-bottom: 10px; }
 .casino-actions { justify-content: center; }
 .inline-coin { width: 16px; height: 16px; vertical-align: -3px; }
@@ -1581,3 +1701,46 @@ body.dark .toast, body.dark .tip { background: var(--card); }
   margin: 0 0 10px;
 }
 .coin-purse strong { color: var(--ink); font-size: 1rem; }
+
+
+/* --------------------------------------- dark mode contrast corrections -- */
+/* These surfaces kept a light gradient in dark mode, leaving dark text on a
+   bright background — the #1 leaderboard slot was unreadable. */
+
+body.dark .board-row.top1 {
+  background: linear-gradient(180deg, #4A3F1B, #322A0F);
+  border-color: var(--shine-dark);
+}
+body.dark .board-row.top1 .board-rank { color: #FFD75E; }
+body.dark .board-row .board-player-name { color: var(--ink); }
+body.dark .board-row .board-score { color: #7FD8FF; }
+
+body.dark .ach-progress {
+  background: linear-gradient(180deg, #3A3524, #2A2618);
+  border-color: var(--shine-dark);
+  color: var(--ink);
+}
+body.dark .ach-progress span { color: #FFD75E; }
+
+body.dark .owned-upgrade { background: linear-gradient(180deg, #4A3F1B, #332B10); }
+body.dark .buff {
+  background: linear-gradient(180deg, #4E421C, #3A3113);
+  color: #FFDE7A;
+  border-color: var(--shine-dark);
+}
+body.dark .buff-bad { background: linear-gradient(180deg, #3B2359, #2A1841); color: #DCC6F5; }
+body.dark .btn-primary {
+  background: linear-gradient(180deg, #E0B437, #C4970E);
+  color: #2A1E00;
+  border-color: #8A6A00;
+}
+body.dark .skin-tile.is-active { background: linear-gradient(180deg, #16394E, #0F2A3B); }
+body.dark .stage-tool span { color: var(--ink-soft); }
+body.dark .toast { border-left-color: var(--shine-dark); }
+body.dark .modal-close { background: var(--surface); color: var(--ink); }
+body.dark .amt { color: var(--ink); }
+body.dark .amt.is-active { color: #FFF; }
+body.dark .list-count, body.dark .list-heading { color: var(--ink-soft); }
+body.dark .empty-note { background: #172937; color: var(--ink-soft); }
+body.dark .board-note { background: #172937; color: var(--ink-soft); }
+body.dark .item.locked .item-lock { color: var(--ink-soft); }

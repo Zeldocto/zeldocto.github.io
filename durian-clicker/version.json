@@ -1,4 +1,4 @@
 {
-  "build": "2026-08-30-update5",
-  "notes": "Skins rebuilt as filter chains; boot survives a partial deploy."
+  "build": "2026-08-30-update5b",
+  "notes": "Slot win/loss feedback, Store and Slots moved beside the durian, dark mode contrast fixes."
 }

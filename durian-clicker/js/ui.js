@@ -34,6 +34,7 @@
      'coin-chip-icon', 'mini-coins', 'coin-layer', 'store-list', 'store-balance',
      'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
+     'slots-hint', 'slots-payout', 'slots-outcome',
      'btn-dark', 'dark-toggle'
     ].forEach(function (id) { el[id] = $(id); });
   }
@@ -627,14 +628,16 @@
     el['btn-spin'].disabled = spinning || !!blocked;
     el['coin-balance'].textContent = DC.Coins.count();
 
+    // The hint lives on its own line. Writing it into the result line meant
+    // that spending your LAST coin wiped the win/loss message you had just
+    // earned, because the spin left you with none.
+    var hint = '';
     if (!spinning && blocked === 'no-coins') {
-      el['slots-result'].textContent =
-        'You need a Blue Coin to spin. Watch for one on screen \u2014 or an airplane.';
-      el['slots-result'].className = 'slots-result';
+      hint = 'Out of Blue Coins. Watch for one on screen \u2014 or an airplane.';
     } else if (!spinning && blocked === 'no-durians') {
-      el['slots-result'].textContent = 'Not enough Durians for that stake.';
-      el['slots-result'].className = 'slots-result';
+      hint = 'Not enough Durians for that stake.';
     }
+    el['slots-hint'].textContent = hint;
   }
 
   function setReels(reels) {
@@ -642,6 +645,60 @@
     for (var i = 0; i < imgs.length; i++) {
       imgs[i].src = reels[i].icon;
       imgs[i].alt = reels[i].name;
+    }
+  }
+
+  /** Win and loss each get their own message, colour and animation. */
+  function showSpinOutcome(result) {
+    var box = el['slots-outcome'];
+    var line = el['slots-result'];
+    var payout = el['slots-payout'];
+    var won = result.kind !== 'none';
+
+    if (!won) {
+      line.textContent = 'No match \u2014 ' + N.format(result.stake) +
+                         ' Durians and a Blue Coin gone.';
+      payout.textContent = '\u2212' + N.format(result.stake);
+    } else if (result.kind === 'triple') {
+      line.textContent = 'Three ' + result.symbol.name + 's!' +
+                         (result.coins ? ' And ' + result.coins + ' Blue Coins.' : '');
+      payout.textContent = '+' + N.format(result.payout);
+    } else {
+      line.textContent = 'Two matching \u2014 your stake comes back.';
+      payout.textContent = '+' + N.format(result.payout);
+    }
+
+    line.className = 'slots-result ' + (won ? 'is-win' : 'is-loss');
+    payout.className = 'slots-payout ' + (won ? 'is-win' : 'is-loss');
+
+    // restart the animation even on repeat outcomes
+    box.classList.remove('won', 'lost', 'jackpot-win');
+    el['reels'].classList.remove('win', 'lose');
+    void box.offsetWidth;
+    box.classList.add(won ? (result.jackpot ? 'jackpot-win' : 'won') : 'lost');
+    el['reels'].classList.add(won ? 'win' : 'lose');
+
+    if (won) confettiBurst(result.jackpot);
+  }
+
+  /** A small shower of symbols over the machine on a win. */
+  function confettiBurst(big) {
+    var host = el['reels'];
+    var rect = host.getBoundingClientRect();
+    var count = big ? 26 : 12;
+    for (var i = 0; i < count; i++) {
+      var bit = document.createElement('div');
+      bit.className = 'slot-confetti';
+      bit.style.left = (rect.left + Math.random() * rect.width) + 'px';
+      bit.style.top = (rect.top + rect.height * 0.4) + 'px';
+      bit.style.setProperty('--dx', (Math.random() * 220 - 110) + 'px');
+      bit.style.setProperty('--dy', (-90 - Math.random() * 140) + 'px');
+      bit.style.setProperty('--spin', (Math.random() * 720 - 360) + 'deg');
+      bit.style.background = big
+        ? ['#5BB8F5', '#BFF0FF', '#FFD429'][i % 3]
+        : ['#FFD429', '#FFE79A', '#7FB03A'][i % 3];
+      document.body.appendChild(bit);
+      autoRemove(bit, 1400);
     }
   }
 
@@ -654,6 +711,10 @@
     refreshCasino();
     DC.Audio.play('spin');
     el['slots-result'].textContent = 'Spinning\u2026';
+    el['slots-result'].className = 'slots-result';
+    el['slots-payout'].textContent = '';
+    el['slots-outcome'].classList.remove('won', 'lost', 'jackpot-win');
+    el['reels'].classList.remove('win', 'lose');
     el['reels'].classList.add('spinning');
 
     // Roll visible junk while it spins, then land on the real result.
@@ -664,26 +725,8 @@
       el['reels'].classList.remove('spinning');
       spinning = false;
 
-      var msg;
-      if (result.kind === 'none') {
-        msg = 'No match. ' + N.format(result.stake) + ' Durians and a Blue Coin gone.';
-      } else {
-        msg = (result.kind === 'triple' ? 'Three ' + result.symbol.name + 's! ' : 'Two matching. ') +
-              'You win ' + N.format(result.payout) + ' Durians' +
-              (result.coins ? ' and ' + result.coins + ' Blue Coins' : '') + '.';
-      }
-      el['slots-result'].textContent = msg;
-      el['slots-result'].className = 'slots-result ' +
-        (result.kind === 'none' ? 'is-loss' : 'is-win');
+      showSpinOutcome(result);
 
-      if (result.jackpot) {
-        DC.Audio.play('jackpot');
-        el['reels'].classList.add('jackpot');
-        setTimeout(function () { el['reels'].classList.remove('jackpot'); }, 1600);
-        toast('Jackpot!', 'Three Blue Coins on the reels.', 'unlock', CONFIG.assets.blueCoin);
-      } else if (result.kind === 'triple') {
-        DC.Audio.play('buyUpgrade');
-      }
       refreshCasino();
       refreshCounters();
     }, CONFIG.casino.spinSeconds * 1000);
@@ -1296,6 +1339,8 @@
       setReels(DC.Casino.roll());
       el['slots-result'].textContent = 'Place a bet to spin.';
       el['slots-result'].className = 'slots-result';
+      el['slots-payout'].textContent = '';
+      el['slots-outcome'].classList.remove('won', 'lost', 'jackpot-win');
       refreshCasino();
       openModal('modal-casino');
     });
