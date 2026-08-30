@@ -463,26 +463,6 @@ cruder automatic version of the same idea.
 
 ---
 
-## Debug mode
-
-**Disabled in this build.** `debugEnabled: false` in `config.js` — the panel is
-removed from the DOM and Ctrl + ` does nothing. Set it back to `true` while
-developing.
-
-
-When enabled, **Ctrl + `** opens the developer panel: add Durians (1K / 1M / 1Qa / ×1000), unlock
-everything, grant all upgrades or achievements, set any worker count directly,
-simulate an offline absence of N seconds, submit to the leaderboard, force a save or
-reload, hard reset, and dump the game state to the console.
-
-For a production build set `debugEnabled: false` in `config.js` — the panel is removed
-from the DOM entirely and the shortcut does nothing.
-
-`window.DC` is exposed in the console regardless, if you want to poke at things
-directly: `DC.Game.state`, `DC.Workers.buy('noki', 10)`, `DC.N.format(DC.Game.derived.dps)`.
-
----
-
 ## Notes on the build
 
 - **Classic scripts, not ES modules.** Deliberate: modules break on `file://`, and
