@@ -1,5 +1,5 @@
 {
-  "build": "2026-08-30-update10",
-  "notes": "Mario skin is now worn art, not a translucent overlay.",
+  "build": "2026-08-30-update11",
+  "notes": "Shine in the header links back to the site.",
   "force": false
 }

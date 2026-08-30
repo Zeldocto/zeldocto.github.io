@@ -113,6 +113,17 @@ button, input, textarea { font-family: inherit; color: inherit; }
 
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
+/* The Shine is a link home. It keeps its spin; the hover just adds a lift. */
+.brand-shine-link {
+  display: inline-flex;
+  border-radius: 50%;
+  line-height: 0;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.brand-shine-link:hover { transform: scale(1.15); filter: brightness(1.15); }
+.brand-shine-link:active { transform: scale(1.02); }
+.brand-shine-link:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
 .brand-shine {
   width: 34px; height: 34px;
   animation: spinShine 6s linear infinite;

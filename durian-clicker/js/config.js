@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-30-update10',
+    buildId: '2026-08-30-update11',
     updateCheck: {
       enabled: true,
       url: 'version.json',
