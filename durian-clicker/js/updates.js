@@ -46,10 +46,14 @@
             sessionStorage.setItem(RELOAD_KEY, data.build);
           } catch (err) { alreadyTried = true; }
 
-          var auto = !!cfg().autoReload && !alreadyTried;
+          // Forced reloads are opt-in PER DEPLOY: version.json has to ask for
+          // it. Ordinary updates just show the banner and let the player
+          // refresh when they are ready.
+          var auto = data.force === true && cfg().allowAutoReload !== false && !alreadyTried;
           DC.Events.emit('updateAvailable', {
             build: data.build,
             notes: data.notes,
+            forced: data.force === true,
             autoReload: auto,
             seconds: cfg().countdownSeconds || 10,
             loopGuarded: alreadyTried

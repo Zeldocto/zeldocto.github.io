@@ -14,9 +14,14 @@ being told to press Ctrl+Shift+R. Changing the query string changes the URL,
 so the browser has no choice but to fetch the new file. index.html itself is
 sent with a short cache lifetime, so it comes through quickly on its own.
 
+A forced reload is opt-in per deploy. Pass --force when everyone needs to be
+on the new code immediately (a save-format change, a broken build); leave it
+off for routine content, which just shows the banner.
+
 Usage:
-    python3 bump_build.py                 # stamps today's date + a counter
-    python3 bump_build.py 2026-09-01-hotfix
+    python3 bump_build.py                          # banner only
+    python3 bump_build.py --force                  # pull everyone across
+    python3 bump_build.py 2026-09-01-hotfix "notes" --force
 """
 import datetime
 import os
@@ -52,8 +57,11 @@ def next_build():
 
 
 def main():
-    build = sys.argv[1] if len(sys.argv) > 1 else next_build()
-    notes = sys.argv[2] if len(sys.argv) > 2 else 'Content and fixes.'
+    args = [a for a in sys.argv[1:] if a != '--force']
+    force = '--force' in sys.argv
+
+    build = args[0] if len(args) > 0 else next_build()
+    notes = args[1] if len(args) > 1 else 'Content and fixes.'
 
     # 1. config
     config = read('js/config.js')
@@ -63,7 +71,9 @@ def main():
     write('js/config.js', config)
 
     # 2. version.json
-    write('version.json', '{\n  "build": "%s",\n  "notes": "%s"\n}\n' % (build, notes))
+    write('version.json',
+          '{\n  "build": "%s",\n  "notes": "%s",\n  "force": %s\n}\n'
+          % (build, notes, 'true' if force else 'false'))
 
     # 3. cache-busting query on every local script and stylesheet
     html = read('index.html')
@@ -80,6 +90,8 @@ def main():
     write('index.html', html)
 
     print('build id : %s' % build)
+    print('reload   : %s' % ('FORCED - everyone is pulled across'
+                             if force else 'banner only, players refresh when ready'))
     print('stamped  : %d scripts, %d stylesheets' % (script_count, css_count))
     print('files    : js/config.js, version.json, index.html')
     print('\nCommit and push all three, plus whatever you changed.')

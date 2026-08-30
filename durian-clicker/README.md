@@ -29,16 +29,23 @@ string changes the URL, so the browser must fetch the new file. `index.html`
 itself is served with a short lifetime and comes through on its own.
 
 Players already in a session poll `version.json` every 5 minutes and whenever
-they refocus the tab. On a new build the game saves, shows a banner and
-reloads after a 10-second countdown. They can press **Update now** to go
-immediately, or dismiss to cancel the reload and finish what they were doing.
+they refocus the tab. What happens next is decided **per deploy**:
+
+- **Routine deploy** (the default): a banner appears with an **Update now**
+  button. Nobody is interrupted; they refresh when they feel like it.
+- **Forced deploy** (`--force`): the game saves, counts down from 10 and
+  reloads itself. Use this when everyone genuinely has to be on the new code —
+  a save-format change, or a broken build. They can still dismiss it.
+
+The switch is `"force": true` in `version.json`, so you decide at deploy time
+without touching any JavaScript. `CONFIG.updateCheck.allowAutoReload = false`
+is a master override that blocks forcing entirely.
 
 A session-storage guard stops reload loops: if a reload does not produce the
 new build (a stale CDN edge, say), the game stops trying and shows the manual
 Ctrl+Shift+R instructions instead.
 
-Turn the automatic part off with `CONFIG.updateCheck.autoReload = false`, or
-change `countdownSeconds`.
+`CONFIG.updateCheck.countdownSeconds` sets how long the countdown runs.
 
 **Upload every file, not a subset.** The JS modules reference each other. A
 missing optional module now hides its own feature and the game plays on, and a

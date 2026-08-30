@@ -1,4 +1,5 @@
 {
-  "build": "2026-08-30-update7",
-  "notes": "Update 7 - forced refresh on new builds, cache-busted assets."
+  "build": "2026-08-30-update8",
+  "notes": "Forced reload is now opt-in per deploy.",
+  "force": false
 }

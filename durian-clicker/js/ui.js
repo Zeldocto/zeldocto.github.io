@@ -53,7 +53,7 @@
       el['update-line'].innerHTML = info && info.loopGuarded
         ? 'The new files are not coming through. Press <kbd>Ctrl</kbd> + ' +
           '<kbd>Shift</kbd> + <kbd>R</kbd> to force a refresh.'
-        : 'Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to refresh and play it.';
+        : 'Refresh whenever you are ready \u2014 or hit the button.';
       return;
     }
 

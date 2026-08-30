@@ -13,15 +13,16 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-30-update7',
+    buildId: '2026-08-30-update8',
     updateCheck: {
       enabled: true,
       url: 'version.json',
       intervalSeconds: 300,
-      // Reload the page automatically when a new build ships, after a short
-      // countdown. Progress is saved first. Set false to go back to a banner
-      // that waits for the player to refresh in their own time.
-      autoReload: true,
+      // Whether a forced reload is PERMITTED at all. Whether one actually
+      // happens is decided per deploy by "force": true in version.json, so a
+      // routine content push just shows the banner and only the updates that
+      // need everyone on the new code pull people across.
+      allowAutoReload: true,
       countdownSeconds: 10
     },
 
