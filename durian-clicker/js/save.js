@@ -24,6 +24,13 @@
       unlocked: Object.assign({}, state.unlocked),
       settings: Object.assign({}, state.settings),
       player: Object.assign({}, state.player),
+      blueCoins: state.blueCoins,
+      coins: Object.assign({}, state.coins),
+      casino: Object.assign({}, state.casino, {
+        wagered: N.serialize(state.casino.wagered || N.ZERO),
+        won: N.serialize(state.casino.won || N.ZERO)
+      }),
+      skins: { owned: Object.assign({}, state.skins.owned), active: state.skins.active },
       buffs: state.buffs.slice(),
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
@@ -66,8 +73,25 @@
 
     if (data.settings) Object.assign(state.settings, data.settings);
     if (!state.settings.numberFormat) state.settings.numberFormat = 'abbreviated';
+    state.settings.darkMode = !!state.settings.darkMode;
     if (data.player) Object.assign(state.player, data.player);
     // Update 2 additions. Absent in v1 saves, which is fine — they default.
+    if (typeof data.blueCoins === 'number') state.blueCoins = data.blueCoins;
+    if (data.coins) Object.assign(state.coins, data.coins);
+    if (data.casino) {
+      Object.assign(state.casino, data.casino);
+      state.casino.wagered = N.deserialize(data.casino.wagered || 0);
+      state.casino.won = N.deserialize(data.casino.won || 0);
+    }
+    if (data.skins) {
+      // Only keep skins that still exist in the catalogue.
+      state.skins.owned = { classic: true };
+      CONFIG.skins.forEach(function (sk) {
+        if (data.skins.owned && data.skins.owned[sk.id]) state.skins.owned[sk.id] = true;
+      });
+      var wanted = data.skins.active;
+      state.skins.active = (wanted && state.skins.owned[wanted]) ? wanted : 'classic';
+    }
     if (Array.isArray(data.buffs)) state.buffs = data.buffs.filter(function (b) {
       return b && typeof b.endsAt === 'number' && b.endsAt > Date.now();
     });

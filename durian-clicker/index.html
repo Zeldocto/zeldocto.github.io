@@ -26,14 +26,21 @@
 
 <header class="topbar">
   <div class="brand">
+    <button class="store-btn" id="btn-store" title="Tanooki Store">
+      <img id="store-icon" alt="Tanooki Store">
+    </button>
     <img class="brand-shine" id="brand-shine" alt="" aria-hidden="true">
     <h1>Durian<span>Clicker</span></h1>
   </div>
   <div class="topbar-actions">
+    <button class="icon-btn casino-btn" id="btn-casino" title="Casino">
+      <img id="casino-icon" alt="Casino">
+    </button>
     <div class="volume-wrap">
       <button class="icon-btn" id="btn-mute" aria-pressed="false" title="Mute sound">🔊</button>
       <input type="range" id="volume-slider" min="0" max="100" value="60" aria-label="Volume">
     </div>
+    <button class="icon-btn" id="btn-dark" aria-pressed="false" title="Dark mode">🌙</button>
     <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
   </div>
 </header>
@@ -62,6 +69,10 @@
       <div class="chip"><strong id="click-power">1</strong> per click</div>
       <div class="chip"><strong id="mini-total">0</strong> earned all-time</div>
       <div class="chip"><strong id="mini-shines">0/0</strong> shines</div>
+      <div class="chip chip-coin" id="coin-chip" tabindex="0">
+        <img id="coin-chip-icon" alt=""><strong id="mini-coins">0</strong> blue coins
+      </div>
+      <button class="chip chip-btn" id="btn-skins">Change skin</button>
     </div>
   </section>
 
@@ -140,7 +151,56 @@
   <button class="update-close" id="update-close" aria-label="Dismiss">×</button>
 </div>
 
+<div class="coin-layer" id="coin-layer" aria-hidden="true"></div>
+
 <div class="tip" id="tip" hidden></div>
+
+<div class="modal" id="modal-store" hidden>
+  <div class="modal-card modal-card-wide store-card">
+    <button class="modal-close" data-close="modal-store" aria-label="Close store">&times;</button>
+    <h2 id="store-title">Tanooki Store</h2>
+    <p class="modal-lead">Durian skins. Purely cosmetic, entirely worth it.</p>
+    <p class="store-balance">You have <strong id="store-balance">0</strong> Durians
+      &middot; <span id="store-owned">1</span> skins owned</p>
+    <div class="store-list" id="store-list"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-skins" hidden>
+  <div class="modal-card modal-card-wide">
+    <button class="modal-close" data-close="modal-skins" aria-label="Close">&times;</button>
+    <h2>Your Durians</h2>
+    <p class="modal-lead">Pick a skin you have unlocked.</p>
+    <div class="skin-grid" id="skin-grid"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-casino" hidden>
+  <div class="modal-card modal-card-wide casino-card">
+    <button class="modal-close" data-close="modal-casino" aria-label="Close casino">&times;</button>
+    <h2>Casino</h2>
+    <p class="modal-lead">Bet Durians, or spend a Blue Coin for a premium spin.</p>
+
+    <div class="reels" id="reels">
+      <div class="reel"><img class="reel-img" alt=""></div>
+      <div class="reel"><img class="reel-img" alt=""></div>
+      <div class="reel"><img class="reel-img" alt=""></div>
+    </div>
+    <p class="slots-result" id="slots-result">Place a bet to spin.</p>
+
+    <div class="bet-row" id="bet-row" role="group" aria-label="Bet size"></div>
+    <div class="setting-actions casino-actions">
+      <button class="btn btn-primary" id="btn-spin">Spin</button>
+      <button class="btn" id="btn-spin-coin">
+        Spin with <img class="inline-coin" id="spin-coin-icon" alt=""> <span id="coin-balance">0</span>
+      </button>
+    </div>
+    <details class="stats-group casino-odds">
+      <summary>Paytable</summary>
+      <div id="paytable"></div>
+    </details>
+  </div>
+</div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
@@ -175,6 +235,14 @@
         <option value="abbreviated">Abbreviated — 1.25M</option>
         <option value="shortened">Shortened — 1.25 million</option>
         <option value="full">Full number — 1,250,000</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <label for="dark-toggle">Appearance</label>
+      <select id="dark-toggle">
+        <option value="light">Bright island</option>
+        <option value="dark">Dark mode</option>
       </select>
     </div>
 
@@ -239,6 +307,7 @@
 <script src="js/content/upgrades.js"></script>
 <script src="js/content/achievements.js"></script>
 <script src="js/content/events.js"></script>
+<script src="js/content/skins.js"></script>
 <script src="js/numbers.js"></script>
 <script src="js/game.js"></script>
 <script src="js/workers.js"></script>
@@ -248,6 +317,9 @@
 <script src="js/offline.js"></script>
 <script src="js/events.js"></script>
 <script src="js/updates.js"></script>
+<script src="js/coins.js"></script>
+<script src="js/casino.js"></script>
+<script src="js/store.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/ui.js"></script>

@@ -30,8 +30,31 @@
      'name-input', 'name-error', 'upgrade-search', 'upgrade-count', 'upgrade-more',
      'owned-details', 'owned-count', 'buff-bar', 'event-banner', 'event-icon',
      'event-title', 'event-text', 'event-amount', 'tip', 'number-format',
-     'update-bar', 'update-icon'
+     'update-bar', 'update-icon', 'store-icon', 'casino-icon', 'coin-chip',
+     'coin-chip-icon', 'mini-coins', 'coin-layer', 'store-list', 'store-balance',
+     'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
+     'btn-spin-coin', 'coin-balance', 'spin-coin-icon', 'paytable', 'btn-skins',
+     'btn-dark', 'dark-toggle'
     ].forEach(function (id) { el[id] = $(id); });
+  }
+
+  /* ------------------------------------------------------------ dark mode */
+
+  function applyDarkMode() {
+    var on = !!Game.state.settings.darkMode;
+    document.body.classList.toggle('dark', on);
+    el['btn-dark'].textContent = on ? '☀' : '🌙';
+    el['btn-dark'].setAttribute('aria-pressed', on ? 'true' : 'false');
+    el['btn-dark'].title = on ? 'Switch to bright island' : 'Switch to dark mode';
+    el['dark-toggle'].value = on ? 'dark' : 'light';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', on ? '#0A2334' : '#0E86B8');
+  }
+
+  function setDarkMode(on) {
+    Game.state.settings.darkMode = !!on;
+    applyDarkMode();
+    DC.Save.save(true);
   }
 
   /* --------------------------------------------------------------- assets */
@@ -40,6 +63,12 @@
     el['durian-img'].src = CONFIG.assets.durian;
     el['brand-shine'].src = CONFIG.assets.shine;
     el['scene-img'].style.backgroundImage = 'url("' + CONFIG.assets.background + '")';
+    el['store-icon'].src = CONFIG.assets.store;
+    el['casino-icon'].src = CONFIG.assets.slots;
+    el['coin-chip-icon'].src = CONFIG.assets.blueCoin;
+    el['spin-coin-icon'].src = CONFIG.assets.blueCoin;
+    applySkin();
+    applyDarkMode();
   }
 
   /* ------------------------------------------------------- click feedback */
@@ -107,6 +136,8 @@
     el['click-power'].textContent = N.format(d.clickPower);
     el['mini-total'].textContent = N.format(s.totalEarned);
     el['mini-shines'].textContent = DC.Achievements.earnedCount() + '/' + DC.Achievements.total();
+    el['mini-coins'].textContent = N.withCommas(DC.Coins.count());
+    el['coin-balance'].textContent = DC.Coins.count();
 
     var now = performance.now();
     if (now - lastTitleUpdate > 1000) {
@@ -544,6 +575,276 @@
     });
   }
 
+  /* --------------------------------------------------------------- casino */
+
+  var betFraction = null;      // null = whichever is selected
+  var spinning = false;
+
+  function buildBetRow() {
+    var row = el['bet-row'];
+    row.innerHTML = '<span class="buy-amount-label">Bet</span>';
+    CONFIG.casino.betFractions.forEach(function (f, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'amt' + ((betFraction === null ? i === 0 : betFraction === f) ? ' is-active' : '');
+      b.textContent = Math.round(f * 100) + '%';
+      b.title = Math.round(f * 100) + '% of your Durians';
+      b.addEventListener('click', function () {
+        betFraction = f;
+        buildBetRow();
+        refreshCasino();
+      });
+      row.appendChild(b);
+    });
+    if (betFraction === null) betFraction = CONFIG.casino.betFractions[0];
+  }
+
+  function buildPaytable() {
+    var rows = DC.Casino.symbols().map(function (sym) {
+      return '<div class="stat-row"><dt><img class="pay-icon" src="' + sym.icon + '" alt=""> ' +
+             escapeHtml(sym.name) + ' &times;3</dt><dd>' + sym.triple + '&times; bet' +
+             (sym.tripleCoins ? ' + ' + sym.tripleCoins + ' coins' : '') + '</dd></div>';
+    }).join('');
+    el['paytable'].innerHTML = rows +
+      '<div class="stat-row"><dt>Any two matching</dt><dd>' +
+      CONFIG.casino.pairPayout + '&times; bet</dd></div>' +
+      '<div class="stat-row"><dt>Long-run return</dt><dd>' +
+      Math.round(DC.Casino.expectedReturn() * 100) + '% of stake</dd></div>';
+  }
+
+  function refreshCasino() {
+    var bet = DC.Casino.betFor(betFraction || CONFIG.casino.betFractions[0]);
+    el['btn-spin'].textContent = 'Spin \u00B7 ' + N.format(bet);
+    el['btn-spin'].disabled = spinning || !DC.Casino.canPlay(betFraction);
+    el['btn-spin-coin'].disabled = spinning || !DC.Coins.canAfford(CONFIG.casino.coinSpinCost);
+    el['coin-balance'].textContent = DC.Coins.count();
+  }
+
+  function setReels(reels) {
+    var imgs = el['reels'].querySelectorAll('.reel-img');
+    for (var i = 0; i < imgs.length; i++) {
+      imgs[i].src = reels[i].icon;
+      imgs[i].alt = reels[i].name;
+    }
+  }
+
+  function doSpin(mode) {
+    if (spinning) return;
+    var result = DC.Casino.play(mode, betFraction);
+    if (!result) return;
+
+    spinning = true;
+    refreshCasino();
+    DC.Audio.play('spin');
+    el['slots-result'].textContent = 'Spinning\u2026';
+    el['reels'].classList.add('spinning');
+
+    // Roll visible junk while it spins, then land on the real result.
+    var tick = setInterval(function () { setReels(DC.Casino.roll()); }, 90);
+    setTimeout(function () {
+      clearInterval(tick);
+      setReels(result.reels);
+      el['reels'].classList.remove('spinning');
+      spinning = false;
+
+      var msg;
+      if (result.kind === 'none') {
+        msg = 'No match. ' + N.format(result.stake) + ' Durians gone.';
+      } else {
+        msg = (result.kind === 'triple' ? 'Three ' + result.symbol.name + 's! ' : 'Two matching. ') +
+              'You win ' + N.format(result.payout) + ' Durians' +
+              (result.coins ? ' and ' + result.coins + ' Blue Coins' : '') + '.';
+      }
+      el['slots-result'].textContent = msg;
+      el['slots-result'].className = 'slots-result ' +
+        (result.kind === 'none' ? 'is-loss' : 'is-win');
+
+      if (result.jackpot) {
+        DC.Audio.play('jackpot');
+        el['reels'].classList.add('jackpot');
+        setTimeout(function () { el['reels'].classList.remove('jackpot'); }, 1600);
+        toast('Jackpot!', 'Three Blue Coins on the reels.', 'unlock', CONFIG.assets.blueCoin);
+      } else if (result.kind === 'triple') {
+        DC.Audio.play('buyUpgrade');
+      }
+      refreshCasino();
+      refreshCounters();
+    }, CONFIG.casino.spinSeconds * 1000);
+  }
+
+  /* ---------------------------------------------------------------- skins */
+
+  /** Skins are CSS variables on the durian button, so any art works. */
+  function applySkin() {
+    var skin = DC.Store.active();
+    var btn = el['durian-button'];
+    var css = skin.css || {};
+    btn.style.setProperty('--skin-filter', css.filter || 'none');
+    btn.style.setProperty('--skin-overlay', css.overlay || 'none');
+    btn.style.setProperty('--skin-blend', css.blend || 'normal');
+    btn.style.setProperty('--skin-size', css.size || 'auto');
+    btn.style.setProperty('--skin-animation', css.animation || 'none');
+    // The overlay is masked to the durian's own silhouette.
+    btn.style.setProperty('--skin-mask', 'url("' + CONFIG.assets.durian + '")');
+    btn.classList.toggle('has-skin', !!css.overlay);
+  }
+
+  function skinPreviewStyle(skin) {
+    var css = skin.css || {};
+    if (css.overlay) {
+      return 'background:' + css.overlay + ';' +
+             (css.size ? 'background-size:' + css.size + ';' : '') +
+             (css.animation ? 'animation:' + css.animation + ';' : '');
+    }
+    return 'background:linear-gradient(160deg,#B7D96A,#7FB03A);';
+  }
+
+  function buildSkinGrid() {
+    var grid = el['skin-grid'];
+    grid.innerHTML = '';
+    DC.Store.all().forEach(function (skin) {
+      var have = DC.Store.owned(skin.id);
+      var node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'skin-tile' + (have ? '' : ' locked') +
+                       (DC.Store.activeId() === skin.id ? ' is-active' : '');
+      node.disabled = !have;
+      node.innerHTML = '<span class="skin-swatch" style="' + skinPreviewStyle(skin) + '"></span>' +
+                       '<span class="skin-name">' + escapeHtml(have ? skin.name : 'Locked') + '</span>';
+      if (have) {
+        node.addEventListener('click', function () {
+          DC.Store.equip(skin.id);
+          buildSkinGrid();
+          DC.Audio.play('buyUpgrade');
+        });
+      }
+      grid.appendChild(node);
+    });
+  }
+
+  /* ---------------------------------------------------------- Tanooki Store */
+
+  function buildStore() {
+    el['store-balance'].textContent = N.format(Game.state.durians);
+    el['store-owned'].textContent = DC.Store.ownedCount() + '/' + DC.Store.all().length;
+
+    var list = el['store-list'];
+    list.innerHTML = '';
+
+    DC.Store.byTier().forEach(function (group) {
+      var head = document.createElement('h3');
+      head.className = 'list-heading';
+      head.textContent = group.tier;
+      list.appendChild(head);
+
+      var row = document.createElement('div');
+      row.className = 'store-grid';
+
+      group.skins.forEach(function (skin) {
+        var have = DC.Store.owned(skin.id);
+        var afford = DC.Store.canBuy(skin.id);
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'store-item' + (have ? ' owned' : (afford ? ' affordable' : ' broke'));
+        card.innerHTML =
+          '<span class="skin-swatch big" style="' + skinPreviewStyle(skin) + '"></span>' +
+          '<span class="store-item-body">' +
+            '<span class="store-item-name">' + escapeHtml(skin.name) + '</span>' +
+            '<span class="store-item-desc">' + escapeHtml(skin.description) + '</span>' +
+          '</span>' +
+          '<span class="store-item-cost">' +
+            (have ? (DC.Store.activeId() === skin.id ? 'Equipped' : 'Owned')
+                  : N.format(skin.cost)) + '</span>';
+
+        card.addEventListener('click', function () {
+          if (have) { DC.Store.equip(skin.id); DC.Audio.play('buyUpgrade'); buildStore(); return; }
+          if (DC.Store.buy(skin.id)) {
+            DC.Audio.play('buyUpgrade');
+            toast('Skin unlocked', skin.name, 'unlock');
+            buildStore();
+          }
+        });
+        row.appendChild(card);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------------------------------------------------------- Blue Coins */
+
+  var coinNode = null;
+
+  function showCoin(info) {
+    removeCoin();
+    var node = document.createElement('button');
+    node.type = 'button';
+    node.className = 'blue-coin' + (info.kind === 'plane' ? ' is-plane' : '') +
+                     (info.lucky ? ' is-lucky' : '');
+    node.setAttribute('aria-label', info.kind === 'plane'
+      ? 'An airplane! Click for a Blue Coin' : 'A Blue Coin! Click to collect');
+    node.innerHTML = '<img src="' +
+      (info.kind === 'plane' ? CONFIG.assets.airplane : CONFIG.assets.blueCoin) + '" alt="">';
+
+    if (info.kind === 'plane') {
+      node.style.top = info.fromTop + '%';
+      node.style.setProperty('--fly-seconds', CONFIG.blueCoins.planeFlightSeconds + 's');
+    } else {
+      node.style.left = info.x + '%';
+      node.style.top = info.y + '%';
+    }
+
+    node.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var reward = DC.Coins.collect();
+      if (reward > 0) burstCoin(e.clientX, e.clientY, reward);
+    });
+
+    el['coin-layer'].appendChild(node);
+    coinNode = node;
+  }
+
+  function removeCoin() {
+    if (coinNode) { coinNode.remove(); coinNode = null; }
+  }
+
+  /** The satisfying bit: the coin flies to the counter and the total ticks up. */
+  function burstCoin(x, y, reward) {
+    removeCoin();
+    DC.Audio.play('coin');
+
+    var chip = el['coin-chip'].getBoundingClientRect();
+    var flyer = document.createElement('div');
+    flyer.className = 'coin-flyer';
+    flyer.innerHTML = '<img src="' + CONFIG.assets.blueCoin + '" alt="">' +
+                      '<span>+' + reward + '</span>';
+    flyer.style.left = x + 'px';
+    flyer.style.top = y + 'px';
+    flyer.style.setProperty('--to-x', (chip.left + chip.width / 2 - x) + 'px');
+    flyer.style.setProperty('--to-y', (chip.top + chip.height / 2 - y) + 'px');
+    document.body.appendChild(flyer);
+    setTimeout(function () { flyer.remove(); }, 1000);
+
+    // sparkle ring at the pickup point
+    for (var i = 0; i < 8; i++) {
+      var p = document.createElement('div');
+      var a = (i / 8) * Math.PI * 2;
+      p.className = 'particle';
+      p.style.position = 'fixed';
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.background = i % 2 ? '#5BB8F5' : '#BFF0FF';
+      p.style.setProperty('--dx', Math.cos(a) * 60 + 'px');
+      p.style.setProperty('--dy', Math.sin(a) * 60 + 'px');
+      document.body.appendChild(p);
+      autoRemove(p, 900);
+    }
+
+    setTimeout(function () {
+      el['coin-chip'].classList.add('pop');
+      setTimeout(function () { el['coin-chip'].classList.remove('pop'); }, 400);
+    }, 620);
+  }
+
   /* ------------------------------------------------------- buffs + events */
 
   function refreshBuffs() {
@@ -946,6 +1247,46 @@
       note('Number display updated.');
     });
 
+    el['btn-dark'].addEventListener('click', function () {
+      setDarkMode(!Game.state.settings.darkMode);
+    });
+    el['dark-toggle'].addEventListener('change', function () {
+      setDarkMode(el['dark-toggle'].value === 'dark');
+    });
+
+    $('btn-store').addEventListener('click', function () {
+      buildStore();
+      openModal('modal-store');
+    });
+    $('btn-casino').addEventListener('click', function () {
+      buildBetRow();
+      buildPaytable();
+      setReels(DC.Casino.roll());
+      el['slots-result'].textContent = 'Place a bet to spin.';
+      el['slots-result'].className = 'slots-result';
+      refreshCasino();
+      openModal('modal-casino');
+    });
+    $('btn-skins').addEventListener('click', function () {
+      buildSkinGrid();
+      openModal('modal-skins');
+    });
+    el['btn-spin'].addEventListener('click', function () { doSpin('durian'); });
+    el['btn-spin-coin'].addEventListener('click', function () { doSpin('coin'); });
+
+    bindTip(el['coin-chip'], function () {
+      return tipHtml('Blue Coins',
+        'Rare finds. A coin or an airplane shows up on screen every few minutes \u2014 click it before it goes.',
+        'Spend them in the Casino for a premium spin.');
+    });
+
+    DC.Events.on('coinSpawn', showCoin);
+    DC.Events.on('coinExpired', removeCoin);
+    DC.Events.on('coinCollected', function () { refreshCounters(); });
+    DC.Events.on('blueCoinsChanged', function () { refreshCounters(); });
+    DC.Events.on('skinChanged', applySkin);
+    DC.Events.on('skinBought', applySkin);
+
     $('update-close').addEventListener('click', function () {
       el['update-bar'].hidden = true;
     });
@@ -1040,6 +1381,7 @@
 
   function syncSettingsControls() {
     el['number-format'].value = Game.state.settings.numberFormat || 'abbreviated';
+    applyDarkMode();
   }
 
   function syncBuyAmountButtons() {

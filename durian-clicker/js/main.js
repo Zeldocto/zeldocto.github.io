@@ -33,6 +33,9 @@
 
     DC.Save.startAutosave();
     DC.Updates.start();
+    if (!DC.Game.state.coins.nextAt || DC.Game.state.coins.nextAt < Date.now()) {
+      DC.Coins.schedule();
+    }
     DC.Leaderboard.startAutoSubmit();
     DC.Audio.unlockOnFirstGesture();
     DC.Game.start();

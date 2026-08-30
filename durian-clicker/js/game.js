@@ -51,7 +51,8 @@
         volume: CONFIG.audio.defaultVolume,
         muted: CONFIG.audio.defaultMuted,
         buyAmount: 1,               // 1 | 10 | 'max'
-        numberFormat: 'abbreviated' // 'abbreviated' | 'shortened' | 'full'
+        numberFormat: 'abbreviated', // 'abbreviated' | 'shortened' | 'full'
+        darkMode: false
       },
       player: {
         // Two ids on purpose. `id` is the row key and is never published, so
@@ -62,6 +63,11 @@
         name: '',                   // asked for the first time they submit a score
         lastSubmit: 0
       },
+      blueCoins: 0,
+      coins: { nextAt: 0, spawned: 0, collected: 0 },
+      casino: { spins: 0, coinSpins: 0, triples: 0, jackpots: 0,
+                wagered: N.ZERO, won: N.ZERO },
+      skins: { owned: { classic: true }, active: 'classic' },
       buffs: [],                    // temporary event multipliers
       events: { seen: {}, total: 0, nextAt: 0 },
       eventGained: N.ZERO,          // durians handed over by good events
@@ -115,6 +121,11 @@
       case 'eventsSeen':     return (s.events.total || 0) >= req.count;
       case 'eventTypeSeen':  return (s.events.seen[req.id] || 0) >= req.count;
       case 'offlineEarned':  return N.gte(s.offlineEarned, req.amount);
+      case 'blueCoins':      return (s.blueCoins || 0) >= req.count;
+      case 'coinsCollected': return (s.coins.collected || 0) >= req.count;
+      case 'casinoSpins':    return (s.casino.spins || 0) >= req.count;
+      case 'casinoJackpots': return (s.casino.jackpots || 0) >= req.count;
+      case 'skinsOwned':     return DC.Store ? DC.Store.ownedCount() >= req.count : false;
       default:
         console.warn('Unknown requirement type:', req.type);
         return false;
@@ -140,6 +151,11 @@
       case 'eventsSeen':     return 'Unlocks after ' + req.count + ' island events';
       case 'eventTypeSeen':  return 'Unlocks after ' + req.count + ' of a certain island event';
       case 'offlineEarned':  return 'Unlocks after collecting ' + N.format(req.amount) + ' offline';
+      case 'blueCoins':      return 'Unlocks with ' + req.count + ' Blue Coins';
+      case 'coinsCollected': return 'Unlocks after collecting ' + req.count + ' Blue Coins';
+      case 'casinoSpins':    return 'Unlocks after ' + req.count + ' spins';
+      case 'casinoJackpots': return 'Unlocks after ' + req.count + ' jackpots';
+      case 'skinsOwned':     return 'Unlocks with ' + req.count + ' skins owned';
       default:               return 'Locked';
     }
   }
@@ -399,6 +415,7 @@
     var produced = N.mul(Game.derived.dps, dt);
     if (produced.m > 0) addDurians(produced, 'worker');
     if (DC.IslandEvents) DC.IslandEvents.update();
+    if (DC.Coins) DC.Coins.update();
     Events.emit('tick', { dt: dt });
   }
 

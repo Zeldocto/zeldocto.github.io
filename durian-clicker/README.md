@@ -290,6 +290,17 @@ Set the default for new players with `CONFIG.formatting.defaultMode`. Full mode
 falls back to abbreviated past 10^60, where writing every digit stops being
 readable.
 
+## Dark mode
+
+Toggle in the top bar next to the volume, or in Settings. It dims the island
+backdrop behind the durian so the fruit is the brightest thing on screen, and
+saves with the player's progress.
+
+It works as a single token swap: `body.dark` redeclares the palette variables
+(`--surface`, `--surface-2`, `--card`, `--ink`, and so on) and every component
+already reads from those. If you add UI, use the tokens rather than literal hex
+values and dark mode will pick it up for free.
+
 ## Tooltips
 
 Hovering an achievement or a purchased upgrade shows a styled panel that appears
