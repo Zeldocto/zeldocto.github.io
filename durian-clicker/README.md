@@ -223,6 +223,12 @@ achievementBonusPer: 0.01
 
 `offline.efficiency: 0.5` would make workers idle at half rate while you're away.
 
+**Clicking is tuned so a full click build is worth ~1/3 of a second of passive
+production per click** — about 2.7x your passive rate at 8 clicks/sec. The two
+levers are the `clickMult` product and the `clickFromDps` sum in
+`js/content/upgrades.js`; their product IS the ratio. A test fails if it drifts
+outside 0.25–0.45.
+
 **On current pacing (Update 2):** simulating a veteran save — the state a player
 reaches at the end of Update 1 — through sixty days of continuous optimal play
 buys about 118 of the 166 upgrades, with the last one landing around day 31 and

@@ -37,7 +37,7 @@
     return true;
   }
 
-  function pct(v) { return String(Math.round(v * 1000) / 10); }
+  function pct(v) { return String(Math.round(v * 10000) / 100); }
   function targetLabel(t) {
     return t === 'all' ? 'All workers' : DC.Game.workerName(t, 2);
   }
