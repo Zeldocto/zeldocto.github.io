@@ -17,13 +17,21 @@
 <style>
   /* Supplied separately. Drop assets/fonts/smsscript.ttf in and the Durian
      counter picks it up; if the file is absent it falls back silently. */
+  /* The font lives at /assets/fonts/ in the site root, while this page is at
+     /durian-clicker/ — so the path has to climb out of the game folder. Both
+     faces are declared; the counter uses SMS Script. */
   @font-face {
     font-family: 'SMS Script';
-    src: url('zeldocto.github.io/assets/fonts/SMSScript.ttf') format('truetype');
+    src: url('../assets/fonts/SMSScript.ttf') format('truetype');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Delfino';
+    src: url('../assets/fonts/Delfino.ttf') format('truetype');
     font-display: swap;
   }
 </style>
-<link rel="stylesheet" href="css/style.css?v=2026-08-31">
+<link rel="stylesheet" href="css/style.css?v=2026-08-31-2">
 </head>
 <body>
 
@@ -328,27 +336,27 @@
 </div>
 
 <!-- Load order matters: data → maths → state → systems → interface. -->
-<script src="js/config.js?v=2026-08-31"></script>
-<script src="js/content/upgrades.js?v=2026-08-31"></script>
-<script src="js/content/achievements.js?v=2026-08-31"></script>
-<script src="js/content/events.js?v=2026-08-31"></script>
-<script src="js/content/skins.js?v=2026-08-31"></script>
-<script src="js/numbers.js?v=2026-08-31"></script>
-<script src="js/game.js?v=2026-08-31"></script>
-<script src="js/workers.js?v=2026-08-31"></script>
-<script src="js/upgrades.js?v=2026-08-31"></script>
-<script src="js/achievements.js?v=2026-08-31"></script>
-<script src="js/save.js?v=2026-08-31"></script>
-<script src="js/offline.js?v=2026-08-31"></script>
-<script src="js/events.js?v=2026-08-31"></script>
-<script src="js/updates.js?v=2026-08-31"></script>
-<script src="js/coins.js?v=2026-08-31"></script>
-<script src="js/casino.js?v=2026-08-31"></script>
-<script src="js/store.js?v=2026-08-31"></script>
-<script src="js/audio.js?v=2026-08-31"></script>
-<script src="js/leaderboard.js?v=2026-08-31"></script>
-<script src="js/ui.js?v=2026-08-31"></script>
-<script src="js/debug.js?v=2026-08-31"></script>
-<script src="js/main.js?v=2026-08-31"></script>
+<script src="js/config.js?v=2026-08-31-2"></script>
+<script src="js/content/upgrades.js?v=2026-08-31-2"></script>
+<script src="js/content/achievements.js?v=2026-08-31-2"></script>
+<script src="js/content/events.js?v=2026-08-31-2"></script>
+<script src="js/content/skins.js?v=2026-08-31-2"></script>
+<script src="js/numbers.js?v=2026-08-31-2"></script>
+<script src="js/game.js?v=2026-08-31-2"></script>
+<script src="js/workers.js?v=2026-08-31-2"></script>
+<script src="js/upgrades.js?v=2026-08-31-2"></script>
+<script src="js/achievements.js?v=2026-08-31-2"></script>
+<script src="js/save.js?v=2026-08-31-2"></script>
+<script src="js/offline.js?v=2026-08-31-2"></script>
+<script src="js/events.js?v=2026-08-31-2"></script>
+<script src="js/updates.js?v=2026-08-31-2"></script>
+<script src="js/coins.js?v=2026-08-31-2"></script>
+<script src="js/casino.js?v=2026-08-31-2"></script>
+<script src="js/store.js?v=2026-08-31-2"></script>
+<script src="js/audio.js?v=2026-08-31-2"></script>
+<script src="js/leaderboard.js?v=2026-08-31-2"></script>
+<script src="js/ui.js?v=2026-08-31-2"></script>
+<script src="js/debug.js?v=2026-08-31-2"></script>
+<script src="js/main.js?v=2026-08-31-2"></script>
 </body>
 </html>

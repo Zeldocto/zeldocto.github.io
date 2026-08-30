@@ -1,5 +1,5 @@
 {
-  "build": "2026-08-31",
-  "notes": "Menu number formatting, x100 and custom buy, buff stacking fix, random event lengths, Fruit Lady buff, gambling stats, counter font.",
+  "build": "2026-08-31-2",
+  "notes": "Fixed the counter font path.",
   "force": false
 }
