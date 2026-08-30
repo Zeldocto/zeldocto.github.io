@@ -30,13 +30,47 @@
      'name-input', 'name-error', 'upgrade-search', 'upgrade-count', 'upgrade-more',
      'owned-details', 'owned-count', 'buff-bar', 'event-banner', 'event-icon',
      'event-title', 'event-text', 'event-amount', 'tip', 'number-format',
-     'update-bar', 'update-icon', 'store-icon', 'casino-icon', 'coin-chip',
+     'update-bar', 'update-icon', 'update-line', 'store-icon', 'casino-icon', 'coin-chip',
      'coin-chip-icon', 'mini-coins', 'coin-layer', 'store-list', 'store-balance',
      'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'slots-hint', 'slots-payout', 'slots-outcome',
      'btn-dark', 'dark-toggle'
     ].forEach(function (id) { el[id] = $(id); });
+  }
+
+  /* -------------------------------------------------------- update prompt */
+
+  var updateTimer = null;
+
+  function stopUpdateCountdown() {
+    if (updateTimer) { clearInterval(updateTimer); updateTimer = null; }
+  }
+
+  function startUpdateCountdown(info) {
+    stopUpdateCountdown();
+    if (!info || !info.autoReload) {
+      el['update-line'].innerHTML = info && info.loopGuarded
+        ? 'The new files are not coming through. Press <kbd>Ctrl</kbd> + ' +
+          '<kbd>Shift</kbd> + <kbd>R</kbd> to force a refresh.'
+        : 'Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to refresh and play it.';
+      return;
+    }
+
+    var left = info.seconds || 10;
+    var tick = function () {
+      el['update-line'].textContent = left > 0
+        ? 'Reloading in ' + left + '\u2026'
+        : 'Reloading\u2026';
+      if (left <= 0) {
+        stopUpdateCountdown();
+        DC.Updates.reloadNow();
+        return;
+      }
+      left--;
+    };
+    tick();
+    updateTimer = setInterval(tick, 1000);
   }
 
   /* ------------------------------------------------------------ dark mode */
@@ -760,14 +794,23 @@
     var shadow = 'drop-shadow(0 12px 16px rgba(6, 48, 70, 0.42))';
 
     img.style.filter = chain ? chain + ' ' + shadow : shadow;
-    btn.classList.toggle('has-skin', !!chain);
-    btn.classList.toggle('skin-animated', !!(skin.css && skin.css.animated));
-
     var c = (skin && skin.css) || {};
+    btn.classList.toggle('has-skin', !!chain);
+    // Two kinds of movement: 'pulse' breathes between two themed states,
+    // 'cycle' runs the whole spectrum. Previously everything used the cycle,
+    // which is why four different skins looked like the same rainbow.
+    btn.classList.toggle('skin-pulse', !!(c.secs && !c.cycle));
+    btn.classList.toggle('skin-cycle', !!c.cycle);
+
     img.style.setProperty('--skin-sat', c.sat !== undefined ? c.sat : 1);
     img.style.setProperty('--skin-hue', (c.hue !== undefined ? c.hue : 0) + 'deg');
     img.style.setProperty('--skin-bright', c.bright !== undefined ? c.bright : 1);
     img.style.setProperty('--skin-contrast', c.contrast !== undefined ? c.contrast : 1);
+    img.style.setProperty('--skin-sat2', c.sat2 !== undefined ? c.sat2 : (c.sat || 1));
+    img.style.setProperty('--skin-hue2', (c.hue2 !== undefined ? c.hue2 : (c.hue || 0)) + 'deg');
+    img.style.setProperty('--skin-bright2', c.bright2 !== undefined ? c.bright2 : (c.bright || 1));
+    img.style.setProperty('--skin-contrast2', c.contrast2 !== undefined ? c.contrast2 : (c.contrast || 1));
+    img.style.setProperty('--skin-secs', (c.secs || 7) + 's');
   }
 
   function skinPreviewStyle(skin) {
@@ -1364,12 +1407,20 @@
     DC.Events.on('skinBought', applySkin);
 
     $('update-close').addEventListener('click', function () {
+      // Dismiss also cancels the automatic reload — nobody should be yanked
+      // out of a session they asked to stay in.
+      stopUpdateCountdown();
       el['update-bar'].hidden = true;
     });
-    DC.Events.on('updateAvailable', function () {
+    DC.Events.on('updateAvailable', function (info) {
       el['update-icon'].src = CONFIG.assets.shine;
       el['update-bar'].hidden = false;
       DC.Audio.play('unlock');
+      startUpdateCountdown(info);
+    });
+    $('update-now').addEventListener('click', function () {
+      stopUpdateCountdown();
+      DC.Updates.reloadNow();
     });
 
     $('event-close').addEventListener('click', hideEvent);

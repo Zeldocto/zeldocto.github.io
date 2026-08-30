@@ -1371,11 +1371,32 @@ input[type="range"] {
   filter: drop-shadow(0 12px 16px rgba(6, 48, 70, 0.42));
 }
 
-/* Animated skins cycle the hue right round. The whole chain is restated in the
-   keyframes because a single function of a filter cannot be animated alone. */
-.durian-btn.skin-animated img {
-  animation: skinHueCycle 7s linear infinite;
+/* Two animation styles. `pulse` breathes between the skin's two themed states
+   (gold to white, violet to black); `cycle` runs the full spectrum and is used
+   by exactly one skin. The whole chain is restated in the keyframes because a
+   single function of a filter cannot be animated on its own. */
+.durian-btn.skin-pulse img {
+  animation: skinPulse var(--skin-secs, 3s) ease-in-out infinite alternate;
 }
+.durian-btn.skin-cycle img {
+  animation: skinHueCycle var(--skin-secs, 7s) linear infinite;
+}
+
+@keyframes skinPulse {
+  from {
+    filter: grayscale(1) sepia(1) saturate(var(--skin-sat))
+            hue-rotate(var(--skin-hue))
+            brightness(var(--skin-bright)) contrast(var(--skin-contrast))
+            drop-shadow(0 12px 16px rgba(6, 48, 70, 0.42));
+  }
+  to {
+    filter: grayscale(1) sepia(1) saturate(var(--skin-sat2))
+            hue-rotate(var(--skin-hue2))
+            brightness(var(--skin-bright2)) contrast(var(--skin-contrast2))
+            drop-shadow(0 12px 16px rgba(6, 48, 70, 0.42));
+  }
+}
+
 @keyframes skinHueCycle {
   from {
     filter: grayscale(1) sepia(1) saturate(var(--skin-sat))
@@ -1744,3 +1765,6 @@ body.dark .list-count, body.dark .list-heading { color: var(--ink-soft); }
 body.dark .empty-note { background: #172937; color: var(--ink-soft); }
 body.dark .board-note { background: #172937; color: var(--ink-soft); }
 body.dark .item.locked .item-lock { color: var(--ink-soft); }
+
+.update-now { flex-shrink: 0; align-self: center; }
+.update-body #update-line { font-weight: 700; }

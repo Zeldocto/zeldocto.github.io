@@ -1,4 +1,4 @@
 {
-  "build": "2026-08-30-update5b",
-  "notes": "Slot win/loss feedback, Store and Slots moved beside the durian, dark mode contrast fixes."
+  "build": "2026-08-30-update7",
+  "notes": "Update 7 - forced refresh on new builds, cache-busted assets."
 }

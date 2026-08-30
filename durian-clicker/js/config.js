@@ -13,11 +13,16 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-30-update5b',
+    buildId: '2026-08-30-update7',
     updateCheck: {
       enabled: true,
       url: 'version.json',
-      intervalSeconds: 300
+      intervalSeconds: 300,
+      // Reload the page automatically when a new build ships, after a short
+      // countdown. Progress is saved first. Set false to go back to a banner
+      // that waits for the player to refresh in their own time.
+      autoReload: true,
+      countdownSeconds: 10
     },
 
     saveKey: 'durianClicker.save.v1',

@@ -10,24 +10,42 @@ touching game code.
 
 ## Deploying an update
 
-**Upload every file, not a subset.** The JS modules reference each other, and a
-half-finished upload used to leave a blank page. That specific failure is now
-handled — a missing optional module hides its own feature and the game plays on,
-and a missing required module shows a panel naming the file instead of a blank
-screen — but a full upload is still the only supported deploy.
+Run the helper, then push everything:
 
+```
+python3 bump_build.py                     # or: bump_build.py 2026-09-01-hotfix "notes"
+```
 
-Bump **two** values to the same string and push:
+It sets one build id in the three places that must agree:
 
-- `CONFIG.buildId` in `js/config.js`
-- `"build"` in `version.json`
+1. `CONFIG.buildId` in `js/config.js` — what the running page thinks it is
+2. `version.json` — what the server advertises
+3. `?v=<build>` on every local `<script>` and `<link>` in `index.html`
 
-Anyone mid-session polls `version.json` every 5 minutes (and whenever they
-refocus the tab). When the build id differs from the one they loaded, the game
-saves their progress and shows a banner telling them to press Ctrl + Shift + R.
-Without this they keep running cached JS until they happen to reload.
+**Point 3 is what actually beats the cache.** GitHub Pages serves JS and CSS
+with a long cache lifetime, so a plain refresh could keep running yesterday's
+code — which is why players used to need Ctrl+Shift+R. Changing the query
+string changes the URL, so the browser must fetch the new file. `index.html`
+itself is served with a short lifetime and comes through on its own.
 
-## Running it
+Players already in a session poll `version.json` every 5 minutes and whenever
+they refocus the tab. On a new build the game saves, shows a banner and
+reloads after a 10-second countdown. They can press **Update now** to go
+immediately, or dismiss to cancel the reload and finish what they were doing.
+
+A session-storage guard stops reload loops: if a reload does not produce the
+new build (a stale CDN edge, say), the game stops trying and shows the manual
+Ctrl+Shift+R instructions instead.
+
+Turn the automatic part off with `CONFIG.updateCheck.autoReload = false`, or
+change `countdownSeconds`.
+
+**Upload every file, not a subset.** The JS modules reference each other. A
+missing optional module now hides its own feature and the game plays on, and a
+missing required module shows a panel naming the file — but a full upload is
+still the only supported deploy.
+
+## Running it## Running it
 
 **Locally:** double-click `index.html`. That's it. The scripts are plain
 `<script>` tags rather than ES modules specifically so `file://` works — no local
@@ -229,6 +247,11 @@ achievementBonusPer: 0.01
 ```
 
 `offline.efficiency: 0.5` would make workers idle at half rate while you're away.
+
+Click power is **normalised automatically** by `gen_upgrades.py`: the ratio is
+exactly (clickMult product) x (clickFromDps sum), so the generator scales the
+DPS shares to hit the target and rewrites their descriptions to match. Add click
+upgrades freely; the balance holds.
 
 **Clicking is tuned so a full click build is worth ~1/3 of a second of passive
 production per click** — about 2.7x your passive rate at 8 clicks/sec. The two

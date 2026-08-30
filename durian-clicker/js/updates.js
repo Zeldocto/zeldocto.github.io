@@ -15,6 +15,7 @@
   var CONFIG = DC.CONFIG;
   var timer = null;
   var notified = false;
+  var RELOAD_KEY = 'durianClicker.reloadedFor';
 
   function cfg() { return CONFIG.updateCheck || {}; }
 
@@ -32,9 +33,27 @@
         if (!data || !data.build) return;
         if (data.build !== CONFIG.buildId) {
           notified = true;
-          // Save first: they may refresh the instant they read the prompt.
+          // Save first: the page is about to go away.
           DC.Save.save(true);
-          DC.Events.emit('updateAvailable', data);
+
+          // Loop guard. If we already reloaded for this build and the browser
+          // is STILL serving the old files (a stale CDN edge, say), reloading
+          // again would trap the player in a refresh loop. Fall back to the
+          // manual banner instead.
+          var alreadyTried = false;
+          try {
+            alreadyTried = sessionStorage.getItem(RELOAD_KEY) === data.build;
+            sessionStorage.setItem(RELOAD_KEY, data.build);
+          } catch (err) { alreadyTried = true; }
+
+          var auto = !!cfg().autoReload && !alreadyTried;
+          DC.Events.emit('updateAvailable', {
+            build: data.build,
+            notes: data.notes,
+            autoReload: auto,
+            seconds: cfg().countdownSeconds || 10,
+            loopGuarded: alreadyTried
+          });
           stop();
         }
       })
@@ -44,6 +63,7 @@
   }
 
   function start() {
+    confirmUpdated();
     if (!cfg().enabled) return;
     stop();
     timer = setInterval(check, (cfg().intervalSeconds || 300) * 1000);
@@ -56,5 +76,33 @@
 
   function stop() { if (timer) { clearInterval(timer); timer = null; } }
 
-  DC.Updates = { start: start, stop: stop, check: check };
+  /**
+   * Saves and reloads. Called by the countdown, or straight away when the
+   * player presses the button.
+   */
+  function reloadNow() {
+    try { DC.Save.save(true); } catch (err) { /* save already attempted */ }
+    // A cache-busting query on the page itself, so the HTML (and therefore the
+    // versioned script URLs inside it) is refetched rather than served stale.
+    try {
+      var url = location.pathname + '?u=' + Date.now() + location.hash;
+      location.replace(url);
+    } catch (err) {
+      location.reload();
+    }
+  }
+
+  /** Clears the loop guard — used after a successful load of the new build. */
+  function confirmUpdated() {
+    try {
+      if (sessionStorage.getItem(RELOAD_KEY) === CONFIG.buildId) {
+        sessionStorage.removeItem(RELOAD_KEY);
+      }
+    } catch (err) { /* not important */ }
+  }
+
+  DC.Updates = {
+    start: start, stop: stop, check: check,
+    reloadNow: reloadNow, confirmUpdated: confirmUpdated
+  };
 })(window.DC = window.DC || {});
