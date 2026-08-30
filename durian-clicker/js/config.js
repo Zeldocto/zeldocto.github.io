@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-31-2',
+    buildId: '2026-08-31-3',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -309,15 +309,20 @@
       spinSeconds: 1.6,
       coinSpinCost: 1,            // Blue Coins per spin — this is the real limiter
       symbols: [
-        { id: 'durian', name: 'Durian', icon: 'assets/placeholder-durian.png', weight: 30, triple: 6 },
-        { id: 'pianta', name: 'Pianta', icon: 'assets/placeholder-pianta.png', weight: 25, triple: 6 },
-        { id: 'noki',   name: 'Noki',   icon: 'assets/placeholder-noki.png',   weight: 20, triple: 8 },
-        { id: 'yoshi',  name: 'Yoshi',  icon: 'assets/placeholder-yoshi.png',  weight: 15, triple: 12 },
-        { id: 'shine',  name: 'Shine',  icon: 'assets/placeholder-shine.png',  weight: 8,  triple: 40 },
-        { id: 'coin',   name: 'Blue Coin', icon: 'assets/placeholder-bluecoin.png', weight: 2,
-          triple: 150, tripleCoins: 3 }
+        { id: 'durian', name: 'Durian', icon: 'assets/placeholder-durian.png', weight: 28, triple: 9 },
+        { id: 'pianta', name: 'Pianta', icon: 'assets/placeholder-pianta.png', weight: 24, triple: 10 },
+        { id: 'noki',   name: 'Noki',   icon: 'assets/placeholder-noki.png',   weight: 20, triple: 14 },
+        { id: 'yoshi',  name: 'Yoshi',  icon: 'assets/placeholder-yoshi.png',  weight: 15, triple: 20 },
+        { id: 'shine',  name: 'Shine',  icon: 'assets/placeholder-shine.png',  weight: 8,  triple: 60 },
+        // weight raised from 2: at 2 the jackpot was one spin in 125,000, which
+        // nobody was ever going to see when a spin costs a Blue Coin
+        { id: 'coin',   name: 'Blue Coin', icon: 'assets/placeholder-bluecoin.png', weight: 5,
+          triple: 200, tripleCoins: 3 }
       ],
-      pairPayout: 1.0             // two matching returns the bet
+      // A pair used to return exactly the stake, so half the "wins" felt like
+      // nothing happened. It now pays out properly, and because a spin already
+      // costs a scarce Blue Coin the Durian side runs at a player advantage.
+      pairPayout: 1.6
     },
 
     /* --------------------------------------------------------------- store */
