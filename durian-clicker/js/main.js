@@ -15,7 +15,7 @@
                   'Save', 'Offline', 'Audio', 'UI'];
   // Modules that add features. If one is absent the game still plays.
   var OPTIONAL = ['IslandEvents', 'Coins', 'Casino', 'Store', 'Leaderboard',
-                  'Updates', 'Debug'];
+                  'Updates', 'Changelog', 'Debug'];
 
   var FILE_FOR = {
     CONFIG: 'js/config.js', N: 'js/numbers.js', Game: 'js/game.js',
@@ -24,7 +24,7 @@
     Offline: 'js/offline.js', Audio: 'js/audio.js', UI: 'js/ui.js',
     IslandEvents: 'js/events.js', Coins: 'js/coins.js', Casino: 'js/casino.js',
     Store: 'js/store.js', Leaderboard: 'js/leaderboard.js',
-    Updates: 'js/updates.js', Debug: 'js/debug.js'
+    Updates: 'js/updates.js', Changelog: 'js/changelog.js', Debug: 'js/debug.js'
   };
 
   function missing(list) {
@@ -94,6 +94,12 @@
 
     DC.Save.startAutosave();
     if (DC.Updates) DC.Updates.start();
+    // A brand-new save has read nothing, but should not be greeted with a
+    // changelog for a version it never played.
+    if (DC.Changelog) {
+      if (!saved) DC.Changelog.markRead();
+      else DC.Changelog.check();
+    }
     if (DC.Coins &&
         (!DC.Game.state.coins.nextAt || DC.Game.state.coins.nextAt < Date.now())) {
       DC.Coins.schedule();

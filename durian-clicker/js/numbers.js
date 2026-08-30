@@ -142,6 +142,12 @@
     'Vg', 'UVg', 'DVg', 'TVg', 'QaVg', 'QiVg', 'SxVg', 'SpVg', 'OcVg', 'NoVg', 'Tg'
   ];
 
+  /** Drops a trailing ".00" or ".50" -> ".5". */
+  function trimZeros(text) {
+    if (text.indexOf('.') === -1) return text;
+    return text.replace(/0+$/, '').replace(/\.$/, '');
+  }
+
   function withCommas(n, decimals) {
     var s = n.toFixed(decimals || 0);
     var parts = s.split('.');
@@ -214,13 +220,14 @@
 
     // Always two decimals: 1.23 / 12.34 / 123.45. The old sliding 2/1/0 threw
     // away precision exactly as the numbers got interesting.
-    var dec = 2;
+    // Two decimals, but never a pointless ".00" — 18M, not 18.00M.
+    var text = trimZeros(mantissa.toFixed(2));
 
     if (style === 'shortened') {
-      if (tier < WORDS.length) return mantissa.toFixed(dec) + ' ' + WORDS[tier];
-      return v.m.toFixed(3) + ' \u00D7 10^' + v.e;
+      if (tier < WORDS.length) return text + ' ' + WORDS[tier];
+      return trimZeros(v.m.toFixed(3)) + ' \u00D7 10^' + v.e;
     }
-    if (tier < SUFFIXES.length) return mantissa.toFixed(dec) + SUFFIXES[tier];
+    if (tier < SUFFIXES.length) return text + SUFFIXES[tier];
     return v.m.toFixed(3) + 'e' + v.e;
   }
 
@@ -270,6 +277,6 @@
     serialize: serialize, deserialize: deserialize,
     format: format, formatMenu: formatMenu, formatRate: formatRate, formatDuration: formatDuration,
     mode: mode, WORDS: WORDS, SUFFIXES: SUFFIXES,
-    withCommas: withCommas
+    withCommas: withCommas, trimZeros: trimZeros
   };
 })(window.DC = window.DC || {});

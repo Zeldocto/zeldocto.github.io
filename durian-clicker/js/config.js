@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-31-5',
+    buildId: '2026-09-01',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -35,7 +35,13 @@
       startingDurians: 0,
       baseClickPower: 1,       // durians per click before upgrades
       tickRate: 20,            // production ticks per second
-      uiRefreshRate: 20        // UI redraws per second
+      uiRefreshRate: 20,       // UI redraws per second
+
+      // Clicks above this rate still register for animation and achievements
+      // but earn a fraction. A console one-liner could otherwise fire 50,000
+      // clicks in a single frame. Autoclickers at human-ish speeds are fine.
+      maxClickRate: 30,        // clicks per second earning full value
+      overflowClickValue: 0.02 // what the rest are worth, as a fraction
     },
 
     formatting: {
@@ -345,6 +351,15 @@
       minIntervalSeconds: 240,      // random gap between events...
       maxIntervalSeconds: 900,      // ...scaled by any eventChance upgrades
       minBankForSetbacks: 10000,    // never take Durians below this
+
+      // Event upgrades used to MULTIPLY together: x67.5 on payouts, x0.013 on
+      // losses, x10 on buff length. Corona Belch handed over 135 hours of
+      // production and a Goop outbreak lasted under a second. They stack
+      // additively now, and these are the ceilings.
+      maxEventGain: 3.0,            // good events pay at most 3x base
+      minEventLoss: 0.4,            // bad events always cost at least 40%
+      maxBuffDuration: 2.5,         // good buffs last at most 2.5x base
+      maxEventChance: 3.0,          // events at most 3x as frequent
       showBanner: true,
       bannerSeconds: 10
     }

@@ -74,6 +74,7 @@
       eventGained: N.ZERO,          // durians handed over by good events
       lost: N.ZERO,                 // durians taken by setback events
       offlineEarned: N.ZERO,
+      changelogSeen: null,          // version string of the last release read
       playTime: 0,
       startedAt: Date.now(),
       lastSaved: Date.now()
@@ -191,7 +192,10 @@
     var workerScaling = {};     // id -> [{ per, value }]
     var workerSynergy = [];     // { target, source, value }
     var achievementBonus = CONFIG.achievementBonusPer;
-    var eventChance = 1, eventGain = 1, eventLoss = 1, buffDuration = 1;
+    // Accumulated as bonuses and summed, not multiplied — see the caps in
+    // CONFIG.events_settings.
+    var eventChanceBonus = 0, eventGainBonus = 0;
+    var eventLossReduction = 0, buffDurationBonus = 0;
     var offlineEfficiency = CONFIG.offline.efficiency;
     var offlineHours = 0;
     var bought = 0;
@@ -214,10 +218,10 @@
               (workerScaling[fx.target] || (workerScaling[fx.target] = [])).push(fx); break;
             case 'workerSynergy':     workerSynergy.push(fx); break;
             case 'achievementBonus':  achievementBonus += fx.value; break;
-            case 'eventChance':       eventChance *= fx.value; break;
-            case 'eventGain':         eventGain *= fx.value; break;
-            case 'eventLoss':         eventLoss *= fx.value; break;
-            case 'buffDuration':      buffDuration *= fx.value; break;
+            case 'eventChance':       eventChanceBonus += (fx.value - 1); break;
+            case 'eventGain':         eventGainBonus += (fx.value - 1); break;
+            case 'eventLoss':         eventLossReduction += (1 - fx.value); break;
+            case 'buffDuration':      buffDurationBonus += (fx.value - 1); break;
             case 'offlineEfficiency': offlineEfficiency += fx.value; break;
             case 'offlineHours':      offlineHours += fx.value; break;
             default: console.warn('Unknown effect type:', fx.type);
@@ -296,10 +300,11 @@
     d.achievementsEarned = achievements;
     d.baseDps = baseDps;                 // excludes temporary event buffs
     d.baseGlobalMult = baseGlobalMult;
-    d.eventChance = eventChance;
-    d.eventGain = eventGain;
-    d.eventLoss = eventLoss;
-    d.buffDuration = buffDuration;
+    var ev = CONFIG.events_settings;
+    d.eventChance = Math.min(1 + eventChanceBonus, ev.maxEventChance || 3);
+    d.eventGain = Math.min(1 + eventGainBonus, ev.maxEventGain || 3);
+    d.eventLoss = Math.max(1 - eventLossReduction, ev.minEventLoss || 0.4);
+    d.buffDuration = Math.min(1 + buffDurationBonus, ev.maxBuffDuration || 2.5);
     d.offlineEfficiency = offlineEfficiency;
     d.offlineMaxSeconds = CONFIG.offline.maxSeconds + offlineHours * 3600;
     d.buffProd = buffProd;
@@ -309,11 +314,22 @@
     // portion together. Multiplying only the flat part made late-game ×3 and
     // ×15 multipliers feel like they did nothing, because the DPS share
     // dominates once Hover/Turbo nozzles are in play.
+    // Click power is the BETTER of two routes, not the product of them:
+    //
+    //   flat gear   (gloves, nozzles, per-worker bonuses) x clickMult
+    //   a share of production   (dps x clickFromDps)
+    //
+    // Multiplying them meant 24 multiplier upgrades compounded to 4,355x, and
+    // the normaliser had to shrink every "% of your DPS" upgrade to 0.001% to
+    // compensate — so Hover Nozzle, Turbo Nozzle and friends literally did
+    // nothing and displayed as 0%. Taking the max keeps gear relevant early,
+    // lets the production share carry the late game, and bounds the ratio at
+    // whatever clickFromDps sums to.
     var clickFlat = N.big(CONFIG.balance.baseClickPower + clickAdd + clickFromWorkers * totalWorkers);
-    d.clickPower = N.mul(
-      N.add(clickFlat, N.mul(dps, clickFromDps)),
-      clickMult * buffClick
-    );
+    var gearRoute = N.mul(clickFlat, clickMult);
+    var shareRoute = N.mul(dps, clickFromDps);
+    d.clickPower = N.mul(N.max(gearRoute, shareRoute), buffClick);
+    d.clickShare = clickFromDps;
 
     Events.emit('recalc');
   }
@@ -339,12 +355,41 @@
     return true;
   }
 
+  /* Rolling one-second window of click times, for the rate limiter. */
+  var recentClicks = [];
+
+  /**
+   * How much of a click actually pays. Up to maxClickRate per second it is the
+   * full amount; past that the extra clicks are worth a small fraction. A
+   * console script firing thousands of clicks per frame therefore earns
+   * almost nothing, while anyone clicking by hand is unaffected.
+   */
+  function clickRateFactor() {
+    var cfg = CONFIG.balance;
+    var limit = cfg.maxClickRate;
+    if (!limit || limit <= 0) return 1;
+    var now = Date.now();
+    while (recentClicks.length && now - recentClicks[0] > 1000) recentClicks.shift();
+    recentClicks.push(now);
+    if (recentClicks.length <= limit) return 1;
+    return cfg.overflowClickValue !== undefined ? cfg.overflowClickValue : 0.02;
+  }
+
+  /** Clicks in the last second, for the UI. */
+  function currentClickRate() {
+    var now = Date.now();
+    while (recentClicks.length && now - recentClicks[0] > 1000) recentClicks.shift();
+    return recentClicks.length;
+  }
+
   /** Player clicked the durian. Returns how much was earned. */
   function click() {
-    var gained = Game.derived.clickPower;
+    var factor = clickRateFactor();
+    var gained = factor === 1 ? Game.derived.clickPower
+                              : N.mul(Game.derived.clickPower, factor);
     Game.state.totalClicks++;
     addDurians(gained, 'click');
-    Events.emit('click', { amount: gained });
+    Events.emit('click', { amount: gained, throttled: factor !== 1 });
     checkProgress();
     return gained;
   }
@@ -462,6 +507,7 @@
     newState: newState,
     recalc: recalc,
     click: click,
+    currentClickRate: currentClickRate,
     tick: tick,
     start: start,
     stop: stop,

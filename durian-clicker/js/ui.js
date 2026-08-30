@@ -35,8 +35,30 @@
      'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'slots-hint', 'slots-payout', 'slots-outcome',
-     'btn-dark', 'dark-toggle', 'buy-custom'
+     'btn-dark', 'dark-toggle', 'buy-custom',
+     'news-bar', 'news-icon', 'news-line', 'changelog-body'
     ].forEach(function (id) { el[id] = $(id); });
+  }
+
+  /* ----------------------------------------------------------- changelog */
+
+  function buildChangelog() {
+    var list = DC.Changelog.entries();
+    el['changelog-body'].innerHTML = list.map(function (entry, i) {
+      return '<section class="changelog-entry' + (i === 0 ? ' is-latest' : '') + '">' +
+        '<h3>' + escapeHtml(entry.title || entry.version) +
+        '<span>' + escapeHtml(entry.version) + '</span></h3>' +
+        '<ul>' + (entry.notes || []).map(function (n) {
+          return '<li>' + escapeHtml(n) + '</li>';
+        }).join('') + '</ul></section>';
+    }).join('') || '<p class="empty-note">Nothing to report yet.</p>';
+  }
+
+  function openChangelog() {
+    buildChangelog();
+    openModal('modal-changelog');
+    DC.Changelog.markRead();
+    el['news-bar'].hidden = true;
   }
 
   /* -------------------------------------------------------- update prompt */
@@ -166,6 +188,7 @@
   /* ------------------------------------------------------------- counters */
 
   function refreshCounters() {
+    if (suppressCounters) return;
     var s = Game.state, d = Game.derived;
     el['durian-count'].textContent = N.format(s.durians);
     el['dps-line'].textContent = N.formatRate(d.dps) + ' per second';
@@ -655,6 +678,9 @@
 
   var betFraction = null;      // null = whichever is selected
   var spinning = false;
+  // While a spin animates, the Durian counters are frozen. Otherwise the
+  // numbers give the result away before the reels stop.
+  var suppressCounters = false;
 
   function buildBetRow() {
     var row = el['bet-row'];
@@ -778,7 +804,11 @@
     if (!result) return;
 
     spinning = true;
-    refreshCasino();
+    // Do NOT refresh the counters here. The stake and any winnings are applied
+    // the moment the spin resolves internally, so redrawing now shows the
+    // player their result before the reels have finished turning.
+    suppressCounters = true;
+    el['btn-spin'].disabled = true;
     DC.Audio.play('spin');
     el['slots-result'].textContent = 'Spinning\u2026';
     el['slots-result'].className = 'slots-result';
@@ -797,6 +827,7 @@
 
       showSpinOutcome(result);
 
+      suppressCounters = false;
       refreshCasino();
       refreshCounters();
     }, CONFIG.casino.spinSeconds * 1000);
@@ -1374,8 +1405,10 @@
 
     $('confirm-cancel').addEventListener('click', function () { closeModal('modal-confirm'); confirmCallback = null; });
     $('confirm-ok').addEventListener('click', function () {
+      // Grab the callback BEFORE closing: closeModal clears it, so reading it
+      // afterwards always found null and Reset and Import silently did nothing.
+      var cb = confirmCallback;
       closeModal('modal-confirm');
-      var cb = confirmCallback; confirmCallback = null;
       if (cb) cb();
     });
 
@@ -1478,6 +1511,17 @@
         toast('Skin unlocked: ' + skin.name, skin.description, 'unlock');
       });
       DC.Audio.play('achievement');
+    });
+
+    $('news-read').addEventListener('click', openChangelog);
+    $('news-close').addEventListener('click', function () {
+      DC.Changelog.markRead();          // dismissing counts as read
+      el['news-bar'].hidden = true;
+    });
+    DC.Events.on('changelogAvailable', function (entry) {
+      el['news-icon'].src = CONFIG.assets.shine;
+      el['news-line'].textContent = entry.title || 'Tap to see what is new.';
+      el['news-bar'].hidden = false;
     });
 
     $('update-close').addEventListener('click', function () {

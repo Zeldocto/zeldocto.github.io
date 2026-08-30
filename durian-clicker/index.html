@@ -31,7 +31,7 @@
     font-display: swap;
   }
 </style>
-<link rel="stylesheet" href="css/style.css?v=2026-08-31-5">
+<link rel="stylesheet" href="css/style.css?v=2026-09-01">
 </head>
 <body>
 
@@ -181,6 +181,24 @@
 </div>
 
 <div class="coin-layer" id="coin-layer" aria-hidden="true"></div>
+
+<div class="news-bar" id="news-bar" hidden role="status">
+  <img class="news-icon" id="news-icon" alt="">
+  <div class="news-body">
+    <strong>The island has changed</strong>
+    <span id="news-line">Tap to see what is new.</span>
+  </div>
+  <button class="btn btn-small btn-primary" id="news-read">What&#39;s new</button>
+  <button class="news-close" id="news-close" aria-label="Dismiss">&times;</button>
+</div>
+
+<div class="modal" id="modal-changelog" hidden>
+  <div class="modal-card modal-card-wide">
+    <button class="modal-close" data-close="modal-changelog" aria-label="Close">&times;</button>
+    <h2>What&#39;s new</h2>
+    <div class="changelog" id="changelog-body"></div>
+  </div>
+</div>
 
 <div class="tip" id="tip" hidden></div>
 
@@ -336,27 +354,29 @@
 </div>
 
 <!-- Load order matters: data → maths → state → systems → interface. -->
-<script src="js/config.js?v=2026-08-31-5"></script>
-<script src="js/content/upgrades.js?v=2026-08-31-5"></script>
-<script src="js/content/achievements.js?v=2026-08-31-5"></script>
-<script src="js/content/events.js?v=2026-08-31-5"></script>
-<script src="js/content/skins.js?v=2026-08-31-5"></script>
-<script src="js/numbers.js?v=2026-08-31-5"></script>
-<script src="js/game.js?v=2026-08-31-5"></script>
-<script src="js/workers.js?v=2026-08-31-5"></script>
-<script src="js/upgrades.js?v=2026-08-31-5"></script>
-<script src="js/achievements.js?v=2026-08-31-5"></script>
-<script src="js/save.js?v=2026-08-31-5"></script>
-<script src="js/offline.js?v=2026-08-31-5"></script>
-<script src="js/events.js?v=2026-08-31-5"></script>
-<script src="js/updates.js?v=2026-08-31-5"></script>
-<script src="js/coins.js?v=2026-08-31-5"></script>
-<script src="js/casino.js?v=2026-08-31-5"></script>
-<script src="js/store.js?v=2026-08-31-5"></script>
-<script src="js/audio.js?v=2026-08-31-5"></script>
-<script src="js/leaderboard.js?v=2026-08-31-5"></script>
-<script src="js/ui.js?v=2026-08-31-5"></script>
-<script src="js/debug.js?v=2026-08-31-5"></script>
-<script src="js/main.js?v=2026-08-31-5"></script>
+<script src="js/config.js?v=2026-09-01"></script>
+<script src="js/content/upgrades.js?v=2026-09-01"></script>
+<script src="js/content/achievements.js?v=2026-09-01"></script>
+<script src="js/content/events.js?v=2026-09-01"></script>
+<script src="js/content/changelog.js?v=2026-09-01"></script>
+<script src="js/content/skins.js?v=2026-09-01"></script>
+<script src="js/numbers.js?v=2026-09-01"></script>
+<script src="js/game.js?v=2026-09-01"></script>
+<script src="js/workers.js?v=2026-09-01"></script>
+<script src="js/upgrades.js?v=2026-09-01"></script>
+<script src="js/achievements.js?v=2026-09-01"></script>
+<script src="js/save.js?v=2026-09-01"></script>
+<script src="js/offline.js?v=2026-09-01"></script>
+<script src="js/events.js?v=2026-09-01"></script>
+<script src="js/changelog.js?v=2026-09-01"></script>
+<script src="js/updates.js?v=2026-09-01"></script>
+<script src="js/coins.js?v=2026-09-01"></script>
+<script src="js/casino.js?v=2026-09-01"></script>
+<script src="js/store.js?v=2026-09-01"></script>
+<script src="js/audio.js?v=2026-09-01"></script>
+<script src="js/leaderboard.js?v=2026-09-01"></script>
+<script src="js/ui.js?v=2026-09-01"></script>
+<script src="js/debug.js?v=2026-09-01"></script>
+<script src="js/main.js?v=2026-09-01"></script>
 </body>
 </html>

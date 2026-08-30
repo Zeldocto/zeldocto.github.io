@@ -34,7 +34,7 @@
       icon: 'assets/placeholder-shine.png',
       title: 'King Boo is feeling generous',
       text: 'He materialises over the orchard, laughs at something you cannot hear, and leaves a pile of fruit behind.',
-      effect: { type: 'gainSeconds', min: 300, max: 1800 }
+      effect: { type: 'gainSeconds', min: 60, max: 260 }
     },
     {
       id: 'king_boo_greedy',
@@ -44,7 +44,7 @@
       icon: 'assets/placeholder-shine.png',
       title: 'King Boo is feeling greedy',
       text: 'He materialises over the storehouse, laughs at something you definitely can hear, and takes a cut.',
-      effect: { type: 'losePercent', min: 0.02, max: 0.08 }
+      effect: { type: 'losePercent', min: 0.05, max: 0.14 }
     },
 
     /* -------------------------------------------------- Sirena Beach -- */
@@ -56,7 +56,7 @@
       icon: 'assets/placeholder-noki.png',
       title: 'The hotel presents your bill',
       text: 'Nobody remembers checking in. The itemisation is immaculate. The manager is not available for questions.',
-      effect: { type: 'losePercent', min: 0.03, max: 0.10 },
+      effect: { type: 'losePercent', min: 0.06, max: 0.16 },
       require: { type: 'totalEarned', amount: 100000 }
     },
     {
@@ -67,7 +67,7 @@
       icon: 'assets/placeholder-noki.png',
       title: 'The hotel issues a refund',
       text: 'An audit found irregularities. Several of the staff were, on inspection, sheets.',
-      effect: { type: 'gainSeconds', min: 600, max: 2400 },
+      effect: { type: 'gainSeconds', min: 240, max: 800 },
       require: { type: 'eventTypeSeen', id: 'sirena_bill', count: 1 }
     },
 
@@ -128,7 +128,7 @@
       icon: 'assets/placeholder-piantissimo.png',
       title: 'Il Piantissimo challenges you',
       text: 'He wins, obviously. He is so pleased about it that he hands over his entire haul.',
-      effect: { type: 'gainSeconds', min: 240, max: 900 }
+      effect: { type: 'gainSeconds', min: 100, max: 380 }
     },
 
     /* -------------------------------------------------------- Blooper -- */
@@ -152,7 +152,7 @@
       icon: 'assets/placeholder-toad.png',
       title: 'Somebody hit the jackpot',
       text: 'Nine hours in the machine. One extremely good bounce. The payout is obscene.',
-      effect: { type: 'gainSeconds', min: 1200, max: 5400 },
+      effect: { type: 'gainSeconds', min: 400, max: 1400 },
       require: { type: 'totalEarned', amount: 1e7 }
     },
 
@@ -165,7 +165,7 @@
       icon: 'assets/placeholder-shine.png',
       title: 'The mountain belches',
       text: 'A column of durians, straight up, and then straight down again. Structural damage: acceptable.',
-      effect: { type: 'gainSeconds', min: 1800, max: 7200 },
+      effect: { type: 'gainSeconds', min: 600, max: 2000 },
       require: { type: 'totalEarned', amount: 1e11 }
     },
 
@@ -178,7 +178,7 @@
       icon: 'assets/placeholder-toad.png',
       title: 'An unscheduled audit',
       text: 'The paperwork was not in order. The paperwork is never in order.',
-      effect: { type: 'loseSeconds', min: 120, max: 600 },
+      effect: { type: 'loseSeconds', min: 400, max: 1400 },
       require: { type: 'totalEarned', amount: 1e6 }
     }
   ]);

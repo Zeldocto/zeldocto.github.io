@@ -512,7 +512,10 @@ body.dark .amt-custom { color: var(--ink); }
   background: linear-gradient(180deg, #FFFBEA, #FFF0C4);
   box-shadow: 0 2px 0 var(--shine-dark), 0 0 0 3px rgba(255, 201, 60, 0.22);
 }
-.item.affordable:hover { transform: translateY(-2px); }
+/* Lifting the element on hover moved it out from under the cursor at the
+   bottom edge, which made it flicker in and out of :hover many times a
+   second. Scaling from the centre keeps the pointer inside the box. */
+.item.affordable:hover { transform: scale(1.012); }
 .item.affordable:active { transform: translateY(1px); box-shadow: 0 0 0 3px rgba(255, 201, 60, 0.22); }
 
 .item.broke { opacity: 0.62; cursor: not-allowed; filter: saturate(0.55); }
@@ -633,7 +636,7 @@ body.dark .amt-custom { color: var(--ink); }
   cursor: help;
   transition: transform 0.1s ease;
 }
-.ach:hover { transform: translateY(-2px); }
+.ach:hover { transform: scale(1.06); }
 .ach img { width: 68%; height: 68%; filter: grayscale(1) opacity(0.3); }
 
 .ach.earned {
@@ -1330,7 +1333,7 @@ body.dark .amt-custom { color: var(--ink); }
   color: var(--ink-soft);
   letter-spacing: 0.02em;
 }
-.stage-tool:hover { background: var(--surface-hi); transform: translateY(-2px); }
+.stage-tool:hover { background: var(--surface-hi); transform: scale(1.05); }
 .stage-tool:active { transform: translateY(1px); box-shadow: none; }
 .stage-tool[hidden] { display: none; }
 
@@ -1844,3 +1847,70 @@ body.dark .item.locked .item-lock { color: var(--ink-soft); }
 
 .update-now { flex-shrink: 0; align-self: center; }
 .update-body #update-line { font-weight: 700; }
+
+
+/* ------------------------------------------------------- changelog prompt */
+
+.news-bar {
+  position: fixed;
+  z-index: 94;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(520px, calc(100vw - 24px));
+  background: var(--card);
+  border: 3px solid var(--sea);
+  border-radius: 16px;
+  padding: 11px 14px;
+  box-shadow: var(--shadow-lg);
+  animation: updateIn 0.4s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.news-bar[hidden] { display: none; }
+.news-icon { width: 34px; height: 34px; flex-shrink: 0; animation: spinShine 6s linear infinite; }
+.news-body { flex: 1; min-width: 0; }
+.news-body strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--sea-deep);
+}
+.news-body span { display: block; font-size: 0.78rem; color: var(--ink-soft); }
+body.dark .news-body strong { color: #7FD8FF; }
+.news-close {
+  border: 0; background: none; font-size: 1.3rem; cursor: pointer;
+  color: var(--ink-soft); padding: 0 4px; align-self: flex-start;
+}
+/* If both bars are up, the update prompt sits above the changelog one. */
+.update-bar:not([hidden]) ~ .news-bar { top: 86px; }
+
+.changelog { max-height: 60dvh; overflow-y: auto; }
+.changelog-entry { margin-bottom: 16px; }
+.changelog-entry h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--roof-dark);
+  margin: 0 0 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  border-bottom: 2px solid var(--sand-line);
+  padding-bottom: 5px;
+}
+.changelog-entry h3 span {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+.changelog-entry ul { margin: 0; padding-left: 20px; }
+.changelog-entry li {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.changelog-entry.is-latest li::marker { color: var(--shine-dark); }
