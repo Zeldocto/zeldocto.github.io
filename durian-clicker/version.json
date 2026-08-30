@@ -1,5 +1,5 @@
 {
-  "build": "2026-08-31-3",
-  "notes": "Better slot odds, Fruit Lady rebalance, Tectonic Knuckles is now a multiplier.",
+  "build": "2026-08-31-4",
+  "notes": "Full economy rebalance: crew evened out, unreachable content fixed, cost bug corrected.",
   "force": false
 }
