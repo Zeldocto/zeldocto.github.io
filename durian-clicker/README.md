@@ -290,6 +290,23 @@ Set the default for new players with `CONFIG.formatting.defaultMode`. Full mode
 falls back to abbreviated past 10^60, where writing every digit stops being
 readable.
 
+## Casino
+
+Every spin costs **one Blue Coin plus a Durian stake**. The coin is the limiter,
+and that is the whole design: Durians are effectively unlimited late game, so
+free spins would let players farm Blue Coins out of the jackpot and make them
+worthless. Coins are scarce, so spins are scarce.
+
+The numbers, verified by test:
+
+- Durian stake returns ~88% long run — a sink, not a faucet
+- Blue Coins returned per coin spent: **0.000024**, i.e. about 41,700 spins to
+  win one back. It can never be farmed.
+
+Tune odds in `CONFIG.casino.symbols` (weights and `triple` multipliers).
+`DC.Casino.expectedReturn()` and `DC.Casino.coinReturn()` compute the theory
+directly, and the test suite fails if either drifts out of a safe band.
+
 ## Dark mode
 
 Toggle in the top bar next to the volume, or in Settings. It dims the island

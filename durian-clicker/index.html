@@ -179,7 +179,8 @@
   <div class="modal-card modal-card-wide casino-card">
     <button class="modal-close" data-close="modal-casino" aria-label="Close casino">&times;</button>
     <h2>Casino</h2>
-    <p class="modal-lead">Bet Durians, or spend a Blue Coin for a premium spin.</p>
+    <p class="modal-lead">Every spin costs one <img class="inline-coin" id="lead-coin-icon" alt="Blue Coin"> Blue Coin,
+      plus whatever you stake in Durians.</p>
 
     <div class="reels" id="reels">
       <div class="reel"><img class="reel-img" alt=""></div>
@@ -189,11 +190,10 @@
     <p class="slots-result" id="slots-result">Place a bet to spin.</p>
 
     <div class="bet-row" id="bet-row" role="group" aria-label="Bet size"></div>
+    <p class="coin-purse">You have <img class="inline-coin" id="spin-coin-icon" alt="">
+      <strong id="coin-balance">0</strong> Blue Coins</p>
     <div class="setting-actions casino-actions">
       <button class="btn btn-primary" id="btn-spin">Spin</button>
-      <button class="btn" id="btn-spin-coin">
-        Spin with <img class="inline-coin" id="spin-coin-icon" alt=""> <span id="coin-balance">0</span>
-      </button>
     </div>
     <details class="stats-group casino-odds">
       <summary>Paytable</summary>

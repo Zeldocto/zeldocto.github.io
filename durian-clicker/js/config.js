@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-08-29-update4b',
+    buildId: '2026-08-29-update4c',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -300,8 +300,7 @@
       betFractions: [0.01, 0.05, 0.25],
       reels: 3,
       spinSeconds: 1.6,
-      coinSpinCost: 1,            // blue coins per premium spin
-      coinSpinProductionSeconds: 900,   // premium payouts scale off your DPS
+      coinSpinCost: 1,            // Blue Coins per spin — this is the real limiter
       symbols: [
         { id: 'durian', name: 'Durian', icon: 'assets/placeholder-durian.png', weight: 30, triple: 6 },
         { id: 'pianta', name: 'Pianta', icon: 'assets/placeholder-pianta.png', weight: 25, triple: 6 },
@@ -309,7 +308,7 @@
         { id: 'yoshi',  name: 'Yoshi',  icon: 'assets/placeholder-yoshi.png',  weight: 15, triple: 12 },
         { id: 'shine',  name: 'Shine',  icon: 'assets/placeholder-shine.png',  weight: 8,  triple: 40 },
         { id: 'coin',   name: 'Blue Coin', icon: 'assets/placeholder-bluecoin.png', weight: 2,
-          triple: 150, tripleCoins: 3, coinSpinCoins: 5 }
+          triple: 150, tripleCoins: 3 }
       ],
       pairPayout: 1.0             // two matching returns the bet
     },

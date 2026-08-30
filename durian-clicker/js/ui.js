@@ -33,7 +33,7 @@
      'update-bar', 'update-icon', 'store-icon', 'casino-icon', 'coin-chip',
      'coin-chip-icon', 'mini-coins', 'coin-layer', 'store-list', 'store-balance',
      'store-owned', 'skin-grid', 'reels', 'slots-result', 'bet-row', 'btn-spin',
-     'btn-spin-coin', 'coin-balance', 'spin-coin-icon', 'paytable', 'btn-skins',
+     'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'btn-dark', 'dark-toggle'
     ].forEach(function (id) { el[id] = $(id); });
   }
@@ -67,6 +67,7 @@
     el['casino-icon'].src = CONFIG.assets.slots;
     el['coin-chip-icon'].src = CONFIG.assets.blueCoin;
     el['spin-coin-icon'].src = CONFIG.assets.blueCoin;
+    el['lead-coin-icon'].src = CONFIG.assets.blueCoin;
     applySkin();
     applyDarkMode();
   }
@@ -609,15 +610,27 @@
       '<div class="stat-row"><dt>Any two matching</dt><dd>' +
       CONFIG.casino.pairPayout + '&times; bet</dd></div>' +
       '<div class="stat-row"><dt>Long-run return</dt><dd>' +
-      Math.round(DC.Casino.expectedReturn() * 100) + '% of stake</dd></div>';
+      Math.round(DC.Casino.expectedReturn() * 100) + '% of stake</dd></div>' +
+      '<div class="stat-row"><dt>Cost per spin</dt><dd>1 Blue Coin + your stake</dd></div>';
   }
 
   function refreshCasino() {
-    var bet = DC.Casino.betFor(betFraction || CONFIG.casino.betFractions[0]);
-    el['btn-spin'].textContent = 'Spin \u00B7 ' + N.format(bet);
-    el['btn-spin'].disabled = spinning || !DC.Casino.canPlay(betFraction);
-    el['btn-spin-coin'].disabled = spinning || !DC.Coins.canAfford(CONFIG.casino.coinSpinCost);
+    var f = betFraction || CONFIG.casino.betFractions[0];
+    var bet = DC.Casino.betFor(f);
+    var blocked = DC.Casino.blockedReason(f);
+
+    el['btn-spin'].textContent = '\u25B6 Spin \u00B7 1 coin + ' + N.format(bet);
+    el['btn-spin'].disabled = spinning || !!blocked;
     el['coin-balance'].textContent = DC.Coins.count();
+
+    if (!spinning && blocked === 'no-coins') {
+      el['slots-result'].textContent =
+        'You need a Blue Coin to spin. Watch for one on screen \u2014 or an airplane.';
+      el['slots-result'].className = 'slots-result';
+    } else if (!spinning && blocked === 'no-durians') {
+      el['slots-result'].textContent = 'Not enough Durians for that stake.';
+      el['slots-result'].className = 'slots-result';
+    }
   }
 
   function setReels(reels) {
@@ -628,9 +641,9 @@
     }
   }
 
-  function doSpin(mode) {
+  function doSpin() {
     if (spinning) return;
-    var result = DC.Casino.play(mode, betFraction);
+    var result = DC.Casino.play(betFraction);
     if (!result) return;
 
     spinning = true;
@@ -649,7 +662,7 @@
 
       var msg;
       if (result.kind === 'none') {
-        msg = 'No match. ' + N.format(result.stake) + ' Durians gone.';
+        msg = 'No match. ' + N.format(result.stake) + ' Durians and a Blue Coin gone.';
       } else {
         msg = (result.kind === 'triple' ? 'Three ' + result.symbol.name + 's! ' : 'Two matching. ') +
               'You win ' + N.format(result.payout) + ' Durians' +
@@ -1271,8 +1284,7 @@
       buildSkinGrid();
       openModal('modal-skins');
     });
-    el['btn-spin'].addEventListener('click', function () { doSpin('durian'); });
-    el['btn-spin-coin'].addEventListener('click', function () { doSpin('coin'); });
+    el['btn-spin'].addEventListener('click', doSpin);
 
     bindTip(el['coin-chip'], function () {
       return tipHtml('Blue Coins',

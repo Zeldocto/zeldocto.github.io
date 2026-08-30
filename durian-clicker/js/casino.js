@@ -1,17 +1,18 @@
 /* =============================================================================
  * casino.js — the slot machine.
  * -----------------------------------------------------------------------------
- * Two ways to play:
- *   'durian' — stake a share of your bank. Payouts are multiples of the stake.
- *   'coin'   — spend a Blue Coin. Payouts scale off your production instead, so
- *              a premium spin is worth the same relative amount all game.
+ * Every spin costs a Blue Coin AND a Durian stake. The Blue Coin is the real
+ * limiter: without it you could spin freely with late-game Durians and farm
+ * Blue Coins out of the jackpot, which would make them worthless. Coins are
+ * scarce, so spins are scarce, and the reels stay a treat rather than a faucet.
  *
  * Reels are weighted (see CONFIG.casino.symbols). Three matching pays that
  * symbol's `triple` multiplier, two matching returns the stake, anything else
- * loses it. Blue Coin symbols also pay out actual Blue Coins.
+ * loses it. Blue Coin symbols also pay out actual Blue Coins — but a spin costs
+ * more coins than it returns on average, so this can never be farmed.
  *
- * House edge is about 12% on Durian spins — deliberately a sink, not a
- * money printer. resolve() is pure, so the odds are unit-testable.
+ * House edge is about 12% on the Durian stake — deliberately a sink. resolve()
+ * is pure, so the odds are unit-testable.
  * ========================================================================== */
 (function (DC) {
   'use strict';
@@ -83,10 +84,21 @@
     return N.ceil(bet);
   }
 
+  /** A spin needs both a Blue Coin and enough Durians for the stake. */
   function canPlay(fraction) {
     if (!cfg().enabled) return false;
+    if (!DC.Coins.canAfford(cfg().coinSpinCost)) return false;
     var bet = betFor(fraction);
     return N.gte(DC.Game.state.durians, bet) && bet.m > 0;
+  }
+
+  /** Why the spin button is disabled, for the UI to explain. */
+  function blockedReason(fraction) {
+    if (!cfg().enabled) return 'closed';
+    if (!DC.Coins.canAfford(cfg().coinSpinCost)) return 'no-coins';
+    var bet = betFor(fraction);
+    if (!N.gte(DC.Game.state.durians, bet) || bet.m <= 0) return 'no-durians';
+    return null;
   }
 
   /* ----------------------------------------------------------------- playing */
@@ -95,37 +107,32 @@
    * Plays one round. Returns a result object for the UI to animate, or null if
    * the player couldn't afford it.
    */
-  function play(mode, fraction, rng) {
+  function play(fraction, rng) {
     var s = DC.Game.state;
     if (!cfg().enabled) return null;
+    if (blockedReason(fraction)) return null;
 
-    var stake = null;
-    if (mode === 'coin') {
-      if (!DC.Coins.spend(cfg().coinSpinCost)) return null;
-      // Premium payouts are denominated in seconds of production.
-      stake = N.mul(DC.Game.derived.baseDps, cfg().coinSpinProductionSeconds);
-    } else {
-      stake = betFor(fraction);
-      if (!N.gte(s.durians, stake) || stake.m <= 0) return null;
-      if (!DC.Game.spendDurians(stake)) return null;
+    var stake = betFor(fraction);
+
+    // Take the coin first, then the stake. If either fails, nothing is spent.
+    if (!DC.Coins.spend(cfg().coinSpinCost)) return null;
+    if (!DC.Game.spendDurians(stake)) {
+      DC.Coins.award(cfg().coinSpinCost);          // refund, never eat the coin
+      return null;
     }
 
     var reels = roll(rng);
     var outcome = resolve(reels);
     var payout = N.mul(stake, outcome.multiplier);
     var coins = outcome.coins;
-    if (mode === 'coin' && outcome.kind === 'triple' && outcome.symbol.coinSpinCoins) {
-      coins = outcome.symbol.coinSpinCoins;
-    }
 
     if (payout.m > 0) DC.Game.addDurians(payout, 'worker');
     if (coins > 0) DC.Coins.award(coins);
 
-    // Stats
     var c = s.casino;
     c.spins = (c.spins || 0) + 1;
-    if (mode === 'coin') c.coinSpins = (c.coinSpins || 0) + 1;
-    c.wagered = N.add(c.wagered || N.ZERO, mode === 'coin' ? N.ZERO : stake);
+    c.coinsSpent = (c.coinsSpent || 0) + cfg().coinSpinCost;
+    c.wagered = N.add(c.wagered || N.ZERO, stake);
     c.won = N.add(c.won || N.ZERO, payout);
     if (outcome.kind === 'triple') c.triples = (c.triples || 0) + 1;
     if (outcome.symbol && outcome.symbol.id === 'coin' && outcome.kind === 'triple') {
@@ -135,18 +142,33 @@
     DC.Game.checkProgress();
 
     var result = {
-      mode: mode,
       reels: reels,
       kind: outcome.kind,
       symbol: outcome.symbol,
       stake: stake,
+      coinCost: cfg().coinSpinCost,
       payout: payout,
       coins: coins,
-      net: N.sub(payout, mode === 'coin' ? N.ZERO : stake),
+      net: N.sub(payout, stake),
       jackpot: !!(outcome.symbol && outcome.symbol.id === 'coin' && outcome.kind === 'triple')
     };
     DC.Events.emit('slotsResult', result);
     return result;
+  }
+
+  /**
+   * Blue Coins returned per coin spent. Must stay well under 1 or the slots
+   * become a Blue Coin faucet and the whole scarcity model collapses.
+   */
+  function coinReturn() {
+    var list = symbols(), total = 0;
+    list.forEach(function (x) { total += x.weight; });
+    var earned = 0;
+    list.forEach(function (sym) {
+      var p = sym.weight / total;
+      earned += Math.pow(p, 3) * (sym.tripleCoins || 0);
+    });
+    return earned / cfg().coinSpinCost;
   }
 
   /** Theoretical return per unit staked — used by the balance test. */
@@ -170,6 +192,8 @@
     spinReel: spinReel,
     betFor: betFor,
     canPlay: canPlay,
+    blockedReason: blockedReason,
+    coinReturn: coinReturn,
     symbols: symbols,
     symbolById: symbolById,
     expectedReturn: expectedReturn

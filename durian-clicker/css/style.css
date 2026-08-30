@@ -1539,3 +1539,10 @@ body.dark .board-row.is-you { background: linear-gradient(180deg, #16394E, #0F2A
 body.dark .store-item.owned { background: linear-gradient(180deg, #16394E, #0F2A3B); }
 body.dark .update-bar { background: linear-gradient(180deg, #3C3620, #2B2716); }
 body.dark .toast, body.dark .tip { background: var(--card); }
+
+.coin-purse {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+.coin-purse strong { color: var(--ink); font-size: 1rem; }
