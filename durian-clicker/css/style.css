@@ -1940,3 +1940,13 @@ body.dark .board-score { color: #7FD8FF; }
 body.dark .tip em { color: #7FD8FF; }
 body.dark .news-body strong { color: #7FD8FF; }
 body.dark .store-item.owned .store-item-cost { color: #7FD8FF; }
+
+
+/* The header kept its cream/gold gradient in dark mode, which left the logo
+   and the icon buttons sitting on a bright band. */
+body.dark .topbar {
+  background: linear-gradient(180deg, rgba(28, 48, 64, 0.96), rgba(20, 36, 50, 0.92));
+  border-bottom-color: var(--roof-dark);
+}
+body.dark .topbar .icon-btn { background: var(--surface); color: var(--ink); }
+body.dark .topbar .icon-btn:hover { background: #26425A; }

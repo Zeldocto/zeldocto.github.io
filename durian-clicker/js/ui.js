@@ -508,6 +508,9 @@
           return N.formatRate(d.dps);
         }],
         ['clicks', 'Total clicks', function () { return N.withCommas(Game.state.totalClicks); }],
+        ['cps_now', 'Clicks per second, now', function () { return N.withCommas(Game.currentClickRate()); }],
+        ['cps_avg', 'Clicks per second, average', function () { return Game.averageClickRate().toFixed(2); }],
+        ['cps_peak', 'Clicks per second, peak', function () { return N.withCommas(Game.state.peakClickRate || 0); }],
         ['globalmult', 'Global multiplier', function () { return '×' + Game.derived.globalMult.toFixed(2); }]
       ] },
       { title: 'Crew', open: true, rows: crew.concat([

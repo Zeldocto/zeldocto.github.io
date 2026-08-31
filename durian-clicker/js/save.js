@@ -36,6 +36,7 @@
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
       changelogSeen: state.changelogSeen,
+      peakClickRate: state.peakClickRate,
       playTime: state.playTime,
       startedAt: state.startedAt,
       lastSaved: Date.now()
@@ -56,6 +57,7 @@
     if (typeof data.totalClicks === 'number') state.totalClicks = data.totalClicks;
     if (typeof data.playTime === 'number') state.playTime = data.playTime;
     if (typeof data.changelogSeen === 'string') state.changelogSeen = data.changelogSeen;
+    if (typeof data.peakClickRate === 'number') state.peakClickRate = data.peakClickRate;
     if (typeof data.startedAt === 'number') state.startedAt = data.startedAt;
     if (typeof data.lastSaved === 'number') state.lastSaved = data.lastSaved;
 

@@ -75,6 +75,7 @@
       lost: N.ZERO,                 // durians taken by setback events
       offlineEarned: N.ZERO,
       changelogSeen: null,          // version string of the last release read
+      peakClickRate: 0,             // best clicks-per-second ever managed
       playTime: 0,
       startedAt: Date.now(),
       lastSaved: Date.now()
@@ -379,7 +380,16 @@
   function currentClickRate() {
     var now = Date.now();
     while (recentClicks.length && now - recentClicks[0] > 1000) recentClicks.shift();
+    if (recentClicks.length > (Game.state.peakClickRate || 0)) {
+      Game.state.peakClickRate = recentClicks.length;
+    }
     return recentClicks.length;
+  }
+
+  /** Clicks per second averaged over the whole save. */
+  function averageClickRate() {
+    var t = Game.state.playTime;
+    return t > 0 ? Game.state.totalClicks / t : 0;
   }
 
   /** Player clicked the durian. Returns how much was earned. */
@@ -474,6 +484,7 @@
     if (produced.m > 0) addDurians(produced, 'worker');
     if (DC.IslandEvents) DC.IslandEvents.update();
     if (DC.Coins) DC.Coins.update();
+    currentClickRate();               // keeps the peak up to date
     Events.emit('tick', { dt: dt });
   }
 
@@ -508,6 +519,7 @@
     recalc: recalc,
     click: click,
     currentClickRate: currentClickRate,
+    averageClickRate: averageClickRate,
     tick: tick,
     start: start,
     stop: stop,

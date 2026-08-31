@@ -16,6 +16,18 @@
 
   DC.CONFIG.changelog = [
     {
+      version: 'v18 2026-09-04',
+      title: 'Pacing, stats and a lot of new flavour',
+      notes: [
+        'The biggest all-worker multipliers are split into sequences, no more quadrupling your income in one purchase',
+        '44 new upgrades from those splits.',
+        'New achievements: octodecillion and friends, crew sizes to 100,000, and upgrade milestones to 850',
+        'Stats now show your current, average and peak clicks per second. (Watch out autoclickers!)',
+        'Upgrade flavor text rewritten with far more variety.',
+        'Dark mode: the header bar is no longer cream.'
+      ]
+    },
+    {
       version: 'v17 2026-08-30',
       title: 'Content audit',
       notes: [
