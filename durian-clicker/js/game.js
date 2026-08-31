@@ -329,7 +329,13 @@
     var clickFlat = N.big(CONFIG.balance.baseClickPower + clickAdd + clickFromWorkers * totalWorkers);
     var gearRoute = N.mul(clickFlat, clickMult);
     var shareRoute = N.mul(dps, clickFromDps);
-    d.clickPower = N.mul(N.max(gearRoute, shareRoute), buffClick);
+    // The two routes ADD. Taking the larger of them meant that the moment the
+    // production share pulled ahead, every piece of gear silently stopped
+    // counting: "Spike-Proof Gauntlets: +50 Durians per click" added exactly
+    // nothing, and a x2 click multiplier multiplied by 1.000. Adding them
+    // keeps every description literally true. Gear simply becomes a small part
+    // of a large total later on, which is honest and expected.
+    d.clickPower = N.mul(N.add(gearRoute, shareRoute), buffClick);
     d.clickShare = clickFromDps;
 
     Events.emit('recalc');

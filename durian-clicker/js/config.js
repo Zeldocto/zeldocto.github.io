@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-05',
+    buildId: '2026-09-06',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -384,6 +384,14 @@
       minEventLoss: 0.4,            // bad events always cost at least 40%
       maxBuffDuration: 2.5,         // good buffs last at most 2.5x base
       maxEventChance: 3.0,          // events at most 3x as frequent
+
+      // Payouts are worked out from production, but a Big number carries only
+      // about 17 significant digits. If the bank has run far ahead of
+      // production, adding the payout changes nothing at all and the banner
+      // announces Durians that never arrived. Floor every event at this share
+      // of the bank so it always registers. In ordinary play the production
+      // figure is far larger and this never binds.
+      minShareOfBank: 0.0002,
       showBanner: true,
       bannerSeconds: 10
     }

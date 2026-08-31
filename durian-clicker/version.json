@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-05",
-  "notes": "Airplanes were invisible to players with reduced motion enabled.",
+  "build": "2026-09-06",
+  "notes": "Event payouts always register; flat click upgrades actually apply.",
   "force": false
 }

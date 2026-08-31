@@ -16,6 +16,15 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2026-09-06',
+      title: 'Two fixes',
+      notes: [
+        'Island events now always pay out or take what they say — at very large banks the amount was being announced but never applied',
+        'Click upgrades that add a flat amount now really add it. "+50 Durians per click" was doing nothing once your production was large',
+        'Click multipliers reworded to say what they multiply'
+      ]
+    },
+    {
       version: 'v19 2026-09-05',
       title: 'Airplane fix',
       notes: [

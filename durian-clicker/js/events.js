@@ -60,6 +60,21 @@
   function between(min, max) { return min + Math.random() * (max - min); }
 
   /**
+   * Raises an amount to at least a visible share of the current bank.
+   *
+   * Payouts come from production, but a Big number carries about 17
+   * significant digits: once the bank has run far ahead of production, adding
+   * the payout is a no-op and the banner announces Durians that never arrive.
+   * In ordinary play the production figure is much larger and this never binds.
+   */
+  function atLeastVisible(amount) {
+    var share = cfg().minShareOfBank;
+    if (!share) return amount;
+    var floorAmount = N.mul(DC.Game.state.durians, share);
+    return N.gte(amount, floorAmount) ? amount : floorAmount;
+  }
+
+  /**
    * Applies an event and returns a plain result the UI can render:
    *   { def, amount (Big or null), direction: 'gain'|'loss'|'buff', text }
    */
@@ -75,7 +90,7 @@
         // baseDps: a buff must not inflate an event payout on top of already
         // multiplying production.
         var secs = between(fx.min, fx.max) * gainMult;
-        var amount = N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, secs);
+        var amount = atLeastVisible(N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, secs));
         DC.Game.addDurians(amount, 'worker');
         s.eventGained = N.add(s.eventGained || N.ZERO, amount);
         result.amount = amount;
@@ -83,7 +98,7 @@
         break;
       }
       case 'gainFlat': {
-        var flat = N.mul(N.big(between(fx.min, fx.max)), gainMult);
+        var flat = atLeastVisible(N.mul(N.big(between(fx.min, fx.max)), gainMult));
         DC.Game.addDurians(flat, 'worker');
         s.eventGained = N.add(s.eventGained || N.ZERO, flat);
         result.amount = flat;
@@ -101,7 +116,7 @@
       }
       case 'loseSeconds': {
         var lsecs = between(fx.min, fx.max) * lossMult;
-        var loss = N.max(N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, lsecs), N.ZERO);
+        var loss = N.max(atLeastVisible(N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, lsecs)), N.ZERO);
         if (N.gte(loss, s.durians)) loss = s.durians;   // never go negative
         s.durians = N.sub(s.durians, loss);
         s.lost = N.add(s.lost || N.ZERO, loss);
