@@ -987,8 +987,11 @@
                      (info.lucky ? ' is-lucky' : '');
     node.setAttribute('aria-label', info.kind === 'plane'
       ? 'An airplane! Click for a Blue Coin' : 'A Blue Coin! Click to collect');
-    node.innerHTML = '<img src="' +
+    node.draggable = false;
+    node.innerHTML = '<img draggable="false" src="' +
       (info.kind === 'plane' ? CONFIG.assets.airplane : CONFIG.assets.blueCoin) + '" alt="">';
+    // Belt and braces: some browsers still start a drag from the button.
+    node.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
     if (info.kind === 'plane') {
       node.style.top = info.fromTop + '%';
@@ -998,7 +1001,10 @@
       node.style.top = info.y + '%';
     }
 
-    node.addEventListener('click', function (e) {
+    // pointerdown, not click: a click needs press and release on the same
+    // spot, so the smallest drag cancelled the collection entirely.
+    node.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
       e.stopPropagation();
       var reward = DC.Coins.collect();
       if (reward > 0) burstCoin(e.clientX, e.clientY, reward);

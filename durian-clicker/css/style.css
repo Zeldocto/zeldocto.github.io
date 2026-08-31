@@ -1356,6 +1356,8 @@ body.dark .amt-custom { color: var(--ink); }
 
 .blue-coin {
   position: absolute;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
   border: 0;
   background: none;
   padding: 0;
@@ -1365,7 +1367,18 @@ body.dark .amt-custom { color: var(--ink); }
   animation: coinIn 0.4s cubic-bezier(0.2, 1.5, 0.4, 1), coinFloat 2.4s ease-in-out 0.4s infinite;
   filter: drop-shadow(0 6px 12px rgba(10, 60, 110, 0.45));
 }
-.blue-coin img { width: 100%; height: 100%; }
+.blue-coin img {
+  width: 100%;
+  height: 100%;
+  /* The browser's native image drag was stealing the click — you would pick
+     the coin up and drop it somewhere instead of collecting it. Routing
+     pointer events to the button also means a click anywhere on the tile
+     counts, not just on an opaque pixel of the artwork. */
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 .blue-coin:hover { transform: scale(1.1); }
 .blue-coin.is-lucky { width: 96px; height: 96px; filter: drop-shadow(0 0 18px #7FD8FF); }
 
@@ -1914,3 +1927,16 @@ body.dark .news-body strong { color: #7FD8FF; }
   margin-bottom: 4px;
 }
 .changelog-entry.is-latest li::marker { color: var(--shine-dark); }
+
+
+/* ------------------------------ dark mode: text that was reading as black */
+/* --sea and --sea-deep are background-weight colours in dark mode, so
+   anything using them for text came out near-black on a dark panel. */
+
+body.dark .item-owned { color: var(--ink-soft); }
+body.dark .brand h1 span { color: #7FD8FF; }
+body.dark .offline-amount { color: #7FD8FF; }
+body.dark .board-score { color: #7FD8FF; }
+body.dark .tip em { color: #7FD8FF; }
+body.dark .news-body strong { color: #7FD8FF; }
+body.dark .store-item.owned .store-item-cost { color: #7FD8FF; }

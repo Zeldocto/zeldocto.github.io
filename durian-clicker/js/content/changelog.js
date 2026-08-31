@@ -16,7 +16,16 @@
 
   DC.CONFIG.changelog = [
     {
-      version: '2026-09-02',
+      version: 'v17 2026-08-30',
+      title: 'Content audit',
+      notes: [
+        'Audited every upgrade and achievement: fixed four achievements whose text did not match their requirement, and three duplicate upgrade names.',
+        'Dark mode: crew counts and several other numbers were showing as near-blac.k',
+        'Blue Coins and airplanes no longer drag when you try to collect them.'
+      ]
+    },
+    {
+      version: 'v16 2026-08-30',
       title: 'Corona Mountain and the Pianta Judge',
       notes: [
         'Two new endgame crew: Corona Mountain, then the Pianta Judge',
@@ -26,7 +35,7 @@
       ]
     },
     {
-      version: '2026-09-01',
+      version: 'v15 2026-08-30',
       title: 'Clicking, events and a pile of fixes',
       notes: [
         'Island events rebalanced.',
