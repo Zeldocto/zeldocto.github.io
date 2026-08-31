@@ -996,9 +996,22 @@
     // Belt and braces: some browsers still start a drag from the button.
     node.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
-    if (info.kind === 'plane') {
+    // Someone who has asked for reduced motion should not be shown a flying
+    // plane at all — and the blanket animation override used to fling it
+    // offscreen, so they never saw one. Give them a stationary plane instead.
+    var stillPlease = false;
+    try {
+      stillPlease = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (err) { stillPlease = false; }
+
+    if (info.kind === 'plane' && !stillPlease) {
       node.style.top = info.fromTop + '%';
       node.style.setProperty('--fly-seconds', CONFIG.blueCoins.planeFlightSeconds + 's');
+    } else if (info.kind === 'plane') {
+      node.classList.add('is-static');
+      node.style.left = info.x + '%';
+      node.style.top = info.y + '%';
     } else {
       node.style.left = info.x + '%';
       node.style.top = info.y + '%';

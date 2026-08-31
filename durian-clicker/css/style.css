@@ -910,6 +910,17 @@ body.dark .amt-custom { color: var(--ink); }
     transition-duration: 0.01ms !important;
   }
   .float-text { display: none; }
+
+  /* The blanket animation-duration override above finished the plane's flight
+     in 0.01ms and, because planeFly fills forwards, parked it 140px past the
+     right edge of the screen. Anyone with reduced motion enabled therefore
+     never saw a single airplane — it spawned offscreen, sat there clickable
+     but invisible, and expired. Park it in view instead and drop the flight. */
+  .blue-coin.is-plane {
+    animation: none !important;
+    left: 50% !important;
+    margin-left: -66px;
+  }
 }
 
 /* ------------------------------------------------------------ leaderboard */
@@ -1394,6 +1405,13 @@ body.dark .amt-custom { color: var(--ink); }
   animation: planeFly var(--fly-seconds, 9s) linear forwards;
 }
 .blue-coin.is-plane:hover { transform: scale(1.06); }
+/* Used when the player has asked for reduced motion: the plane simply sits
+   there like a coin rather than flying past. */
+.blue-coin.is-plane.is-static {
+  animation: coinIn 0.4s cubic-bezier(0.2, 1.5, 0.4, 1);
+  left: auto;
+  margin-left: 0;
+}
 @keyframes planeFly {
   from { left: -140px; }
   to   { left: calc(100vw + 140px); }
