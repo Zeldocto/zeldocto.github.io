@@ -31,7 +31,7 @@
     font-display: swap;
   }
 </style>
-<link rel="stylesheet" href="css/style.css?v=2026-09-07">
+<link rel="stylesheet" href="css/style.css?v=2026-09-08">
 </head>
 <body>
 
@@ -48,6 +48,7 @@
       <img class="brand-shine" id="brand-shine" alt="Back to zeldocto.github.io">
     </a>
     <h1>Durian<span>Clicker</span></h1>
+    <small class="brand-version" id="brand-version"></small>
   </div>
   <div class="topbar-actions">
     <div class="volume-wrap">
@@ -195,7 +196,7 @@
 <div class="modal" id="modal-changelog" hidden>
   <div class="modal-card modal-card-wide">
     <button class="modal-close" data-close="modal-changelog" aria-label="Close">&times;</button>
-    <h2>What&#39;s new</h2>
+    <h2 id="changelog-title">What&#39;s new</h2>
     <div class="changelog" id="changelog-body"></div>
   </div>
 </div>
@@ -307,6 +308,7 @@
       <button class="btn" id="btn-save">Save game</button>
       <button class="btn" id="btn-export">Export save</button>
       <button class="btn" id="btn-download">Download save file</button>
+      <button class="btn btn-small" id="btn-history">View changelog</button>
       <button class="btn btn-danger" id="btn-reset">Reset save</button>
     </div>
 
@@ -354,30 +356,30 @@
 </div>
 
 <!-- Load order matters: data → maths → state → systems → interface. -->
-<script src="js/config.js?v=2026-09-07"></script>
-<script src="js/content/upgrades.js?v=2026-09-07"></script>
-<script src="js/content/upgrades-farshore.js?v=2026-09-07"></script>
-<script src="js/content/achievements.js?v=2026-09-07"></script>
-<script src="js/content/events.js?v=2026-09-07"></script>
-<script src="js/content/changelog.js?v=2026-09-07"></script>
-<script src="js/content/skins.js?v=2026-09-07"></script>
-<script src="js/numbers.js?v=2026-09-07"></script>
-<script src="js/game.js?v=2026-09-07"></script>
-<script src="js/workers.js?v=2026-09-07"></script>
-<script src="js/upgrades.js?v=2026-09-07"></script>
-<script src="js/achievements.js?v=2026-09-07"></script>
-<script src="js/save.js?v=2026-09-07"></script>
-<script src="js/offline.js?v=2026-09-07"></script>
-<script src="js/events.js?v=2026-09-07"></script>
-<script src="js/changelog.js?v=2026-09-07"></script>
-<script src="js/updates.js?v=2026-09-07"></script>
-<script src="js/coins.js?v=2026-09-07"></script>
-<script src="js/casino.js?v=2026-09-07"></script>
-<script src="js/store.js?v=2026-09-07"></script>
-<script src="js/audio.js?v=2026-09-07"></script>
-<script src="js/leaderboard.js?v=2026-09-07"></script>
-<script src="js/ui.js?v=2026-09-07"></script>
-<script src="js/debug.js?v=2026-09-07"></script>
-<script src="js/main.js?v=2026-09-07"></script>
+<script src="js/config.js?v=2026-09-08"></script>
+<script src="js/content/upgrades.js?v=2026-09-08"></script>
+<script src="js/content/upgrades-farshore.js?v=2026-09-08"></script>
+<script src="js/content/achievements.js?v=2026-09-08"></script>
+<script src="js/content/events.js?v=2026-09-08"></script>
+<script src="js/content/changelog.js?v=2026-09-08"></script>
+<script src="js/content/skins.js?v=2026-09-08"></script>
+<script src="js/numbers.js?v=2026-09-08"></script>
+<script src="js/game.js?v=2026-09-08"></script>
+<script src="js/workers.js?v=2026-09-08"></script>
+<script src="js/upgrades.js?v=2026-09-08"></script>
+<script src="js/achievements.js?v=2026-09-08"></script>
+<script src="js/save.js?v=2026-09-08"></script>
+<script src="js/offline.js?v=2026-09-08"></script>
+<script src="js/events.js?v=2026-09-08"></script>
+<script src="js/changelog.js?v=2026-09-08"></script>
+<script src="js/updates.js?v=2026-09-08"></script>
+<script src="js/coins.js?v=2026-09-08"></script>
+<script src="js/casino.js?v=2026-09-08"></script>
+<script src="js/store.js?v=2026-09-08"></script>
+<script src="js/audio.js?v=2026-09-08"></script>
+<script src="js/leaderboard.js?v=2026-09-08"></script>
+<script src="js/ui.js?v=2026-09-08"></script>
+<script src="js/debug.js?v=2026-09-08"></script>
+<script src="js/main.js?v=2026-09-08"></script>
 </body>
 </html>

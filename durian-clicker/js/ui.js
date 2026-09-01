@@ -36,14 +36,15 @@
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'slots-hint', 'slots-payout', 'slots-outcome',
      'btn-dark', 'dark-toggle', 'buy-custom',
-     'news-bar', 'news-icon', 'news-line', 'changelog-body'
+     'news-bar', 'news-icon', 'news-line', 'changelog-body', 'brand-version', 'changelog-title'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
   /* ----------------------------------------------------------- changelog */
 
-  function buildChangelog() {
+  function buildChangelog(onlyLatest) {
     var list = DC.Changelog.entries();
+    if (onlyLatest) list = list.slice(0, 1);
     el['changelog-body'].innerHTML = list.map(function (entry, i) {
       return '<section class="changelog-entry' + (i === 0 ? ' is-latest' : '') + '">' +
         '<h3>' + escapeHtml(entry.title || entry.version) +
@@ -54,11 +55,21 @@
     }).join('') || '<p class="empty-note">Nothing to report yet.</p>';
   }
 
+  /** From the "What's new" prompt: just the release they have not read. */
   function openChangelog() {
-    buildChangelog();
+    el['changelog-title'].textContent = 'What\u2019s new';
+    buildChangelog(true);
     openModal('modal-changelog');
     DC.Changelog.markRead();
     el['news-bar'].hidden = true;
+  }
+
+  /** From Settings: the whole history, any time. */
+  function openFullChangelog() {
+    el['changelog-title'].textContent = 'Changelog';
+    buildChangelog(false);
+    closeModal('modal-settings');
+    openModal('modal-changelog');
   }
 
   /* -------------------------------------------------------- update prompt */
@@ -121,6 +132,9 @@
     el['brand-shine'].src = CONFIG.assets.shine;
     el['scene-img'].style.backgroundImage = 'url("' + CONFIG.assets.background + '")';
     el['store-icon'].src = CONFIG.assets.store;
+    if (el['brand-version'] && CONFIG.version) {
+      el['brand-version'].textContent = 'v' + CONFIG.version;
+    }
     el['casino-icon'].src = CONFIG.assets.slots;
     el['coin-chip-icon'].src = CONFIG.assets.blueCoin;
     el['spin-coin-icon'].src = CONFIG.assets.blueCoin;
@@ -1536,6 +1550,7 @@
     });
 
     $('news-read').addEventListener('click', openChangelog);
+    $('btn-history').addEventListener('click', openFullChangelog);
     $('news-close').addEventListener('click', function () {
       DC.Changelog.markRead();          // dismissing counts as read
       el['news-bar'].hidden = true;

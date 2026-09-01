@@ -211,7 +211,9 @@ SHINES = [
  ('More Light Than Island', 'The glow is visible from the next archipelago.'),
 ]
 for i, (nm, flavor) in enumerate(SHINES):
-    val = round(0.012 + i * 0.004, 4)
+    # halved alongside the main catalogue: achievement scaling is multiplied
+    # by your Shine count, and by this point players have hundreds
+    val = round(0.006 + i * 0.002, 4)
     cost = next_cost()
     add('far_shine%d' % (i + 1), nm,
         'Each Shine earned adds a further +%s%% to all production. %s' % (pct(val), flavor),
