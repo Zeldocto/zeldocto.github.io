@@ -454,12 +454,11 @@
 
   /* ------------------------------------------------------------- the loop */
 
-  var lastTime = 0, accumulator = 0, uiAccumulator = 0, progressAccumulator = 0;
+  var lastTime = 0, lastWall = 0, accumulator = 0, uiAccumulator = 0, progressAccumulator = 0;
 
   function frame(now) {
     if (!Game.running) return;
-    var dt = Math.min((now - lastTime) / 1000, 1);   // ignore huge tab-away gaps
-    lastTime = now;
+    var dt = frameSeconds(now);
 
     var step = 1 / CONFIG.balance.tickRate;
     accumulator += dt;
@@ -498,7 +497,30 @@
     if (Game.running) return;
     Game.running = true;
     lastTime = performance.now();
+    lastWall = Date.now();
     requestAnimationFrame(frame);
+  }
+
+  /**
+   * How much game time this frame is worth.
+   *
+   * Idle games are routinely sped up by overriding the clock or the frame
+   * driver from the console. Taking the SMALLER of two independent clocks
+   * means speeding up either one alone gains nothing — both have to be
+   * faked in step. It also means the frame rate is irrelevant: production is
+   * paced by elapsed real seconds, so fast hardware earns no more than slow.
+   */
+  function frameSeconds(now) {
+    var perfDelta = (now - lastTime) / 1000;
+    var wallDelta = (Date.now() - lastWall) / 1000;
+    lastTime = now;
+    lastWall = Date.now();
+
+    var dt = Math.min(perfDelta, wallDelta);
+    if (!(dt > 0)) return 0;                        // clock went backwards
+    var cap = CONFIG.balance.maxFrameSeconds || 1;
+    if (dt > cap) dt = cap;                         // tab-away gaps are offline earnings
+    return dt * (CONFIG.balance.timeScale || 1);
   }
 
   function stop() { Game.running = false; }

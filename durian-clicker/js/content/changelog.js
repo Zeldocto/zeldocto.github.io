@@ -21,7 +21,7 @@
 
   DC.CONFIG.changelog = [
     {
-      version: 'v2.2  2026-09-08',
+      version: '2.2  2026-09-08',
       title: 'Achievement scaling and the changelog',
       notes: [
         'Production per achievement halved — with hundreds of Shines it was overwhelming everything else and flattening the nonillion stretch',
@@ -31,7 +31,7 @@
       ]
     },
     {
-      version: 'v2.1 2026-09-07',
+      version: '2026-09-07',
       title: 'The Far Shore',
       notes: [
         '100 new upgrades for the extreme endgame, from octodecillion upward',
@@ -41,7 +41,7 @@
       ]
     },
     {
-      version: 'v2.0 2026-09-06',
+      version: '2026-09-06',
       title: 'Two fixes',
       notes: [
         'Island events now always pay out or take what they say — at very large banks the amount was being announced but never applied',
@@ -50,7 +50,7 @@
       ]
     },
     {
-      version: 'v1.9 2026-09-05',
+      version: 'v19 2026-09-05',
       title: 'Airplane fix',
       notes: [
         'Airplanes now appear for everyone. If you had reduced motion turned on in your system settings, they were spawning off the edge of the screen and you never saw one',
@@ -58,7 +58,7 @@
       ]
     },
     {
-      version: 'v1.8 2026-09-04',
+      version: 'v18 2026-09-04',
       title: 'Pacing, stats and a lot of new flavour',
       notes: [
         'The biggest all-worker multipliers are split into sequences — no more quadrupling your income in one purchase',
@@ -70,7 +70,7 @@
       ]
     },
     {
-      version: 'v1.7 2026-08-30',
+      version: 'v17 2026-08-30',
       title: 'Content audit',
       notes: [
         'Audited every upgrade and achievement: fixed four achievements whose text did not match their requirement, and three duplicate upgrade names.',
@@ -79,7 +79,7 @@
       ]
     },
     {
-      version: 'v1.6 2026-08-30',
+      version: 'v16 2026-08-30',
       title: 'Corona Mountain and the Pianta Judge',
       notes: [
         'Two new endgame crew: Corona Mountain, then the Pianta Judge',
@@ -89,7 +89,7 @@
       ]
     },
     {
-      version: 'v1.5 2026-08-30',
+      version: 'v15 2026-08-30',
       title: 'Clicking, events and a pile of fixes',
       notes: [
         'Island events rebalanced.',

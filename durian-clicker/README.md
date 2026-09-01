@@ -54,7 +54,7 @@ missing optional module now hides its own feature and the game plays on, and a
 missing required module shows a panel naming the file — but a full upload is
 still the only supported deploy.
 
-## Running it## Running it
+## Running it
 
 **Locally:** double-click `index.html`. That's it. The scripts are plain
 `<script>` tags rather than ES modules specifically so `file://` works — no local
@@ -235,6 +235,26 @@ Adding a new one means a `case` in `meetsRequirement()` and a matching line in
 `describeRequirement()` (which writes the "🔒 Unlocks at …" text) — both in `game.js`.
 
 ---
+
+## Timing and speed
+
+Production is paced against the wall clock, not the frame rate. Each frame
+advances by the **smaller of two independent clocks** (`performance.now` and
+`Date.now`), so overriding either one on its own gains nothing — both have to
+be faked in step. Pumping the frame driver gains nothing either: at 1200fps the
+loop credits exactly what it credits at 60fps, and a 240Hz display earns what a
+60Hz one does.
+
+A single frame can credit at most `CONFIG.balance.maxFrameSeconds` (1 second).
+Longer gaps are the offline-earnings system's job, not the frame loop's.
+
+`CONFIG.balance.timeScale` is the testing knob — set it to 10 to run the
+economy ten times faster locally. **Ship it at 1.** `test-timing.js` asserts
+all of the above, including that timeScale is 1.
+
+This is a client-side game, so someone determined with the console can still
+edit their own numbers. What this stops is the accidental and the casual: fast
+hardware, high refresh rates, and one-line speed hacks.
 
 ## Balance knobs
 

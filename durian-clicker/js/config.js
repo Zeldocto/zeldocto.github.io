@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-08',
+    buildId: '2026-09-09',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -38,6 +38,16 @@
     balance: {
       startingDurians: 0,
       baseClickPower: 1,       // durians per click before upgrades
+      // Production is paced against the WALL CLOCK, not the frame rate. Each
+      // frame advances by the smaller of two independent clocks
+      // (performance.now and Date.now), so speeding up either one on its own
+      // buys nothing, and a 240Hz display earns exactly what a 60Hz one does.
+      //
+      // timeScale is the testing knob: set it to 10 to run the economy ten
+      // times faster locally. Ship it at 1.
+      timeScale: 1,
+      maxFrameSeconds: 1,      // longest jump a single frame may credit
+
       tickRate: 20,            // production ticks per second
       uiRefreshRate: 20,       // UI redraws per second
 
