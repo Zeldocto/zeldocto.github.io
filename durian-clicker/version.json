@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-06",
-  "notes": "Event payouts always register; flat click upgrades actually apply.",
+  "build": "2026-09-07",
+  "notes": "The Far Shore: 100 endgame upgrades.",
   "force": false
 }

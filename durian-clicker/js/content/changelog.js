@@ -16,6 +16,15 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2026-09-07',
+      title: 'The Far Shore',
+      notes: [
+        '100 new upgrades for the extreme endgame, from octodecillion upward',
+        'Densely packed rather than steeply priced, so the last stretch has something to buy every session instead of long empty gaps',
+        'Two new upgrade milestones, and "Bought The Shop" now counts the full catalogue'
+      ]
+    },
+    {
       version: '2026-09-06',
       title: 'Two fixes',
       notes: [
