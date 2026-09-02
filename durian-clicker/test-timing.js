@@ -24,6 +24,10 @@ function run(opts) {
   w.Date = class extends Date { static now() { return wallMs; } };
   FILES.forEach(f => w.eval(fs.readFileSync(ROOT + 'js/' + f, 'utf8')));
   const DC = w.DC, N = DC.N, G = DC.Game;
+  // Island events pay out from inside the tick loop, which adds hundreds of
+  // seconds of production at random and swamps what we are measuring here.
+  if (DC.IslandEvents) DC.IslandEvents.update = function () {};
+  if (DC.Coins) DC.Coins.update = function () {};
   DC.CONFIG.workers.forEach(x => { G.state.unlocked[x.id] = true; G.state.workers[x.id] = 10; });
   G.recalc();
   G.state.durians = N.ZERO;

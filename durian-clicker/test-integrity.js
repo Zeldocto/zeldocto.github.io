@@ -57,13 +57,17 @@ console.log('\n=== the checks must not accuse honest players ===');
   eq('a brand-new clicker is not flagged', Dn.Save.verify(raw), 'ok');
   eq('playTime really is zero there', raw.playTime, 0);
 
-  // a fast but human click rate over a real session
-  const wf = boot(); const Df = wf.DC, Gf = Df.Game;
-  Gf.state.playTime = 3600;
-  Gf.state.totalClicks = 3600 * 25;            // 25/sec sustained, under the cap
-  Df.Save.save(true);
-  eq('sustained fast clicking is fine',
-     Df.Save.verify(JSON.parse(wf.localStorage.getItem('durianClicker.save.v1'))), 'ok');
+  // Autoclickers are allowed, at any rate. The click limiter already removes
+  // the advantage, so an integrity rule here would only punish players for
+  // something we told them was fine.
+  [10, 30, 100, 1000, 20000].forEach(function (cps) {
+    const wf = boot(); const Df = wf.DC, Gf = Df.Game;
+    Gf.state.playTime = 3600;
+    Gf.state.totalClicks = 3600 * cps;
+    Df.Save.save(true);
+    eq(cps + ' clicks/sec stays eligible',
+       Df.Save.verify(JSON.parse(wf.localStorage.getItem('durianClicker.save.v1'))), 'ok');
+  });
 
   // an offline windfall leaves a big bank with little playTime
   const wo = boot(); const Do = wo.DC, Go = Do.Game;

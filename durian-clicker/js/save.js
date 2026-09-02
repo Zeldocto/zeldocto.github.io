@@ -156,11 +156,14 @@
       var held = N.toNumber(N.deserialize(data.durians || 0));
       if (!isFinite(earned) || !isFinite(held)) return false;
       if (held > earned * 1.0001) return false;          // held more than ever earned
-      // Only meaningful once some time has passed: in the first second a
-      // player can legitimately be at hundreds of clicks per recorded second,
-      // and flagging them for that would be indefensible. The click limiter
-      // caps paid clicks at 30/sec, so a sustained 60 is impossible.
-      if (data.playTime > 60 && (data.totalClicks || 0) / data.playTime > 60) return false;
+      // NOTE: there is deliberately no click-rate rule here.
+      //
+      // Autoclickers are allowed. The rate limiter in game.js already removes
+      // the advantage — clicks past maxClickRate earn a fraction — and
+      // totalClicks still counts every one of them so click achievements keep
+      // working. A plausibility rule on clicks per second would therefore
+      // catch nothing the limiter has not already neutralised, while banning
+      // people from the leaderboard for playing the way we said they could.
       return true;
     } catch (err) {
       return true;                                        // never block on our own bug

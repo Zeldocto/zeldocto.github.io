@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-10",
-  "notes": "v2.3: leaderboard integrity.",
+  "build": "2026-09-10-2",
+  "notes": "v2.3: leaderboard integrity, autoclickers unaffected.",
   "force": false
 }
