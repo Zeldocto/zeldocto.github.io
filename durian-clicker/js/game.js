@@ -69,6 +69,7 @@
                 jackpots: 0, streak: 0, worstStreak: 0,
                 wagered: N.ZERO, won: N.ZERO, biggestWin: N.ZERO },
       skins: { owned: { classic: true }, active: 'classic' },
+      backgrounds: { owned: { default: true }, active: 'default' },
       buffs: [],                    // temporary event multipliers
       events: { seen: {}, total: 0, nextAt: 0 },
       eventGained: N.ZERO,          // durians handed over by good events
@@ -517,7 +518,10 @@
   function checkProgress() {
     checkUnlocks();
     checkAchievements();
-    if (DC.Store) DC.Store.checkRewards();
+    if (DC.Store) {
+      DC.Store.checkRewards();
+      DC.Store.checkBackgroundRewards();
+    }
   }
 
   /* ------------------------------------------------------------- the loop */

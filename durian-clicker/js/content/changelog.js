@@ -21,10 +21,19 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.5  2026-09-13',
+      title: 'Backgrounds',
+      notes: [
+        'The Tanooki Store now sells backgrounds as well as skins',
+        'Five to buy, plus Endgame, which is earned by playing for a week rather than bought'
+      ]
+    },
+    {
       version: '2.4  2026-09-12',
       title: 'Offline production',
       notes: [
-        'Reduce offline production percentage (originally 100% down to 10%, also heavily nerfed upgrades. Maximum 90% offline production, for now) - Closing the tab is no longer optimal, lol.',
+        'Your crew now works at 10% of normal while you are away, instead of full rate',
+        'The nine offline upgrades raise that to a maximum of 90%, so being online is always worth more',
         'Stats shows your current offline rate and how long being away counts for'
       ]
     },

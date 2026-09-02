@@ -86,7 +86,84 @@
     return order.map(function (t) { return { tier: t, skins: groups[t] }; });
   }
 
+  /* ------------------------------------------------------------ backdrops */
+  /*
+   * Backgrounds work exactly like skins: bought once, kept forever, switched
+   * freely. Kept in their own state key so neither can clobber the other.
+   */
+  function allBackgrounds() { return CONFIG.backgrounds || []; }
+
+  function backgroundDef(id) {
+    var list = allBackgrounds();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return list[0];
+  }
+
+  function backgroundOwned(id) {
+    return id === 'default' || !!DC.Game.state.backgrounds.owned[id];
+  }
+
+  /** Earned rather than sold. Cannot be bought at any price. */
+  function backgroundIsReward(id) { return !!backgroundDef(id).reward; }
+
+  /**
+   * Grants any earned background whose condition is now met. Called from
+   * Game.checkProgress, so it keeps up without polling.
+   */
+  function checkBackgroundRewards() {
+    var granted = [];
+    allBackgrounds().forEach(function (bg) {
+      if (!bg.reward || backgroundOwned(bg.id)) return;
+      if (bg.requires && DC.Game.meetsRequirement(bg.requires)) {
+        DC.Game.state.backgrounds.owned[bg.id] = true;
+        granted.push(bg);
+      }
+    });
+    if (granted.length) DC.Events.emit('backgroundUnlocked', granted);
+    return granted;
+  }
+
+  function canBuyBackground(id) {
+    var d = backgroundDef(id);
+    if (!d || backgroundOwned(id) || d.reward) return false;
+    return N.gte(DC.Game.state.durians, N.big(d.cost));
+  }
+
+  function buyBackground(id) {
+    var d = backgroundDef(id);
+    if (!d || backgroundOwned(id) || d.reward) return false;
+    if (!DC.Game.spendDurians(N.big(d.cost))) return false;
+    DC.Game.state.backgrounds.owned[id] = true;
+    equipBackground(id);
+    DC.Events.emit('backgroundBought', d);
+    return true;
+  }
+
+  function equipBackground(id) {
+    if (!backgroundOwned(id)) return false;
+    DC.Game.state.backgrounds.active = id;
+    DC.Events.emit('backgroundChanged', backgroundDef(id));
+    return true;
+  }
+
+  function activeBackground() { return backgroundDef(DC.Game.state.backgrounds.active); }
+  function activeBackgroundId() { return DC.Game.state.backgrounds.active; }
+  function backgroundsOwnedCount() {
+    return allBackgrounds().filter(function (b) { return backgroundOwned(b.id); }).length;
+  }
+
   DC.Store = {
+    allBackgrounds: allBackgrounds,
+    backgroundDef: backgroundDef,
+    backgroundOwned: backgroundOwned,
+    backgroundIsReward: backgroundIsReward,
+    checkBackgroundRewards: checkBackgroundRewards,
+    canBuyBackground: canBuyBackground,
+    buyBackground: buyBackground,
+    equipBackground: equipBackground,
+    activeBackground: activeBackground,
+    activeBackgroundId: activeBackgroundId,
+    backgroundsOwnedCount: backgroundsOwnedCount,
     all: all,
     def: def,
     owned: owned,

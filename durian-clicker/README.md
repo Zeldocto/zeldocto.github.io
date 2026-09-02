@@ -107,6 +107,32 @@ Nothing outside `ui.js` touches the DOM. Nothing outside `config.js` defines con
 
 ---
 
+## Backgrounds
+
+Purchasable views for the island, in the Backgrounds half of the Tanooki Store.
+Six ship as placeholders; edit **`js/content/backgrounds.js`** to change them.
+
+Each entry needs `id`, `name`, `description`, `cost`, `image` and `tier`. The
+`id` is the save key — **never rename one after release**, or everyone who
+bought it loses it. `default` must stay first and free.
+
+To use your own art, drop the file in `assets/` and point `image` at it. Any
+wide image works; the placeholders are 960x540 and the scene is drawn with
+`background-size: cover`, so keep anything important away from the edges.
+
+Adding another is just an entry in the array — no code changes.
+
+A background can be **earned** instead of bought: set `cost: null` and add
+`reward: true`, a `requires` condition and a `requirementText`. Endgame works
+this way, unlocking after seven days of play. Earned backgrounds cannot be
+bought at any price; `Store.checkBackgroundRewards()` grants them from
+`Game.checkProgress`, and the store shows the requirement where the price
+would be.
+
+Backgrounds and skins are stored separately and equip independently.
+Backgrounds removed from the catalogue are dropped from saves on load, falling
+back to `default`, so retiring one is safe.
+
 ## Replacing the placeholder art
 
 Two options, both one-step:

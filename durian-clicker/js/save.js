@@ -32,6 +32,8 @@
         biggestWin: N.serialize(state.casino.biggestWin || N.ZERO)
       }),
       skins: { owned: Object.assign({}, state.skins.owned), active: state.skins.active },
+      backgrounds: { owned: Object.assign({}, state.backgrounds.owned),
+                     active: state.backgrounds.active },
       buffs: state.buffs.slice(),
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
@@ -99,6 +101,18 @@
       });
       var wanted = data.skins.active;
       state.skins.active = (wanted && state.skins.owned[wanted]) ? wanted : 'classic';
+    }
+    if (data.backgrounds) {
+      // Same rule as skins: keep only what still exists in the catalogue.
+      state.backgrounds.owned = { default: true };
+      (CONFIG.backgrounds || []).forEach(function (bg) {
+        if (data.backgrounds.owned && data.backgrounds.owned[bg.id]) {
+          state.backgrounds.owned[bg.id] = true;
+        }
+      });
+      var wantedBg = data.backgrounds.active;
+      state.backgrounds.active =
+        (wantedBg && state.backgrounds.owned[wantedBg]) ? wantedBg : 'default';
     }
     if (Array.isArray(data.buffs)) state.buffs = data.buffs.filter(function (b) {
       return b && typeof b.endsAt === 'number' && b.endsAt > Date.now();

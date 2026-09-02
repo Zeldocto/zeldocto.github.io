@@ -131,6 +131,7 @@
     el['durian-img'].src = CONFIG.assets.durian;
     el['brand-shine'].src = CONFIG.assets.shine;
     el['scene-img'].style.backgroundImage = 'url("' + CONFIG.assets.background + '")';
+    applyBackground();
     el['store-icon'].src = CONFIG.assets.store;
     if (el['brand-version'] && CONFIG.version) {
       el['brand-version'].textContent = 'v' + CONFIG.version;
@@ -951,8 +952,22 @@
 
   /* ---------------------------------------------------------- Tanooki Store */
 
+  var storeSection = 'skins';
+
   function buildStore() {
     el['store-balance'].textContent = N.formatMenu(Game.state.durians);
+
+    document.querySelectorAll('.store-tab').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.store === storeSection);
+    });
+
+    if (storeSection === 'backgrounds') {
+      el['store-owned'].textContent =
+        DC.Store.backgroundsOwnedCount() + '/' + DC.Store.allBackgrounds().length;
+      buildBackgroundStore();
+      return;
+    }
+
     el['store-owned'].textContent = DC.Store.ownedCount() + '/' + DC.Store.all().length;
 
     var list = el['store-list'];
@@ -998,6 +1013,75 @@
       });
       list.appendChild(row);
     });
+  }
+
+  /** The Backgrounds half of the store. Same card shape as the skins. */
+  function buildBackgroundStore() {
+    var list = el['store-list'];
+    list.innerHTML = '';
+
+    var tiers = [];
+    DC.Store.allBackgrounds().forEach(function (bg) {
+      var group = null;
+      for (var i = 0; i < tiers.length; i++) if (tiers[i].tier === bg.tier) group = tiers[i];
+      if (!group) { group = { tier: bg.tier, items: [] }; tiers.push(group); }
+      group.items.push(bg);
+    });
+
+    tiers.forEach(function (group) {
+      var head = document.createElement('h3');
+      head.className = 'list-heading';
+      head.textContent = group.tier;
+      list.appendChild(head);
+
+      var row = document.createElement('div');
+      row.className = 'store-grid';
+
+      group.items.forEach(function (bg) {
+        var have = DC.Store.backgroundOwned(bg.id);
+        var afford = DC.Store.canBuyBackground(bg.id);
+        var earned = DC.Store.backgroundIsReward(bg.id);
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'store-item' +
+          (have ? ' owned' : (earned ? ' reward-locked' : (afford ? ' affordable' : ' broke')));
+        card.innerHTML =
+          '<span class="bg-thumb" style="background-image:url(&quot;' +
+            escapeHtml(bg.image) + '&quot;)"></span>' +
+          '<span class="store-item-body">' +
+            '<span class="store-item-name">' + escapeHtml(bg.name) + '</span>' +
+            '<span class="store-item-desc">' + escapeHtml(bg.description) + '</span>' +
+          '</span>' +
+          '<span class="store-item-cost">' +
+            (have ? (DC.Store.activeBackgroundId() === bg.id ? 'Equipped' : 'Owned')
+                  : (earned ? '\u{1F512} ' + escapeHtml(bg.requirementText || 'Earned')
+                            : N.formatMenu(bg.cost))) + '</span>';
+
+        card.addEventListener('click', function () {
+          if (have) {
+            DC.Store.equipBackground(bg.id);
+            DC.Audio.play('buyUpgrade');
+            buildStore();
+            return;
+          }
+          if (DC.Store.buyBackground(bg.id)) {
+            DC.Audio.play('buyUpgrade');
+            toast('Background unlocked', bg.name, 'unlock');
+            buildStore();
+          }
+        });
+        row.appendChild(card);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  /** Paints the equipped background onto the scene. */
+  function applyBackground() {
+    if (!DC.Store || !DC.Store.activeBackground) return;
+    var bg = DC.Store.activeBackground();
+    var src = (bg && bg.image) || CONFIG.assets.background;
+    el['scene-img'].style.backgroundImage = 'url("' + src + '")';
   }
 
   /* ---------------------------------------------------------- Blue Coins */
@@ -1549,6 +1633,20 @@
     DC.Events.on('coinCollected', function () { refreshCounters(); });
     DC.Events.on('blueCoinsChanged', function () { refreshCounters(); });
     DC.Events.on('skinChanged', applySkin);
+    DC.Events.on('backgroundChanged', applyBackground);
+    DC.Events.on('backgroundUnlocked', function (list) {
+      list.forEach(function (bg) {
+        toast('Background unlocked: ' + bg.name, bg.description, 'unlock');
+      });
+      DC.Audio.play('achievement');
+    });
+    DC.Events.on('backgroundBought', applyBackground);
+    document.querySelectorAll('.store-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        storeSection = btn.dataset.store;
+        buildStore();
+      });
+    });
     DC.Events.on('skinBought', applySkin);
     DC.Events.on('skinUnlocked', function (list) {
       list.forEach(function (skin) {
