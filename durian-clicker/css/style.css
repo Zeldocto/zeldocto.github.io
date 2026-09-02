@@ -1993,13 +1993,24 @@ body.dark .store-tab { color: var(--ink); }
 body.dark .store-tab.is-active { color: #FFF; }
 
 /* A wide crop of the art, so you can tell them apart before buying. */
+/* A background card needs a wide thumbnail, but .store-item is a grid whose
+   first column is a fixed 54px (sized for a round skin swatch). A 92px image
+   in a 54px column overflows into the text, which is what put the art under
+   the names. Widen the column for these cards instead of oversizing the cell.
+   flex-shrink does nothing in a grid, so it is gone too. */
+.store-item.has-thumb { grid-template-columns: 92px minmax(0, 1fr) auto; }
+
 .bg-thumb {
-  width: 92px;
-  height: 52px;
-  flex-shrink: 0;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: 10px;
   border: 2px solid var(--sand-line);
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
-@media (max-width: 480px) { .bg-thumb { width: 68px; height: 40px; } }
+
+@media (max-width: 480px) {
+  .store-item.has-thumb { grid-template-columns: 68px minmax(0, 1fr) auto; }
+}

@@ -78,6 +78,22 @@ const cards = [...w.document.querySelectorAll('#store-list .store-item')];
 eq('a card per background', cards.length, list.length);
 eq('every card has a preview',
    w.document.querySelectorAll('#store-list .bg-thumb').length, list.length);
+// .store-item is a grid with a fixed first column sized for a round skin
+// swatch; a wide thumbnail must widen that column or it overflows the text
+eq('cards with a thumbnail are marked for the wider column',
+   [...w.document.querySelectorAll('#store-list .store-item')]
+     .every(c => c.classList.contains('has-thumb')), true);
+{
+  const css = fs.readFileSync(ROOT + 'css/style.css', 'utf8');
+  eq('and the wider column is defined',
+     /\.store-item\.has-thumb\s*\{[^}]*grid-template-columns:\s*92px/.test(css), true);
+  eq('the thumbnail fills its column rather than overhanging',
+     /\.bg-thumb\s*\{[^}]*width:\s*100%/.test(css), true);
+  eq('it keeps a fixed shape whatever the source image',
+     /\.bg-thumb\s*\{[^}]*aspect-ratio/.test(css), true);
+  eq('skin cards keep the original narrow column',
+     /\.store-item\s*\{[^}]*grid-template-columns:\s*54px/.test(css), true);
+}
 eq('the equipped one says so',
    cards.some(c => /Equipped/.test(c.textContent)), true);
 eq('owned ones say Owned', cards.some(c => /Owned/.test(c.textContent)), true);

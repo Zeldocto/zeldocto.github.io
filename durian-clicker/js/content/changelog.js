@@ -21,11 +21,19 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.5.1  2026-09-14',
+      title: 'Store layout fix',
+      notes: [
+        'Background previews no longer overlap the names and descriptions in the store'
+      ]
+    },
+    {
       version: '2.5  2026-09-13',
       title: 'Backgrounds',
       notes: [
         'The Tanooki Store now sells backgrounds as well as skins',
-        'Five to buy, plus Endgame, which is earned by playing for a week rather than bought'
+        'Five to buy, plus Endgame — which is earned by playing for a week rather than bought',
+        'Buy once, switch between them whenever you like'
       ]
     },
     {

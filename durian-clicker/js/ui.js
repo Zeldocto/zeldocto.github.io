@@ -1043,7 +1043,7 @@
         var earned = DC.Store.backgroundIsReward(bg.id);
         var card = document.createElement('button');
         card.type = 'button';
-        card.className = 'store-item' +
+        card.className = 'store-item has-thumb' +
           (have ? ' owned' : (earned ? ' reward-locked' : (afford ? ' affordable' : ' broke')));
         card.innerHTML =
           '<span class="bg-thumb" style="background-image:url(&quot;' +
