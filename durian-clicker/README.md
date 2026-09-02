@@ -339,9 +339,18 @@ Three layers, and it is worth being clear about what each one is worth.
    least `baseCost x (mult^n - 1) / (mult - 1)`. A save claiming 500,000 Pianta
    Judges is rejected **even if it has been correctly re-signed**, which is what
    makes this worth more than the signature alone.
-3. **Server-side limits** (`leaderboard-guard.sql`, optional). Rejects scores
-   that are impossible for the play time claimed. This is the only layer a
-   player cannot reach.
+3. **Server-side limits** (`leaderboard-guard.sql`). Rejects scores impossible
+   for the play time claimed. The only layer a player cannot reach.
+
+   The ceiling is `log10 300`, far above anything reachable — the measured
+   maximum with every upgrade and 5,000 of every crew is about 1e90. A ceiling
+   that blocks a real player is worse than one that lets an absurd score
+   through, and the bank-lead and time rules do the actual work. Recheck with
+   `node balance.js` after a big content tier.
+
+   Client-side plausibility works entirely in log10: `toNumber()` returns
+   Infinity past 1e308 and an honest save can get there, so comparing raw
+   numbers would have marked every such save impossible.
 
 A save that fails 1 or 2 **still loads and still plays** — losing someone's
 real progress to a false positive would be far worse than the cheating. It is

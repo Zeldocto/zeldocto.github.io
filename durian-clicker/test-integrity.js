@@ -337,6 +337,33 @@ console.log('\n=== a save file cannot smuggle in unaffordable crew ===');
      De.Save.verify(JSON.parse(we.localStorage.getItem('durianClicker.save.v1'))), 'ok');
 }
 
+console.log('\n=== huge but honest totals are not rejected ===');
+{
+  // toNumber() returns Infinity past 1e308 and an honest save can get there,
+  // so the plausibility checks work in log10 rather than raw numbers.
+  [80, 200, 308, 400, 900].forEach(function (exp) {
+    const wx = boot(); const Dx = wx.DC, Gx = Dx.Game, Nx = Dx.N;
+    Dx.CONFIG.workers.forEach(x => { Gx.state.unlocked[x.id] = true; });
+    Dx.CONFIG.upgrades.forEach(u => Gx.state.upgrades[u.id] = true);
+    Gx.addDurians(Nx.pow10(exp), 'worker');
+    Gx.state.playTime = 500000;
+    Gx.recalc();
+    Dx.Save.save(true);
+    eq('a total of 1e' + exp + ' is accepted',
+       Dx.Save.verify(JSON.parse(wx.localStorage.getItem('durianClicker.save.v1'))), 'ok');
+  });
+
+  // and the rule it replaces still works
+  const wy = boot(); const Dy = wy.DC, Gy = Dy.Game, Ny = Dy.N;
+  Dy.CONFIG.workers.forEach(x => { Gy.state.unlocked[x.id] = true; });
+  Gy.addDurians(Ny.pow10(10), 'worker'); Gy.state.playTime = 1000;
+  Dy.Save.save(true);
+  const tweaked = JSON.parse(wy.localStorage.getItem('durianClicker.save.v1'));
+  tweaked.durians = { m: 5, e: 40 };
+  eq('holding more than you earned is still caught',
+     /impossible/.test(Dy.Save.verify(tweaked)), true);
+}
+
 console.log('\n=== an old unsigned save is grandfathered ===');
 {
   const legacy = JSON.parse(honest);

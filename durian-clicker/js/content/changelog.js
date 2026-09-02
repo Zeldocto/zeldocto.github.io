@@ -21,6 +21,14 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.5.4  2026-09-17',
+      title: 'Bug fixes',
+      notes: [
+        'Very large totals are handled correctly everywhere',
+        'Bug fixes'
+      ]
+    },
+    {
       version: '2.5.3  2026-09-16',
       title: 'Bug fixes',
       notes: [

@@ -167,10 +167,16 @@
   /** Internal consistency, independent of the signature. */
   function looksPlausible(data) {
     try {
-      var earned = N.toNumber(N.deserialize(data.totalEarned || 0));
-      var held = N.toNumber(N.deserialize(data.durians || 0));
-      if (!isFinite(earned) || !isFinite(held)) return false;
-      if (held > earned * 1.0001) return false;          // held more than ever earned
+      // Work in log10 throughout. toNumber() returns Infinity past 1e308, and
+      // an honest save CAN get there — using it would have marked every save
+      // above that as impossible, which is the worst kind of false positive.
+      var earnedBig = N.deserialize(data.totalEarned || 0);
+      var heldBig = N.deserialize(data.durians || 0);
+      var earnedLog = earnedBig.m > 0 ? N.log10(earnedBig) : -Infinity;
+      var heldLog = heldBig.m > 0 ? N.log10(heldBig) : -Infinity;
+      if (isNaN(earnedLog) || isNaN(heldLog)) return false;
+      // held more than ever earned (a hair of slack for rounding)
+      if (heldLog > earnedLog + 0.0001) return false;
 
       // Crew has to have been paid for. Costs rise 10% a head, so owning n of
       // a worker means having spent at least baseCost x (1.1^n - 1) / 0.1 on
@@ -186,7 +192,7 @@
         var mult = def.costMultiplier || 1.1;
         var spentLog = Math.log10(def.baseCost) +
                        n * Math.log10(mult) - Math.log10(mult - 1);
-        if (spentLog > Math.log10(Math.max(earned, 1)) + 1) return false;
+        if (spentLog > Math.max(earnedLog, 0) + 1) return false;
       }
       // NOTE: there is deliberately no click-rate rule here.
       //

@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-16",
-  "notes": "v2.5.3: integrity flag hardened.",
+  "build": "2026-09-17",
+  "notes": "v2.5.4: overflow-safe plausibility, ceiling raised.",
   "force": false
 }
