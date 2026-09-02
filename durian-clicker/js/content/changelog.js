@@ -21,6 +21,15 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.3  2026-09-10',
+      title: 'Leaderboard integrity',
+      notes: [
+        'Saves are now signed, and edited saves are refused by the leaderboard',
+        'A modified save still plays normally — it is just not eligible for ranking',
+        'Bug fixes'
+      ]
+    },
+    {
       version: '2.2  2026-09-08',
       title: 'Achievement scaling and the changelog',
       notes: [

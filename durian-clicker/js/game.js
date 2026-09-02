@@ -341,6 +341,48 @@
     Events.emit('recalc');
   }
 
+  /* ------------------------------------------------------- bank integrity */
+  /*
+   * The bank only ever changes in four places: addDurians, spendDurians, and
+   * the two event setbacks. Each records what the total should now be, and the
+   * tick loop checks once a second that it still is.
+   *
+   * So `DC.Game.state.durians = whatever` from the console is caught within a
+   * second. Someone who calls the game's own addDurians instead is not — no
+   * code running on the player's own machine can stop that — but the edit
+   * people actually make is the direct one, and this catches it.
+   */
+  var bankMark = null;
+
+  /** Records the current bank as legitimate. */
+  function markBank() {
+    var d = Game.state.durians;
+    bankMark = { m: d.m, e: d.e };
+  }
+
+  function bankWasEdited() {
+    if (!bankMark) return false;
+    var d = Game.state.durians;
+    return d.m !== bankMark.m || d.e !== bankMark.e;
+  }
+
+  /** Marks the save ineligible. Never reversible from inside the game. */
+  function flagTampered(reason) {
+    if (Game.state.integrity) return;
+    Game.state.integrity = reason;
+    console.warn('[Durian Clicker] ' + reason +
+                 ' \u2014 this save is no longer eligible for the leaderboard.');
+    Events.emit('integrityFailed', reason);
+    if (DC.Save) DC.Save.save(true);
+  }
+
+  function auditBank() {
+    if (bankWasEdited()) {
+      flagTampered('the Durian total changed outside the game');
+      markBank();                       // resync: flag once, not every second
+    }
+  }
+
   /* ---------------------------------------------------------- earning API */
 
   function addDurians(amount, source) {
@@ -351,6 +393,7 @@
     s.totalEarned = N.add(s.totalEarned, amount);
     if (source === 'click') s.clickEarned = N.add(s.clickEarned, amount);
     else if (source === 'worker') s.workerEarned = N.add(s.workerEarned, amount);
+    markBank();
   }
 
   function spendDurians(amount) {
@@ -359,6 +402,7 @@
     if (!N.gte(s.durians, amount)) return false;
     s.durians = N.sub(s.durians, amount);
     s.spent = N.add(s.spent, amount);
+    markBank();
     return true;
   }
 
@@ -454,6 +498,7 @@
 
   /* ------------------------------------------------------------- the loop */
 
+  var auditSeconds = 0;
   var lastTime = 0, lastWall = 0, accumulator = 0, uiAccumulator = 0, progressAccumulator = 0;
 
   function frame(now) {
@@ -484,6 +529,12 @@
 
   function tick(dt) {
     var s = Game.state;
+
+    // Audit BEFORE producing: production calls addDurians, which re-marks the
+    // bank, and would quietly absorb an edit made since the last tick.
+    auditSeconds += dt;
+    if (auditSeconds >= 1) { auditSeconds = 0; auditBank(); }
+
     s.playTime += dt;
     var produced = N.mul(Game.derived.dps, dt);
     if (produced.m > 0) addDurians(produced, 'worker');
@@ -546,6 +597,9 @@
     newState: newState,
     recalc: recalc,
     click: click,
+    markBank: markBank,
+    auditBank: auditBank,
+    flagTampered: flagTampered,
     currentClickRate: currentClickRate,
     averageClickRate: averageClickRate,
     tick: tick,

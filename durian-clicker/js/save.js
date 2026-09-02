@@ -36,6 +36,7 @@
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
       changelogSeen: state.changelogSeen,
+      integrity: state.integrity,
       peakClickRate: state.peakClickRate,
       playTime: state.playTime,
       startedAt: state.startedAt,
@@ -57,6 +58,7 @@
     if (typeof data.totalClicks === 'number') state.totalClicks = data.totalClicks;
     if (typeof data.playTime === 'number') state.playTime = data.playTime;
     if (typeof data.changelogSeen === 'string') state.changelogSeen = data.changelogSeen;
+    if (data.integrity) state.integrity = data.integrity;
     if (typeof data.peakClickRate === 'number') state.peakClickRate = data.peakClickRate;
     if (typeof data.startedAt === 'number') state.startedAt = data.startedAt;
     if (typeof data.lastSaved === 'number') state.lastSaved = data.lastSaved;
@@ -121,9 +123,70 @@
 
   /* --------------------------------------------------------------- storage */
 
+  /* --------------------------------------------------------- save integrity */
+  /*
+   * A signature over the stored payload, plus a few consistency checks. This
+   * catches hand-edited localStorage and pasted export strings, which is how
+   * saves are usually altered and shared. It does not defeat someone working
+   * through the console, and nothing client-side would.
+   *
+   * A failing save still LOADS — losing real progress to a false positive
+   * would be far worse than the cheating — it is simply marked ineligible.
+   */
+  var SIGNED_VERSION = 2;
+
+  function signature(payload) {
+    var copy = {};
+    Object.keys(payload).sort().forEach(function (k) {
+      if (k !== 'sig') copy[k] = payload[k];
+    });
+    var text = JSON.stringify(copy) + '|isle-delfino|' + SIGNED_VERSION;
+    var h = 0x811c9dc5;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    return h.toString(36);
+  }
+
+  /** Internal consistency, independent of the signature. */
+  function looksPlausible(data) {
+    try {
+      var earned = N.toNumber(N.deserialize(data.totalEarned || 0));
+      var held = N.toNumber(N.deserialize(data.durians || 0));
+      if (!isFinite(earned) || !isFinite(held)) return false;
+      if (held > earned * 1.0001) return false;          // held more than ever earned
+      // Only meaningful once some time has passed: in the first second a
+      // player can legitimately be at hundreds of clicks per recorded second,
+      // and flagging them for that would be indefensible. The click limiter
+      // caps paid clicks at 30/sec, so a sustained 60 is impossible.
+      if (data.playTime > 60 && (data.totalClicks || 0) / data.playTime > 60) return false;
+      return true;
+    } catch (err) {
+      return true;                                        // never block on our own bug
+    }
+  }
+
+  /** 'ok' or a human-readable reason. */
+  function verify(data) {
+    if (!data) return 'ok';
+    if (data.integrity) return data.integrity;
+    if (!looksPlausible(data)) return 'the save contains impossible values';
+    if (!data.sig) {
+      // Saves written before signing existed are grandfathered and re-signed
+      // on the next write.
+      return (data.saveVersion >= SIGNED_VERSION)
+        ? 'the save file was edited' : 'ok';
+    }
+    if (data.sig !== signature(data)) return 'the save file was edited';
+    return 'ok';
+  }
+
   function save(silent) {
     try {
       var payload = serialize(DC.Game.state);
+      payload.saveVersion = SIGNED_VERSION;
+      payload.sig = signature(payload);
       localStorage.setItem(CONFIG.saveKey, JSON.stringify(payload));
       DC.Game.state.lastSaved = payload.lastSaved;
       if (!silent) DC.Events.emit('saved', { at: payload.lastSaved });
@@ -149,8 +212,11 @@
   function load() {
     var data = loadRaw();
     if (!data) return null;
+    var verdict = verify(data);
     DC.Game.state = deserialize(data);
+    if (verdict !== 'ok') DC.Game.state.integrity = verdict;
     DC.Game.recalc();
+    DC.Game.markBank();                 // the loaded total is the baseline
     DC.Game.checkUnlocks();
     DC.Events.emit('loaded', data);
     return data;
@@ -181,8 +247,11 @@
     }
     if (!data || typeof data !== 'object') return false;
 
+    var importVerdict = verify(data);
     DC.Game.state = deserialize(data);
+    if (importVerdict !== 'ok') DC.Game.state.integrity = importVerdict;
     DC.Game.recalc();
+    DC.Game.markBank();
     DC.Game.checkUnlocks();
     save(true);
     DC.Events.emit('imported', data);
@@ -230,6 +299,9 @@
     wipe: wipe,
     serialize: serialize,
     deserialize: deserialize,
+    signature: signature,
+    verify: verify,
+    looksPlausible: looksPlausible,
     exportString: exportString,
     importString: importString,
     downloadSaveFile: downloadSaveFile,

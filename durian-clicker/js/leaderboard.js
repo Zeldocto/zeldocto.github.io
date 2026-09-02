@@ -300,6 +300,12 @@
     }
 
     var s = DC.Game.state;
+
+    // A modified save still plays; it just does not go on the board.
+    if (s.integrity) {
+      setStatus('error', 'This save was modified, so it cannot be submitted.');
+      return Promise.resolve({ ok: false, reason: 'modified' });
+    }
     if (!s.player.name) return Promise.resolve({ ok: false, reason: 'no-name' });
     if (!options.force && N.lt(s.totalEarned, cfg.minScoreToSubmit)) {
       return Promise.resolve({ ok: false, reason: 'too-low' });

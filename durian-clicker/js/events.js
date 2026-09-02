@@ -109,6 +109,7 @@
         var pct = between(fx.min, fx.max) * lossMult;
         var taken = N.mul(s.durians, pct);
         s.durians = N.max(N.sub(s.durians, taken), N.ZERO);
+        DC.Game.markBank();
         s.lost = N.add(s.lost || N.ZERO, taken);
         result.amount = taken;
         result.direction = 'loss';
@@ -119,6 +120,7 @@
         var loss = N.max(atLeastVisible(N.mul(d.baseDps !== undefined ? d.baseDps : d.dps, lsecs)), N.ZERO);
         if (N.gte(loss, s.durians)) loss = s.durians;   // never go negative
         s.durians = N.sub(s.durians, loss);
+        DC.Game.markBank();
         s.lost = N.add(s.lost || N.ZERO, loss);
         result.amount = loss;
         result.direction = 'loss';

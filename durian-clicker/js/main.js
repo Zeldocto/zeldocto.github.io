@@ -70,6 +70,7 @@
     DC.Audio.init();
 
     var saved = DC.Save.load();
+    DC.Game.markBank();
     if (!saved) {
       DC.Game.recalc();
       DC.Game.checkUnlocks();
