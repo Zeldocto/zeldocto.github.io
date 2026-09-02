@@ -282,6 +282,36 @@ This is a client-side game, so someone determined with the console can still
 edit their own numbers. What this stops is the accidental and the casual: fast
 hardware, high refresh rates, and one-line speed hacks.
 
+## Click limiting
+
+Three things guard it, because the first one alone was one line from being
+switched off.
+
+1. **The limit is captured at load** into a closure in `js/game.js`. It used to
+   be read from `CONFIG` on every click, so `CONFIG.balance.maxClickRate = 0`
+   from the console turned it off entirely. Editing `CONFIG` afterwards now has
+   no effect.
+2. **Total click income per second is capped**, not just the rate. Past
+   `maxClickRate` clicks pay a fraction, and past `maxClickRate x 2`
+   click-equivalents in a second they pay nothing at all — they still register
+   for animation and achievements. Without this, a fast enough autoclicker
+   earned an unbounded amount through the fraction alone.
+3. **Click income is audited independently.** Each second, click earnings are
+   compared against `clickPower x hard cap`. A script that replaces `click()`
+   outright is caught by the money it produces rather than the route it took.
+
+Any of these tripping marks the save ineligible for the leaderboard.
+
+**Autoclickers remain fine at any speed** — 1, 30, 1,000 and 50,000 per second
+all stay clean, and `test-integrity.js` asserts it. The audit window is the
+larger of the tick loop's game time and real elapsed time, because a burst can
+land in one millisecond while a backgrounded tab can drop real seconds between
+ticks; taking the larger avoids false positives in both directions.
+
+**What this still does not do:** stop someone who edits the JS before it runs,
+via a local file override or a userscript. Nothing shipped to the browser can.
+`leaderboard-guard.sql` is the layer they cannot reach.
+
 ## Leaderboard integrity
 
 Three layers, and it is worth being clear about what each one is worth.

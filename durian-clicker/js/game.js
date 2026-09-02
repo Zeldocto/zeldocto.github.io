@@ -355,6 +355,18 @@
    */
   var stateMark = null;
 
+  var CLICK_LIMIT = (function () {
+    var v = CONFIG.balance.maxClickRate;
+    return (typeof v === 'number' && v > 0) ? v : 30;
+  })();
+  var CLICK_OVERFLOW = (function () {
+    var v = CONFIG.balance.overflowClickValue;
+    return (typeof v === 'number' && v >= 0 && v <= 1) ? v : 0.02;
+  })();
+
+  /* Balance settings are read at load and never expected to change. */
+  var BALANCE_MARK = JSON.stringify(CONFIG.balance);
+
   /** A compact fingerprint of everything that decides production. */
   function fingerprint() {
     var s = Game.state;
@@ -400,7 +412,60 @@
     if (DC.Save) DC.Save.save(true);
   }
 
-  function auditBank() {
+  /*
+   * Click income has a hard ceiling: clickPower x CLICK_LIMIT per second. This
+   * is checked against what actually arrived, so even a script that replaces
+   * the click function outright is caught by the money it produces rather than
+   * by the route it took. Slack is generous — this is here to catch a hundred
+   * times the limit, not a rounding difference.
+   */
+  var lastClickEarned = null;
+
+  /**
+   * Click income has a ceiling: clickPower x CLICK_LIMIT for each second of
+   * game time. Checking the money rather than the route means a script that
+   * replaces the click function outright is still caught.
+   *
+   * The window is the tick loop's own accumulated time, NOT wall-clock between
+   * audits: a burst of clicks can all land in the same millisecond, and
+   * measuring that against elapsed real time gave a ceiling of nearly zero and
+   * accused honest autoclickers. Slack is 3x, so this catches a hundred times
+   * the limit and never a legitimate fast clicker.
+   */
+  var lastAuditWall = 0;
+
+  function auditClickIncome(windowSeconds) {
+    var now = Date.now();
+    // Use whichever window is LONGER: the tick loop's accumulated game time,
+    // or the real time since the last audit. A burst of clicks can land in one
+    // millisecond (game time is the fair measure), while a slow or backgrounded
+    // tab can let real seconds pass between ticks (real time is the fair
+    // measure). Taking the larger keeps honest players clean in both cases.
+    var wall = lastAuditWall ? (now - lastAuditWall) / 1000 : 0;
+    lastAuditWall = now;
+    if (wall > windowSeconds) windowSeconds = wall;
+
+    var earned = Game.state.clickEarned;
+    if (lastClickEarned === null || !(windowSeconds > 0)) {
+      lastClickEarned = earned;
+      return;
+    }
+    var gained = N.sub(earned, lastClickEarned);
+    lastClickEarned = earned;
+    if (gained.m <= 0) return;
+
+    var ceiling = N.mul(Game.derived.clickPower, CLICK_HARD_CAP * windowSeconds * 2);
+    if (N.cmp(gained, ceiling) > 0) {
+      flagTampered('clicks earned more than the click limit allows');
+    }
+  }
+
+  function auditBank(windowSeconds) {
+    auditClickIncome(windowSeconds);
+    if (JSON.stringify(CONFIG.balance) !== BALANCE_MARK) {
+      flagTampered('the balance settings were changed');
+      BALANCE_MARK = JSON.stringify(CONFIG.balance);
+    }
     var reason = whatWasEdited();
     if (reason) {
       flagTampered(reason);
@@ -440,15 +505,42 @@
    * console script firing thousands of clicks per frame therefore earns
    * almost nothing, while anyone clicking by hand is unaffected.
    */
+  /*
+   * The limit is read ONCE, here, and kept in this closure. It used to be read
+   * from CONFIG on every click, which meant `CONFIG.balance.maxClickRate = 0`
+   * from the console turned the whole thing off in one line — the escape hatch
+   * was doing more work for a cheat than it ever did for testing.
+   *
+   * Nothing outside this file can reach these values now, and editing CONFIG
+   * afterwards has no effect on them.
+   */
+  /*
+   * Clicks past CLICK_LIMIT still pay a fraction, but the fraction is not
+   * unlimited: at a few thousand clicks a second the overflow alone added up
+   * to more than the limit was meant to allow. Total click income in any
+   * second is therefore capped at CLICK_HARD_CAP click-equivalents, after
+   * which further clicks register (animation, achievements) and pay nothing.
+   *
+   * This also gives the income audit a ceiling it can trust: honest clicking
+   * cannot exceed the cap at any rate, so anything above it came from
+   * somewhere else.
+   */
+  var CLICK_HARD_CAP = CLICK_LIMIT * 2;
+  var paidUnits = 0;
+
   function clickRateFactor() {
-    var cfg = CONFIG.balance;
-    var limit = cfg.maxClickRate;
-    if (!limit || limit <= 0) return 1;
     var now = Date.now();
-    while (recentClicks.length && now - recentClicks[0] > 1000) recentClicks.shift();
-    recentClicks.push(now);
-    if (recentClicks.length <= limit) return 1;
-    return cfg.overflowClickValue !== undefined ? cfg.overflowClickValue : 0.02;
+    while (recentClicks.length && now - recentClicks[0].t > 1000) {
+      paidUnits -= recentClicks.shift().paid;
+    }
+    var paid;
+    if (recentClicks.length < CLICK_LIMIT) paid = 1;
+    else if (paidUnits < CLICK_HARD_CAP) paid = CLICK_OVERFLOW;
+    else paid = 0;
+
+    recentClicks.push({ t: now, paid: paid });
+    paidUnits += paid;
+    return paid;
   }
 
   /** Clicks in the last second, for the UI. */
@@ -561,7 +653,7 @@
     // Audit BEFORE producing: production calls addDurians, which re-marks the
     // bank, and would quietly absorb an edit made since the last tick.
     auditSeconds += dt;
-    if (auditSeconds >= 1) { auditSeconds = 0; auditBank(); }
+    if (auditSeconds >= 1) { auditBank(auditSeconds); auditSeconds = 0; }
 
     s.playTime += dt;
     var produced = N.mul(Game.derived.dps, dt);

@@ -83,6 +83,70 @@ console.log('\n=== the checks must not accuse honest players ===');
      Do.Save.verify(JSON.parse(wo.localStorage.getItem('durianClicker.save.v1'))), 'ok');
 }
 
+console.log('\n=== the click limiter cannot be switched off ===');
+{
+  const mk = function () {
+    const wk = boot(); const Dk = wk.DC, Gk = Dk.Game;
+    Dk.CONFIG.workers.forEach(x => { Gk.state.unlocked[x.id] = true; Gk.state.workers[x.id] = 50; });
+    Gk.recalc(); Gk.state.durians = Dk.N.ZERO; Gk.markBank(); Gk.tick(1);
+    return Dk;
+  };
+
+  // honest autoclicking, at any speed, stays clean
+  [1, 10, 30, 100, 1000, 50000].forEach(function (rate) {
+    const Dh = mk();
+    for (let i = 0; i < rate; i++) Dh.Game.click();
+    Dh.Game.tick(1);
+    eq(rate + ' clicks/sec stays clean', String(Dh.Game.state.integrity), 'undefined');
+  });
+
+  // total click income per second is bounded however fast you click
+  const Db = mk(); const Nb = Db.N, Gb = Db.Game;
+  const one = Nb.toNumber(Gb.derived.clickPower);
+  Gb.state.durians = Nb.ZERO;
+  const started = Date.now();
+  for (let i = 0; i < 20000; i++) Gb.click();
+  const elapsed = Math.max(0.001, (Date.now() - started) / 1000);
+  const perSecond = (Nb.toNumber(Gb.state.durians) / one) / elapsed;
+  console.log('     20,000 clicks paid ' + perSecond.toFixed(1) +
+              ' click-equivalents per real second');
+  // the budget is 60 a second; anything near that is the cap working, and a
+  // rate far above it would mean the cap leaks
+  eq('click income per second is capped however fast you go', perSecond < 150, true);
+
+  // turning the limiter off from the console
+  const Dz = mk();
+  Dz.CONFIG.balance.maxClickRate = 0;
+  for (let i = 0; i < 500; i++) Dz.Game.click();
+  Dz.Game.tick(1);
+  eq('maxClickRate = 0 no longer disables it', typeof Dz.Game.state.integrity, 'string');
+  eq('and it names the settings',
+     /balance settings were changed/.test(Dz.Game.state.integrity), true);
+
+  const Do = mk();
+  Do.CONFIG.balance.overflowClickValue = 1;
+  for (let i = 0; i < 500; i++) Do.Game.click();
+  Do.Game.tick(1);
+  eq('overflowClickValue = 1 is caught too', typeof Do.Game.state.integrity, 'string');
+
+  // paying yourself click income directly
+  const Da = mk();
+  for (let i = 0; i < 1000; i++) Da.Game.addDurians(Da.Game.derived.clickPower, 'click');
+  Da.Game.tick(1);
+  eq('paying yourself click income is caught', typeof Da.Game.state.integrity, 'string');
+  eq('and it names the clicks',
+     /clicks earned more than the click limit/.test(Da.Game.state.integrity), true);
+
+  // replacing the click function outright
+  const Dr = mk(); const Nr = Dr.N, Gr = Dr.Game;
+  for (let i = 0; i < 1000; i++) {
+    Gr.state.clickEarned = Nr.add(Gr.state.clickEarned, Gr.derived.clickPower);
+    Gr.addDurians(Gr.derived.clickPower, 'worker');
+  }
+  Gr.tick(1);
+  eq('replacing click() entirely is caught', typeof Gr.state.integrity, 'string');
+}
+
 console.log('\n=== editing the total from the console is caught ===');
 {
   const wt = boot(); const Dt = wt.DC, Gt = Dt.Game;
