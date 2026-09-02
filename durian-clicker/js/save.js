@@ -156,6 +156,23 @@
       var held = N.toNumber(N.deserialize(data.durians || 0));
       if (!isFinite(earned) || !isFinite(held)) return false;
       if (held > earned * 1.0001) return false;          // held more than ever earned
+
+      // Crew has to have been paid for. Costs rise 10% a head, so owning n of
+      // a worker means having spent at least baseCost x (1.1^n - 1) / 0.1 on
+      // it alone. Compared against everything ever earned, with plenty of
+      // slack — this is here to catch 500,000 Pianta Judges, not to audit
+      // anyone's spending.
+      var workers = data.workers || {};
+      for (var i = 0; i < CONFIG.workers.length; i++) {
+        var def = CONFIG.workers[i];
+        var n = workers[def.id] || 0;
+        if (!n) continue;
+        if (n > 1e6) return false;                       // beyond any real save
+        var mult = def.costMultiplier || 1.1;
+        var spentLog = Math.log10(def.baseCost) +
+                       n * Math.log10(mult) - Math.log10(mult - 1);
+        if (spentLog > Math.log10(Math.max(earned, 1)) + 1) return false;
+      }
       // NOTE: there is deliberately no click-rate rule here.
       //
       // Autoclickers are allowed. The rate limiter in game.js already removes

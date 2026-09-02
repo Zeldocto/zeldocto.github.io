@@ -22,7 +22,10 @@ const eq = (l,g,e) => { if (String(g)!==String(e)) { fails++; console.log('FAIL'
 
 console.log('=== an honest save is never accused ===');
 let w = boot(), DC = w.DC, N = DC.N, G = DC.Game;
-DC.CONFIG.workers.forEach(x => { G.state.unlocked[x.id]=true; G.state.workers[x.id]=25; });
+DC.CONFIG.workers.forEach(x => { G.state.unlocked[x.id]=true; });
+G.addDurians(N.big(1e9), 'worker');          // earned, so the crew is affordable
+DC.Workers.buy('pianta', 25);
+DC.Workers.buy('noki', 10);
 G.recalc();
 for (let i=0;i<50;i++) G.click();
 for (let i=0;i<120;i++) G.tick(1);
@@ -85,6 +88,7 @@ console.log('\n=== editing the total from the console is caught ===');
   const wt = boot(); const Dt = wt.DC, Gt = Dt.Game;
   Dt.CONFIG.workers.forEach(x => { Gt.state.unlocked[x.id]=true; Gt.state.workers[x.id]=5; });
   Gt.recalc();
+  Gt.markBank();                    // as if this state had just been loaded
   Gt.tick(1);
   eq('clean before the edit', Gt.state.integrity, 'undefined');
   Gt.state.durians = Dt.N.pow10(60);          // the classic F12 edit
@@ -95,6 +99,79 @@ console.log('\n=== editing the total from the console is caught ===');
      !!JSON.parse(wt.localStorage.getItem('durianClicker.save.v1')).integrity, true);
   const wr = boot(wt.localStorage.getItem('durianClicker.save.v1'));
   eq('and survives a reload', typeof wr.DC.Game.state.integrity, 'string');
+}
+
+console.log('\n=== adding crew from the console is caught ===');
+{
+  const wc = boot(); const Dc = wc.DC, Gc = Dc.Game, Nc = Dc.N;
+  Dc.CONFIG.workers.forEach(x => { Gc.state.unlocked[x.id] = true; });
+  Gc.addDurians(Nc.pow10(14)); Gc.recalc();
+  Dc.Workers.buy('pianta', 20);            // buying is legitimate
+  Gc.tick(1);
+  eq('buying crew normally is fine', String(Gc.state.integrity), 'undefined');
+
+  Gc.state.workers.piantajudge = 500000;   // the actual cheat used
+  Gc.tick(1);
+  eq('a pile of Pianta Judges is caught', typeof Gc.state.integrity, 'string');
+  eq('and it names the crew', /crew changed outside the game/.test(Gc.state.integrity), true);
+  eq('the flag reaches the save',
+     !!JSON.parse(wc.localStorage.getItem('durianClicker.save.v1')).integrity, true);
+}
+{
+  // even a single extra worker, on any crew
+  const w1 = boot(); const D1 = w1.DC, G1 = D1.Game;
+  D1.CONFIG.workers.forEach(x => { G1.state.unlocked[x.id] = true; });
+  G1.markBank();
+  G1.tick(1);
+  G1.state.workers.pianta = (G1.state.workers.pianta || 0) + 1;
+  G1.tick(1);
+  eq('one extra worker is enough to catch', typeof G1.state.integrity, 'string');
+
+  // and moving counts between crew, which a naive total would miss
+  const w2 = boot(); const D2 = w2.DC, G2 = D2.Game, N2 = D2.N;
+  D2.CONFIG.workers.forEach(x => { G2.state.unlocked[x.id] = true; });
+  G2.addDurians(N2.pow10(14)); G2.recalc();
+  D2.Workers.buy('pianta', 10);
+  G2.tick(1);
+  eq('clean before the swap', String(G2.state.integrity), 'undefined');
+  G2.state.workers.pianta -= 10;
+  G2.state.workers.piantajudge = (G2.state.workers.piantajudge || 0) + 10;
+  G2.tick(1);
+  eq('swapping cheap crew for expensive crew is caught',
+     typeof G2.state.integrity, 'string');
+}
+
+console.log('\n=== granting upgrades from the console is caught ===');
+{
+  const wu = boot(); const Du = wu.DC, Gu = Du.Game, Nu = Du.N;
+  Du.CONFIG.workers.forEach(x => { Gu.state.unlocked[x.id] = true; });
+  Gu.addDurians(Nu.pow10(14)); Gu.recalc();
+  Du.Upgrades.buy('gloves');               // buying is legitimate
+  Gu.tick(1);
+  eq('buying an upgrade is fine', String(Gu.state.integrity), 'undefined');
+  Du.CONFIG.upgrades.slice(0, 200).forEach(u => { Gu.state.upgrades[u.id] = true; });
+  Gu.tick(1);
+  eq('granting yourself 200 upgrades is caught', typeof Gu.state.integrity, 'string');
+  eq('and it names the upgrades',
+     /upgrade list changed outside the game/.test(Gu.state.integrity), true);
+}
+
+console.log('\n=== earning normally never trips any of it ===');
+{
+  const wn = boot(); const Dn = wn.DC, Gn = Dn.Game, Nn = Dn.N;
+  Dn.CONFIG.workers.forEach(x => { Gn.state.unlocked[x.id] = true; });
+  Gn.addDurians(Nn.pow10(16)); Gn.recalc();
+  for (let i = 0; i < 40; i++) {
+    Dn.Workers.buy('pianta', 1);
+    Dn.Workers.buy('noki', 1);
+    for (let c = 0; c < 5; c++) Gn.click();
+    Gn.tick(1);
+  }
+  Dn.IslandEvents.trigger('king_boo');
+  Dn.IslandEvents.trigger('toadsworth_audit');
+  Gn.tick(1); Gn.tick(1);
+  eq('40 rounds of buying, clicking and events stay clean',
+     String(Gn.state.integrity), 'undefined');
 }
 
 console.log('\n=== editing the save file is caught ===');
@@ -108,7 +185,7 @@ console.log('\n=== editing the save file is caught ===');
   const stripped = JSON.parse(honest);
   delete stripped.sig;
   eq('removing the signature does not help',
-     /edited/.test(boot(JSON.stringify(stripped)).DC.Game.state.integrity || ''), true);
+     boot(JSON.stringify(stripped)).DC.Game.state.integrity !== undefined, true);
 
   const wq = boot();
   const resigned = JSON.parse(honest);
@@ -117,6 +194,40 @@ console.log('\n=== editing the save file is caught ===');
   resigned.sig = wq.DC.Save.signature(resigned);        // correctly re-signed
   eq('holding more than you ever earned is still caught',
      /impossible/.test(wq.DC.Save.verify(resigned)), true);
+}
+
+console.log('\n=== a save file cannot smuggle in unaffordable crew ===');
+{
+  const wa = boot(); const Da = wa.DC, Ga = Da.Game, Na = Da.N;
+  Da.CONFIG.workers.forEach(x => { Ga.state.unlocked[x.id] = true; Ga.state.workers[x.id] = 900; });
+  Da.CONFIG.upgrades.forEach(u => Ga.state.upgrades[u.id] = true);
+  Ga.addDurians(Na.pow10(70)); Ga.recalc(); Ga.state.playTime = 200000;
+  Da.Save.save(true);
+  const good = JSON.parse(wa.localStorage.getItem('durianClicker.save.v1'));
+  eq('an honest 900-of-each save passes', Da.Save.verify(good), 'ok');
+
+  const huge = JSON.parse(JSON.stringify(good));
+  huge.workers.piantajudge = 500000;
+  huge.sig = Da.Save.signature(huge);                  // correctly re-signed
+  eq('500,000 Pianta Judges rejected even when re-signed',
+     /impossible/.test(Da.Save.verify(huge)), true);
+
+  const modest = JSON.parse(JSON.stringify(good));
+  modest.workers.piantajudge = 3000;
+  modest.sig = Da.Save.signature(modest);
+  eq('3,000 Judges on that bank is also rejected',
+     /impossible/.test(Da.Save.verify(modest)), true);
+
+  // and an ordinary early save must still pass
+  const we = boot(); const De = we.DC, Ge = De.Game, Ne = De.N;
+  De.CONFIG.workers.forEach(x => { Ge.state.unlocked[x.id] = true; });
+  Ge.addDurians(Ne.big(5e5)); Ge.recalc();
+  De.Workers.buy('pianta', 30);
+  De.Workers.buy('noki', 5);
+  Ge.state.playTime = 900;
+  De.Save.save(true);
+  eq('an ordinary early save passes',
+     De.Save.verify(JSON.parse(we.localStorage.getItem('durianClicker.save.v1'))), 'ok');
 }
 
 console.log('\n=== an old unsigned save is grandfathered ===');

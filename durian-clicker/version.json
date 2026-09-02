@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-10-2",
-  "notes": "v2.3: leaderboard integrity, autoclickers unaffected.",
+  "build": "2026-09-11",
+  "notes": "v2.3: crew and upgrade tampering caught too.",
   "force": false
 }

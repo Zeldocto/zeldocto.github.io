@@ -70,6 +70,7 @@
     if (!DC.Game.spendDurians(price)) return 0;
 
     s.workers[id] = owned + k;
+    DC.Game.markBank();                 // a purchase is a legitimate change
     DC.Game.recalc();
     DC.Game.checkProgress();
     DC.Events.emit('buyWorker', { def: def, amount: k, cost: price, total: s.workers[id] });

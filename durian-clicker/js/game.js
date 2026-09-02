@@ -352,18 +352,41 @@
    * code running on the player's own machine can stop that — but the edit
    * people actually make is the direct one, and this catches it.
    */
-  var bankMark = null;
+  var stateMark = null;
 
-  /** Records the current bank as legitimate. */
-  function markBank() {
-    var d = Game.state.durians;
-    bankMark = { m: d.m, e: d.e };
+  /** A compact fingerprint of everything that decides production. */
+  function fingerprint() {
+    var s = Game.state;
+    var crew = 0, i;
+    for (i = 0; i < CONFIG.workers.length; i++) {
+      var id = CONFIG.workers[i].id;
+      // position-weighted so swapping counts between crew still shows up
+      crew += (s.workers[id] || 0) * (i + 1);
+    }
+    var ups = 0;
+    for (var k in s.upgrades) {
+      if (Object.prototype.hasOwnProperty.call(s.upgrades, k) && s.upgrades[k]) {
+        ups += (typeof s.upgrades[k] === 'number') ? s.upgrades[k] : 1;
+      }
+    }
+    return { m: s.durians.m, e: s.durians.e, crew: crew, ups: ups };
   }
 
-  function bankWasEdited() {
-    if (!bankMark) return false;
-    var d = Game.state.durians;
-    return d.m !== bankMark.m || d.e !== bankMark.e;
+  /** Records the current state as legitimate. Call after any sanctioned change. */
+  function markBank() {
+    stateMark = fingerprint();
+  }
+
+  /** What was changed behind the game's back, if anything. */
+  function whatWasEdited() {
+    if (!stateMark) return null;
+    var now = fingerprint();
+    if (now.crew !== stateMark.crew) return 'the crew changed outside the game';
+    if (now.ups !== stateMark.ups) return 'the upgrade list changed outside the game';
+    if (now.m !== stateMark.m || now.e !== stateMark.e) {
+      return 'the Durian total changed outside the game';
+    }
+    return null;
   }
 
   /** Marks the save ineligible. Never reversible from inside the game. */
@@ -377,8 +400,9 @@
   }
 
   function auditBank() {
-    if (bankWasEdited()) {
-      flagTampered('the Durian total changed outside the game');
+    var reason = whatWasEdited();
+    if (reason) {
+      flagTampered(reason);
       markBank();                       // resync: flag once, not every second
     }
   }

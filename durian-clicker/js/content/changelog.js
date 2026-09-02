@@ -26,6 +26,7 @@
       notes: [
         'Saves are now signed, and edited saves are refused by the leaderboard',
         'A modified save still plays normally — it is just not eligible for ranking',
+        'Autoclickers are unaffected and stay eligible, as before',
         'Bug fixes'
       ]
     },

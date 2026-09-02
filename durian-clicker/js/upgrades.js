@@ -31,6 +31,7 @@
 
     var s = DC.Game.state;
     s.upgrades[id] = def.repeatable ? (s.upgrades[id] || 0) + 1 : true;
+    DC.Game.markBank();                 // a purchase is a legitimate change
     DC.Game.recalc();
     DC.Game.checkProgress();
     DC.Events.emit('buyUpgrade', { def: def, cost: price });
