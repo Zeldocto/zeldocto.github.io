@@ -539,9 +539,9 @@ for i, (uid, nm, fx, cost, desc) in enumerate(EVENTS_UP):
 
 # -------------------------------------------------------- offline upgrades --
 OFFLINE_UP = [
- ('offline1', 'Night Shift', 0.25, None, 4e8, 'Workers produce 25% more while you are away.'),
- ('offline2', 'Double Shift', 0.25, None, 6e10, 'A further 25% more while you are away.'),
- ('offline3', 'They Never Stop', 0.5, None, 2e13, 'A further 50% more while you are away.'),
+ ('offline1', 'Night Shift', 0.05, None, 4e8, 'Workers produce 5% more while you are away.'),
+ ('offline2', 'Double Shift', 0.05, None, 6e10, 'A further 5% more while you are away.'),
+ ('offline3', 'They Never Stop', 0.08, None, 2e13, 'A further 8% more while you are away.'),
  ('offline_time1', 'Longer Leave', None, 12, 3e9, 'Offline earnings now accumulate for up to 36 hours.'),
  ('offline_time2', 'Extended Leave', None, 36, 1e12, 'Offline earnings now accumulate for up to 72 hours.'),
  ('offline_time3', 'Indefinite Sabbatical', None, 96, 4e14, 'Offline earnings now accumulate for up to a week.'),
@@ -789,10 +789,10 @@ for i, (nm, fx, desc) in enumerate(CASINO2):
 
 # -- 8 offline
 OFFLINE2 = [
- ('Overnight Rota', 0.2, None, 'Workers produce 20% more while you are away.'),
- ('Dawn Patrol', 0.2, None, 'A further 20% more while you are away.'),
- ('The Island Never Sleeps', 0.3, None, 'A further 30% more while you are away.'),
- ('Perpetual Harvest', 0.4, None, 'A further 40% more while you are away.'),
+ ('Overnight Rota', 0.06, None, 'Workers produce 6% more while you are away.'),
+ ('Dawn Patrol', 0.07, None, 'A further 7% more while you are away.'),
+ ('The Island Never Sleeps', 0.09, None, 'A further 9% more while you are away.'),
+ ('Perpetual Harvest', 0.10, None, 'A further 10% more while you are away.'),
  ('Long Weekend', None, 168, 'Offline earnings now accumulate for up to 14 days.'),
  ('Extended Sabbatical', None, 168, 'Offline earnings now accumulate for up to 21 days.'),
  ('Gone Fishing', None, 168, 'Offline earnings now accumulate for up to 28 days.'),
@@ -987,10 +987,10 @@ for i, (nm, val, flavor) in enumerate([
 
 # -- 6: late offline and island-event work
 DEEP_MISC = [
- ('The Island Runs Itself', dict(type='offlineEfficiency', value=0.5),
-  'Workers produce 50% more while you are away.'),
- ('Nobody Needs Watching', dict(type='offlineEfficiency', value=0.75),
-  'A further 75% more while you are away.'),
+ ('The Island Runs Itself', dict(type='offlineEfficiency', value=0.14),
+  'Workers produce 14% more while you are away.'),
+ ('Nobody Needs Watching', dict(type='offlineEfficiency', value=0.16),
+  'A further 16% more while you are away.'),
  ('Generational Absence', dict(type='offlineHours', value=1176),
   'Offline earnings now accumulate for up to 98 days.'),
  ('Fortune Favours You', dict(type='eventGain', value=2.5),

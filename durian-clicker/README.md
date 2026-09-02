@@ -256,6 +256,63 @@ This is a client-side game, so someone determined with the console can still
 edit their own numbers. What this stops is the accidental and the casual: fast
 hardware, high refresh rates, and one-line speed hacks.
 
+## Leaderboard integrity
+
+Three layers, and it is worth being clear about what each one is worth.
+
+1. **State reconciliation** (`js/game.js`). A fingerprint covering the Durian
+   total, every crew count and the owned-upgrade tally is recorded after each
+   sanctioned change — `addDurians`, `spendDurians`, `Workers.buy`,
+   `Upgrades.buy` and the two event setbacks — and the tick loop checks once a
+   second that it still matches. So `state.durians = 1e60`,
+   `state.workers.piantajudge = 500000` and granting yourself a stack of
+   upgrades are all caught within a second. Crew counts are position-weighted,
+   so moving counts from a cheap worker to an expensive one is caught too.
+2. **Save signing and affordability** (`js/save.js`). The payload carries a
+   signature, and the crew is checked against what the save could have paid
+   for: costs rise 10% a head, so owning n of a worker means having spent at
+   least `baseCost x (mult^n - 1) / (mult - 1)`. A save claiming 500,000 Pianta
+   Judges is rejected **even if it has been correctly re-signed**, which is what
+   makes this worth more than the signature alone.
+3. **Server-side limits** (`leaderboard-guard.sql`, optional). Rejects scores
+   that are impossible for the play time claimed. This is the only layer a
+   player cannot reach.
+
+A save that fails 1 or 2 **still loads and still plays** — losing someone's
+real progress to a false positive would be far worse than the cheating. It is
+marked, and marked saves are refused by the leaderboard.
+
+**What this does not do:** stop someone who calls the game's own functions.
+`DC.Game.addDurians(...)` goes through the sanctioned path and looks exactly
+like earning, because on the player's own machine it is indistinguishable from
+it. No client-side scheme changes that. Layer 3 is the answer if you want the
+board to be trustworthy rather than merely tidy.
+
+**Autoclickers stay eligible, at any rate.** There is deliberately no
+click-rate rule: the limiter in `js/game.js` already removes the advantage
+(clicks past `maxClickRate` earn a fraction), so a plausibility check on clicks
+per second would catch nothing the limiter has not already neutralised, while
+banning people for playing the way we told them they could.
+
+The false-positive cases matter more than the detection, so `test-integrity.js`
+pins them down: a brand-new player clicking before the first tick, autoclicking
+from 10 to 20,000 per second, and a large offline windfall all pass clean.
+
+## Offline production
+
+`CONFIG.offline.efficiency` is the fraction of normal production earned while
+away, **before** upgrades. It ships at `0.1` — a tenth of normal.
+
+The nine `offlineEfficiency` upgrades are **additive** on top of that and sum
+to +80%, so a full build tops out at **90%** — being online is always worth
+more than being away, at every stage. `test-update13.js` asserts both the sum
+and the 90% ceiling, so a future retune cannot quietly push offline past
+parity. The values live in the `OFFLINE_UP`, `OFFLINE2` and `DEEP_MISC` lists
+in `gen_upgrades.py`.
+
+Duration is separate: `CONFIG.offline.maxSeconds` (24h) with the
+`offlineHours` upgrades extending it to 49 days.
+
 ## Balance knobs
 
 All in `js/config.js`:

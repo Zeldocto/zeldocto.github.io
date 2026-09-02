@@ -525,6 +525,14 @@
         ['cps_now', 'Clicks per second, now', function () { return N.withCommas(Game.currentClickRate()); }],
         ['cps_avg', 'Clicks per second, average', function () { return Game.averageClickRate().toFixed(2); }],
         ['cps_peak', 'Clicks per second, peak', function () { return N.withCommas(Game.state.peakClickRate || 0); }],
+        ['offline_rate', 'Offline production', function () {
+          return Math.round((Game.derived.offlineEfficiency || 0) * 100) + '% of normal';
+        }],
+        ['offline_cap', 'Offline counts for up to', function () {
+          var hours = (Game.derived.offlineHours !== undefined
+            ? Game.derived.offlineHours : CONFIG.offline.maxSeconds / 3600);
+          return hours >= 48 ? Math.round(hours / 24) + ' days' : Math.round(hours) + ' hours';
+        }],
         ['globalmult', 'Global multiplier', function () { return '×' + Game.derived.globalMult.toFixed(2); }]
       ] },
       { title: 'Crew', open: true, rows: crew.concat([

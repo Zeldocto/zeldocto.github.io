@@ -21,6 +21,14 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.4  2026-09-12',
+      title: 'Offline production',
+      notes: [
+        'Reduce offline production percentage (originally 100% down to 10%, also heavily nerfed upgrades. Maximum 90% offline production, for now) - Closing the tab is no longer optimal, lol.',
+        'Stats shows your current offline rate and how long being away counts for'
+      ]
+    },
+    {
       version: '2.3  2026-09-10',
       title: 'Leaderboard integrity',
       notes: [

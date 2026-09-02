@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-11',
+    buildId: '2026-09-12-2',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -28,7 +28,7 @@
 
     // Shown beside the logo and used as the changelog heading. Bump this when
     // you cut a release; buildId is the deploy stamp and changes far more often.
-    version: '2.3',
+    version: '2.4',
 
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,
@@ -74,7 +74,10 @@
       enabled: true,
       maxSeconds: 24 * 60 * 60,  // cap on how much time away counts
       minSeconds: 60,            // don't nag for short absences
-      efficiency: 1.0            // 0.5 would mean workers idle at half rate
+      // Fraction of normal production earned while away, BEFORE the offline
+      // upgrades add to it. Those are additive, so a full build reaches
+      // efficiency + the sum of their values.
+      efficiency: 0.1
     },
 
     /* ------------------------------------------------------------- assets */
