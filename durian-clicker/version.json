@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-15-2",
-  "notes": "v2.5.2: leaderboard guard corrected.",
+  "build": "2026-09-16",
+  "notes": "v2.5.3: integrity flag hardened.",
   "force": false
 }

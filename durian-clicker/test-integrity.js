@@ -17,6 +17,23 @@ function boot(saveJson) {
   w.document.dispatchEvent(new w.Event('DOMContentLoaded', { bubbles: true }));
   return w;
 }
+
+/* The signing function is no longer exported (handing a cheat the ability to
+   re-sign an edited save defeated the point). These tests reproduce it so they
+   can still check the "re-signed but impossible" cases. */
+function resign(payload) {
+  const copy = {};
+  Object.keys(payload).sort().forEach(k => { if (k !== 'sig') copy[k] = payload[k]; });
+  const text = JSON.stringify(copy) + '|isle-delfino|2';
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  payload.sig = h.toString(36);
+  return payload;
+}
+
 let fails = 0;
 const eq = (l,g,e) => { if (String(g)!==String(e)) { fails++; console.log('FAIL',l,'| got',g,'| want',e); } else console.log('  ok  ',l,'=',g); };
 
@@ -33,9 +50,9 @@ G.state.playTime = 600;
 DC.Save.save(true);
 const honest = w.localStorage.getItem('durianClicker.save.v1');
 eq('saves are signed', !!JSON.parse(honest).sig, true);
-eq('normal play is not flagged', G.state.integrity, 'undefined');
+eq('normal play is not flagged', G.integrity(), null);
 const w2 = boot(honest);
-eq('and it reloads clean', w2.DC.Game.state.integrity, 'undefined');
+eq('and it reloads clean', w2.DC.Game.integrity(), null);
 eq('verify agrees', w2.DC.Save.verify(JSON.parse(honest)), 'ok');
 // buying, events and setbacks must not trip it either
 {
@@ -47,7 +64,7 @@ eq('verify agrees', w2.DC.Save.verify(JSON.parse(honest)), 'ok');
   Dc.IslandEvents.trigger('king_boo_greedy');
   Dc.IslandEvents.trigger('toadsworth_audit');
   for (let i=0;i<5;i++) Gc.tick(1);
-  eq('buying, gains and setbacks stay clean', Gc.state.integrity, 'undefined');
+  eq('buying, gains and setbacks stay clean', Gc.integrity(), null);
 }
 
 console.log('\n=== the checks must not accuse honest players ===');
@@ -83,6 +100,32 @@ console.log('\n=== the checks must not accuse honest players ===');
      Do.Save.verify(JSON.parse(wo.localStorage.getItem('durianClicker.save.v1'))), 'ok');
 }
 
+console.log('\n=== the flag cannot be cleared from the console ===');
+{
+  const wf = boot(); const Df = wf.DC, Gf = Df.Game, Nf = Df.N;
+  Df.CONFIG.workers.forEach(x => { Gf.state.unlocked[x.id] = true; Gf.state.workers[x.id] = 20; });
+  Gf.recalc(); Gf.markBank(); Gf.tick(1);
+  Gf.state.durians = Nf.pow10(60); Gf.tick(1);
+  eq('flagged to begin with', typeof Gf.integrity(), 'string');
+
+  Gf.state.integrity = false;
+  eq('state.integrity = false does nothing', typeof Gf.integrity(), 'string');
+  Gf.state.integrity = undefined;
+  eq('setting it undefined does nothing', typeof Gf.integrity(), 'string');
+  try { Gf.integrity = function () { return null; }; } catch (e) { /* strict mode */ }
+  eq('the getter cannot be replaced', typeof Gf.integrity === 'function' && !!Gf.integrity(), true);
+  try { delete Gf.integrity; } catch (e) { /* non-configurable */ }
+  eq('the getter cannot be deleted', typeof Gf.integrity === 'function' && !!Gf.integrity(), true);
+  Gf.restoreIntegrity(null); Gf.restoreIntegrity(false); Gf.restoreIntegrity('');
+  eq('restoreIntegrity cannot clear it', typeof Gf.integrity(), 'string');
+  eq('the signing function is not exposed', typeof Df.Save.signature, 'undefined');
+
+  // and it survives a save and reload
+  Df.Save.save(true);
+  eq('still flagged after a reload',
+     typeof boot(wf.localStorage.getItem('durianClicker.save.v1')).DC.Game.integrity(), 'string');
+}
+
 console.log('\n=== the click limiter cannot be switched off ===');
 {
   const mk = function () {
@@ -97,7 +140,7 @@ console.log('\n=== the click limiter cannot be switched off ===');
     const Dh = mk();
     for (let i = 0; i < rate; i++) Dh.Game.click();
     Dh.Game.tick(1);
-    eq(rate + ' clicks/sec stays clean', String(Dh.Game.state.integrity), 'undefined');
+    eq(rate + ' clicks/sec stays clean', String(Dh.Game.integrity()), 'null');
   });
 
   // total click income per second is bounded however fast you click
@@ -119,23 +162,23 @@ console.log('\n=== the click limiter cannot be switched off ===');
   Dz.CONFIG.balance.maxClickRate = 0;
   for (let i = 0; i < 500; i++) Dz.Game.click();
   Dz.Game.tick(1);
-  eq('maxClickRate = 0 no longer disables it', typeof Dz.Game.state.integrity, 'string');
+  eq('maxClickRate = 0 no longer disables it', typeof Dz.Game.integrity(), 'string');
   eq('and it names the settings',
-     /balance settings were changed/.test(Dz.Game.state.integrity), true);
+     /balance settings were changed/.test(Dz.Game.integrity()), true);
 
   const Do = mk();
   Do.CONFIG.balance.overflowClickValue = 1;
   for (let i = 0; i < 500; i++) Do.Game.click();
   Do.Game.tick(1);
-  eq('overflowClickValue = 1 is caught too', typeof Do.Game.state.integrity, 'string');
+  eq('overflowClickValue = 1 is caught too', typeof Do.Game.integrity(), 'string');
 
   // paying yourself click income directly
   const Da = mk();
   for (let i = 0; i < 1000; i++) Da.Game.addDurians(Da.Game.derived.clickPower, 'click');
   Da.Game.tick(1);
-  eq('paying yourself click income is caught', typeof Da.Game.state.integrity, 'string');
+  eq('paying yourself click income is caught', typeof Da.Game.integrity(), 'string');
   eq('and it names the clicks',
-     /clicks earned more than the click limit/.test(Da.Game.state.integrity), true);
+     /clicks earned more than the click limit/.test(Da.Game.integrity()), true);
 
   // replacing the click function outright
   const Dr = mk(); const Nr = Dr.N, Gr = Dr.Game;
@@ -144,7 +187,7 @@ console.log('\n=== the click limiter cannot be switched off ===');
     Gr.addDurians(Gr.derived.clickPower, 'worker');
   }
   Gr.tick(1);
-  eq('replacing click() entirely is caught', typeof Gr.state.integrity, 'string');
+  eq('replacing click() entirely is caught', typeof Gr.integrity(), 'string');
 }
 
 console.log('\n=== editing the total from the console is caught ===');
@@ -154,15 +197,15 @@ console.log('\n=== editing the total from the console is caught ===');
   Gt.recalc();
   Gt.markBank();                    // as if this state had just been loaded
   Gt.tick(1);
-  eq('clean before the edit', Gt.state.integrity, 'undefined');
+  eq('clean before the edit', Gt.integrity(), null);
   Gt.state.durians = Dt.N.pow10(60);          // the classic F12 edit
   Gt.tick(1);
-  eq('flagged within a second', typeof Gt.state.integrity, 'string');
-  eq('and it says why', /changed outside the game/.test(Gt.state.integrity), true);
+  eq('flagged within a second', typeof Gt.integrity(), 'string');
+  eq('and it says why', /changed outside the game/.test(Gt.integrity()), true);
   eq('the flag persists to disk',
      !!JSON.parse(wt.localStorage.getItem('durianClicker.save.v1')).integrity, true);
   const wr = boot(wt.localStorage.getItem('durianClicker.save.v1'));
-  eq('and survives a reload', typeof wr.DC.Game.state.integrity, 'string');
+  eq('and survives a reload', typeof wr.DC.Game.integrity(), 'string');
 }
 
 console.log('\n=== adding crew from the console is caught ===');
@@ -172,12 +215,12 @@ console.log('\n=== adding crew from the console is caught ===');
   Gc.addDurians(Nc.pow10(14)); Gc.recalc();
   Dc.Workers.buy('pianta', 20);            // buying is legitimate
   Gc.tick(1);
-  eq('buying crew normally is fine', String(Gc.state.integrity), 'undefined');
+  eq('buying crew normally is fine', String(Gc.integrity()), 'null');
 
   Gc.state.workers.piantajudge = 500000;   // the actual cheat used
   Gc.tick(1);
-  eq('a pile of Pianta Judges is caught', typeof Gc.state.integrity, 'string');
-  eq('and it names the crew', /crew changed outside the game/.test(Gc.state.integrity), true);
+  eq('a pile of Pianta Judges is caught', typeof Gc.integrity(), 'string');
+  eq('and it names the crew', /crew changed outside the game/.test(Gc.integrity()), true);
   eq('the flag reaches the save',
      !!JSON.parse(wc.localStorage.getItem('durianClicker.save.v1')).integrity, true);
 }
@@ -189,7 +232,7 @@ console.log('\n=== adding crew from the console is caught ===');
   G1.tick(1);
   G1.state.workers.pianta = (G1.state.workers.pianta || 0) + 1;
   G1.tick(1);
-  eq('one extra worker is enough to catch', typeof G1.state.integrity, 'string');
+  eq('one extra worker is enough to catch', typeof G1.integrity(), 'string');
 
   // and moving counts between crew, which a naive total would miss
   const w2 = boot(); const D2 = w2.DC, G2 = D2.Game, N2 = D2.N;
@@ -197,12 +240,12 @@ console.log('\n=== adding crew from the console is caught ===');
   G2.addDurians(N2.pow10(14)); G2.recalc();
   D2.Workers.buy('pianta', 10);
   G2.tick(1);
-  eq('clean before the swap', String(G2.state.integrity), 'undefined');
+  eq('clean before the swap', String(G2.integrity()), 'null');
   G2.state.workers.pianta -= 10;
   G2.state.workers.piantajudge = (G2.state.workers.piantajudge || 0) + 10;
   G2.tick(1);
   eq('swapping cheap crew for expensive crew is caught',
-     typeof G2.state.integrity, 'string');
+     typeof G2.integrity(), 'string');
 }
 
 console.log('\n=== granting upgrades from the console is caught ===');
@@ -212,12 +255,12 @@ console.log('\n=== granting upgrades from the console is caught ===');
   Gu.addDurians(Nu.pow10(14)); Gu.recalc();
   Du.Upgrades.buy('gloves');               // buying is legitimate
   Gu.tick(1);
-  eq('buying an upgrade is fine', String(Gu.state.integrity), 'undefined');
+  eq('buying an upgrade is fine', String(Gu.integrity()), 'null');
   Du.CONFIG.upgrades.slice(0, 200).forEach(u => { Gu.state.upgrades[u.id] = true; });
   Gu.tick(1);
-  eq('granting yourself 200 upgrades is caught', typeof Gu.state.integrity, 'string');
+  eq('granting yourself 200 upgrades is caught', typeof Gu.integrity(), 'string');
   eq('and it names the upgrades',
-     /upgrade list changed outside the game/.test(Gu.state.integrity), true);
+     /upgrade list changed outside the game/.test(Gu.integrity()), true);
 }
 
 console.log('\n=== earning normally never trips any of it ===');
@@ -235,7 +278,7 @@ console.log('\n=== earning normally never trips any of it ===');
   Dn.IslandEvents.trigger('toadsworth_audit');
   Gn.tick(1); Gn.tick(1);
   eq('40 rounds of buying, clicking and events stay clean',
-     String(Gn.state.integrity), 'undefined');
+     String(Gn.integrity()), 'null');
 }
 
 console.log('\n=== editing the save file is caught ===');
@@ -243,19 +286,19 @@ console.log('\n=== editing the save file is caught ===');
   const edited = JSON.parse(honest);
   edited.durians = { m: 9.99, e: 60 };
   const we = boot(JSON.stringify(edited));
-  eq('flagged on load', /edited|impossible/.test(we.DC.Game.state.integrity || ''), true);
+  eq('flagged on load', /edited|impossible/.test(we.DC.Game.integrity() || ''), true);
   eq('progress still loads', we.DC.N.toNumber(we.DC.Game.state.durians) > 0, true);
 
   const stripped = JSON.parse(honest);
   delete stripped.sig;
   eq('removing the signature does not help',
-     boot(JSON.stringify(stripped)).DC.Game.state.integrity !== undefined, true);
+     boot(JSON.stringify(stripped)).DC.Game.integrity() !== null, true);
 
   const wq = boot();
   const resigned = JSON.parse(honest);
   resigned.durians = { m: 5, e: 40 };
   resigned.totalEarned = { m: 1, e: 6 };
-  resigned.sig = wq.DC.Save.signature(resigned);        // correctly re-signed
+  resign(resigned);        // correctly re-signed
   eq('holding more than you ever earned is still caught',
      /impossible/.test(wq.DC.Save.verify(resigned)), true);
 }
@@ -272,13 +315,13 @@ console.log('\n=== a save file cannot smuggle in unaffordable crew ===');
 
   const huge = JSON.parse(JSON.stringify(good));
   huge.workers.piantajudge = 500000;
-  huge.sig = Da.Save.signature(huge);                  // correctly re-signed
+  resign(huge);                  // correctly re-signed
   eq('500,000 Pianta Judges rejected even when re-signed',
      /impossible/.test(Da.Save.verify(huge)), true);
 
   const modest = JSON.parse(JSON.stringify(good));
   modest.workers.piantajudge = 3000;
-  modest.sig = Da.Save.signature(modest);
+  resign(modest);
   eq('3,000 Judges on that bank is also rejected',
      /impossible/.test(Da.Save.verify(modest)), true);
 
@@ -299,7 +342,7 @@ console.log('\n=== an old unsigned save is grandfathered ===');
   const legacy = JSON.parse(honest);
   delete legacy.sig; delete legacy.saveVersion;
   const wg = boot(JSON.stringify(legacy));
-  eq('pre-signing saves load clean', wg.DC.Game.state.integrity, 'undefined');
+  eq('pre-signing saves load clean', wg.DC.Game.integrity(), null);
   wg.DC.Save.save(true);
   eq('and are signed from then on',
      !!JSON.parse(wg.localStorage.getItem('durianClicker.save.v1')).sig, true);
@@ -309,7 +352,7 @@ console.log('\n=== flagged saves cannot reach the leaderboard ===');
 {
   const wf = boot(); const Df = wf.DC;
   Df.Game.state.player.name = 'Tester';
-  Df.Game.flagTampered('test');
+  Df.Game.restoreIntegrity('test');
   Df.Leaderboard.submit({ force: true }).then(function (r) {
     eq('submission refused', r.reason, 'modified');
     console.log('\n' + (fails ? fails + ' FAILURES' : 'Integrity checks working.'));

@@ -402,10 +402,31 @@
     return null;
   }
 
-  /** Marks the save ineligible. Never reversible from inside the game. */
+  /*
+   * The flag lives in this closure, NOT on Game.state.
+   *
+   * It used to be `state.integrity`, a plain writable property — so
+   * `DC.Game.state.integrity = false` from the console cleared it and the save
+   * went back on the leaderboard. Nothing outside this file can reach the
+   * variable now, and the only way in is one-directional: it can be set, never
+   * cleared. Reading is exposed through a non-writable, non-configurable
+   * property so it cannot be replaced with a function that lies.
+   */
+  var tamperReason = null;
+
+  /** The reason this save is ineligible, or null. */
+  function integrity() { return tamperReason; }
+
+  /** One way only: restores a flag from a save. Falsy input is ignored. */
+  function restoreIntegrity(reason) {
+    if (!reason || tamperReason) return;
+    tamperReason = String(reason);
+  }
+
+  /** Marks the save ineligible. Never reversible. */
   function flagTampered(reason) {
-    if (Game.state.integrity) return;
-    Game.state.integrity = reason;
+    if (tamperReason) return;
+    tamperReason = reason;
     console.warn('[Durian Clicker] ' + reason +
                  ' \u2014 this save is no longer eligible for the leaderboard.');
     Events.emit('integrityFailed', reason);
@@ -712,6 +733,15 @@
     Events.emit('reset');
   }
 
+  // Read-only and undeletable: `DC.Game.integrity = function () { return null; }`
+  // is rejected, so the leaderboard cannot be lied to by replacing the getter.
+  Object.defineProperty(Game, 'integrity', {
+    value: integrity,
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+
   DC.Game = Game;
   Object.assign(Game, {
     newState: newState,
@@ -719,7 +749,7 @@
     click: click,
     markBank: markBank,
     auditBank: auditBank,
-    flagTampered: flagTampered,
+    restoreIntegrity: restoreIntegrity,
     currentClickRate: currentClickRate,
     averageClickRate: averageClickRate,
     tick: tick,

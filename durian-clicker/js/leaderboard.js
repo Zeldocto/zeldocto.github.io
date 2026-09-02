@@ -302,7 +302,7 @@
     var s = DC.Game.state;
 
     // A modified save still plays; it just does not go on the board.
-    if (s.integrity) {
+    if (DC.Game.integrity()) {
       setStatus('error', 'This save was modified, so it cannot be submitted.');
       return Promise.resolve({ ok: false, reason: 'modified' });
     }

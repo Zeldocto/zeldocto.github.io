@@ -38,7 +38,7 @@
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
       changelogSeen: state.changelogSeen,
-      integrity: state.integrity,
+      integrity: DC.Game.integrity(),
       peakClickRate: state.peakClickRate,
       playTime: state.playTime,
       startedAt: state.startedAt,
@@ -60,7 +60,8 @@
     if (typeof data.totalClicks === 'number') state.totalClicks = data.totalClicks;
     if (typeof data.playTime === 'number') state.playTime = data.playTime;
     if (typeof data.changelogSeen === 'string') state.changelogSeen = data.changelogSeen;
-    if (data.integrity) state.integrity = data.integrity;
+    // restored through the one-way setter, not written onto state
+    if (data.integrity) DC.Game.restoreIntegrity(data.integrity);
     if (typeof data.peakClickRate === 'number') state.peakClickRate = data.peakClickRate;
     if (typeof data.startedAt === 'number') state.startedAt = data.startedAt;
     if (typeof data.lastSaved === 'number') state.lastSaved = data.lastSaved;
@@ -248,7 +249,7 @@
     if (!data) return null;
     var verdict = verify(data);
     DC.Game.state = deserialize(data);
-    if (verdict !== 'ok') DC.Game.state.integrity = verdict;
+    if (verdict !== 'ok') DC.Game.restoreIntegrity(verdict);
     DC.Game.recalc();
     DC.Game.markBank();                 // the loaded total is the baseline
     DC.Game.checkUnlocks();
@@ -283,7 +284,7 @@
 
     var importVerdict = verify(data);
     DC.Game.state = deserialize(data);
-    if (importVerdict !== 'ok') DC.Game.state.integrity = importVerdict;
+    if (importVerdict !== 'ok') DC.Game.restoreIntegrity(importVerdict);
     DC.Game.recalc();
     DC.Game.markBank();
     DC.Game.checkUnlocks();
@@ -333,7 +334,6 @@
     wipe: wipe,
     serialize: serialize,
     deserialize: deserialize,
-    signature: signature,
     verify: verify,
     looksPlausible: looksPlausible,
     exportString: exportString,

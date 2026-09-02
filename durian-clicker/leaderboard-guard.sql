@@ -1,98 +1,148 @@
--- leaderboard-guard.sql
+-- =============================================================================
+-- leaderboard-guard.sql — server-side score checks.
+-- -----------------------------------------------------------------------------
+-- Run this AFTER leaderboard-setup.sql and leaderboard-fix.sql, in the Supabase
+-- SQL editor. It replaces submit_durian_score with the same signature plus
+-- limits, so the client needs no changes and nothing else has to be touched.
 --
--- OPTIONAL. Everything in the game is client-side, so the checks that ship in
--- js/save.js and js/game.js can be worked around by anyone comfortable in the
--- console. This is the only layer that cannot: it runs on Supabase, where the
--- player has no reach.
+-- Why this exists: everything in js/ runs on the player's machine and can be
+-- edited by anyone who opens devtools. This is the one layer they cannot reach.
+-- It does not try to detect cheating cleverly — it rejects scores that are
+-- impossible for the play time claimed, which is enough to keep the board
+-- honest.
 --
--- It does not try to detect cheating cleverly. It rejects scores that are
--- physically impossible for the play time claimed, which is enough to keep the
--- top of the board honest.
---
--- Run it in the Supabase SQL editor after leaderboard-setup.sql.
+-- Rejected submissions raise an exception. The game reports it as a failed
+-- submission and carries on; nobody loses their save.
+-- =============================================================================
 
--- 1. Record how long the run took, so the ceiling has something to work from.
-alter table public.durian_scores
-  add column if not exists play_seconds double precision default 0;
-
--- 2. The ceiling.
---
--- Production is bounded by what the catalogue can reach. Set CEILING_LOG10 to
--- a little above the highest log10(dps) an honest maxed player can hold — check
--- it with `node balance.js` after any big content update and raise it then.
--- A submission above the ceiling, or one claiming a rate it has not had time to
--- reach, is rejected outright.
 create or replace function public.submit_durian_score(
-  p_player_id   uuid,
-  p_public_id   uuid,
-  p_name        text,
-  p_total_log10 double precision,
-  p_dps_log10   double precision,
+  p_player_id     text,
+  p_public_id     text,
+  p_name          text,
+  p_total_log     double precision,
   p_total_display text,
+  p_dps_log       double precision,
   p_dps_display   text,
-  p_play_seconds  double precision default 0
+  p_play_time     integer,
+  p_total_clicks  bigint,
+  p_workers       integer,
+  p_achievements  integer
 )
 returns void
 language plpgsql
 security definer
+set search_path = public
 as $$
 declare
-  ceiling_log10 constant double precision := 80;   -- review after content updates
-  -- Nobody reaches a given rate faster than this. Generous on purpose: it is
-  -- here to catch 1e300, not to second-guess a good player.
-  max_log10_per_hour constant double precision := 6;
-  allowed double precision;
+  -- Highest log10(total) an honest save can hold. Check with `node balance.js`
+  -- after a big content update and raise it then. Generous on purpose.
+  ceiling_log         constant double precision := 90;
+  -- How fast production can climb, in log10 per hour played, plus a starting
+  -- allowance. Checked against a real endgame save: this binds for roughly the
+  -- first day and a half, which is where an invented score shows up, and never
+  -- troubles an honest player after that.
+  --
+  -- These are deliberately loose. The ceiling and bank-lead rules below are
+  -- principled — they follow from what the content can actually reach — but
+  -- "how fast can production legitimately grow" is guesswork, and a wrong
+  -- guess silently blocks real players. This is set to catch 1e80 after ten
+  -- minutes, nothing subtler.
+  start_allowance     constant double precision := 20;
+  max_log_per_hour    constant double precision := 10;
+  -- How far a bank may run ahead of production. Offline caps at 49 days (~6.6
+  -- in log10) and event windfalls add more, so 12 leaves real room while still
+  -- catching a huge total attached to a small rate.
+  max_bank_lead       constant double precision := 12;
+  -- The click limiter caps paid clicks at 30/sec; 200 leaves room for the
+  -- overflow and for clock jitter, while still catching invented numbers.
+  max_clicks_per_sec  constant double precision := 200;
+  allowed_dps         double precision;
 begin
-  if p_name is null or length(trim(p_name)) < 2 then
-    raise exception 'name too short';
+  if p_player_id is null or char_length(p_player_id) < 8 then
+    raise exception 'Bad player id';
+  end if;
+  if p_name is null or char_length(btrim(p_name)) < 2 or char_length(p_name) > 20 then
+    raise exception 'Name must be 2 to 20 characters';
   end if;
 
-  if p_total_log10 is null or p_dps_log10 is null then
-    raise exception 'missing score';
+  -- ---------------------------------------------------------------- limits --
+  if coalesce(p_total_log, 0) > ceiling_log or coalesce(p_dps_log, 0) > ceiling_log then
+    raise exception 'Score above the possible ceiling';
   end if;
 
-  if p_total_log10 > ceiling_log10 or p_dps_log10 > ceiling_log10 then
-    raise exception 'score above the possible ceiling';
+  if coalesce(p_total_log, 0) > coalesce(p_dps_log, 0) + max_bank_lead then
+    raise exception 'Total is impossible for that production rate';
   end if;
 
-  -- You cannot bank more than you produce, give or take a long idle stretch.
-  if p_total_log10 > p_dps_log10 + 9 then
-    raise exception 'total is impossible for that production rate';
-  end if;
-
-  if coalesce(p_play_seconds, 0) > 0 then
-    allowed := 6 + max_log10_per_hour * (p_play_seconds / 3600.0);
-    if p_dps_log10 > allowed then
-      raise exception 'production too high for the time played';
+  if coalesce(p_play_time, 0) > 0 then
+    allowed_dps := start_allowance + max_log_per_hour * (p_play_time / 3600.0);
+    if coalesce(p_dps_log, 0) > allowed_dps then
+      raise exception 'Production too high for the time played';
     end if;
+
+    if coalesce(p_total_clicks, 0) > p_play_time::double precision * max_clicks_per_sec then
+      raise exception 'More clicks than the time played allows';
+    end if;
+  elsif coalesce(p_dps_log, 0) > start_allowance then
+    -- No play time recorded but a large rate claimed.
+    raise exception 'Production too high for the time played';
   end if;
 
-  insert into public.durian_scores as d
-    (player_id, public_id, name, total_log10, dps_log10,
-     total_display, dps_display, play_seconds, updated_at)
-  values
-    (p_player_id, p_public_id, trim(p_name), p_total_log10, p_dps_log10,
-     p_total_display, p_dps_display, coalesce(p_play_seconds, 0), now())
-  on conflict (player_id) do update
-    set name          = excluded.name,
-        public_id     = excluded.public_id,
-        total_log10   = excluded.total_log10,
-        dps_log10     = excluded.dps_log10,
-        total_display = excluded.total_display,
-        dps_display   = excluded.dps_display,
-        play_seconds  = excluded.play_seconds,
-        updated_at    = now()
-    -- and never let a row go backwards, which stops a rejected client from
-    -- overwriting a good score with a bad one
-    where excluded.total_log10 >= d.total_log10;
+  if coalesce(p_workers, 0) > 200000 or coalesce(p_achievements, 0) > 1000 then
+    raise exception 'Crew or achievement count out of range';
+  end if;
+
+  -- ----------------------------------------------------------------- write --
+  insert into public.durian_scores (
+    player_id, public_id, name,
+    total_log, total_display, dps_log, dps_display,
+    play_time, total_clicks, workers, achievements, updated_at
+  ) values (
+    p_player_id, p_public_id, btrim(p_name),
+    greatest(coalesce(p_total_log, 0), 0), coalesce(p_total_display, '0'),
+    greatest(coalesce(p_dps_log, 0), 0), coalesce(p_dps_display, '0'),
+    greatest(coalesce(p_play_time, 0), 0), greatest(coalesce(p_total_clicks, 0), 0),
+    greatest(coalesce(p_workers, 0), 0), greatest(coalesce(p_achievements, 0), 0),
+    now()
+  )
+  on conflict (player_id) do update set
+    public_id     = excluded.public_id,
+    name          = excluded.name,
+    total_log     = excluded.total_log,
+    total_display = excluded.total_display,
+    dps_log       = excluded.dps_log,
+    dps_display   = excluded.dps_display,
+    play_time     = excluded.play_time,
+    total_clicks  = excluded.total_clicks,
+    workers       = excluded.workers,
+    achievements  = excluded.achievements,
+    updated_at    = now();
 end;
 $$;
 
--- 3. Housekeeping: find rows that look wrong, so you can remove them by hand.
+revoke all on function public.submit_durian_score(
+  text, text, text, double precision, text, double precision, text,
+  integer, bigint, integer, integer) from public;
+
+grant execute on function public.submit_durian_score(
+  text, text, text, double precision, text, double precision, text,
+  integer, bigint, integer, integer) to anon;
+
+notify pgrst, 'reload schema';
+
+-- =============================================================================
+-- Afterwards: find rows already on the board that the new rules would reject.
+-- Review them by hand; this does not delete anything.
 --
---   select public_id, name, total_log10, dps_log10, play_seconds
+--   select public_id, name, total_log, dps_log, play_time, total_clicks
 --   from public.durian_scores
---   where total_log10 > 80
---      or total_log10 > dps_log10 + 9
---      or (play_seconds > 0 and dps_log10 > 6 + 6 * (play_seconds / 3600.0))
---   order by total_log10 desc;
+--   where total_log > 90
+--      or total_log > dps_log + 12
+--      or (play_time > 0 and dps_log > 12 + 2.5 * (play_time / 3600.0))
+--      or (play_time > 0 and total_clicks > play_time * 200)
+--   order by total_log desc;
+--
+-- Then remove the ones you want gone, by id:
+--
+--   delete from public.durian_scores where public_id in ('...', '...');
+-- =============================================================================

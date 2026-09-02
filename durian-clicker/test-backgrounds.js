@@ -153,7 +153,7 @@ eq('the equipped one persists', w2.DC.Store.activeBackgroundId(), 'toybox');
 eq('and it is on screen after a reload',
    w2.document.getElementById('scene-img').style.backgroundImage.indexOf('bg-toybox') !== -1, true);
 eq('buying a background does not flag the save',
-   String(w2.DC.Game.state.integrity), 'undefined');
+   String(w2.DC.Game.integrity()), 'null');
 
 console.log('\n=== an unknown background in a save is dropped ===');
 {

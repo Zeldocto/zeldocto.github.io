@@ -21,6 +21,14 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.5.3  2026-09-16',
+      title: 'Bug fixes',
+      notes: [
+        'Autoclickers are unaffected, as always',
+        'Bug fixes'
+      ]
+    },
+    {
       version: '2.5.2  2026-09-15',
       title: 'Bug fixes',
       notes: [

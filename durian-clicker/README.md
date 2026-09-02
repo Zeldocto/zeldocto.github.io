@@ -308,6 +308,15 @@ larger of the tick loop's game time and real elapsed time, because a burst can
 land in one millisecond while a backgrounded tab can drop real seconds between
 ticks; taking the larger avoids false positives in both directions.
 
+**The flag itself is not on `Game.state`.** It lives in a closure in
+`js/game.js` and is exposed only as `Game.integrity()`, a non-writable,
+non-configurable property. It used to be `state.integrity`, a plain writable
+field, so `DC.Game.state.integrity = false` from the console cleared it and put
+the save straight back on the board. Setting it now does nothing, the getter
+cannot be replaced or deleted, and `restoreIntegrity` ignores falsy input — it
+can only ever be set, never cleared. `Save.signature` is no longer exported
+either, since handing out the signing function let an edited save be re-signed.
+
 **What this still does not do:** stop someone who edits the JS before it runs,
 via a local file override or a userscript. Nothing shipped to the browser can.
 `leaderboard-guard.sql` is the layer they cannot reach.
