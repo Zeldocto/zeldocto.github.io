@@ -135,6 +135,27 @@
     'octovigintillion', 'novemvigintillion', 'trigintillion'
   ];
 
+  /* First tier shown as a power of ten instead of a suffix. Tier 12 is 1e36,
+     where the suffix table stops being single words and starts compounding. */
+  var POWER_TIER = 12;
+
+  var SUP = { '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
+              '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077',
+              '8': '\u2078', '9': '\u2079', '-': '\u207B' };
+
+  /** 1.23 x 10^45, with a real superscript exponent. */
+  function superscript(v) {
+    var exp = v.e;
+    var mant = v.m;
+    // normalise so the mantissa reads 1.00-9.99
+    while (Math.abs(mant) >= 10) { mant /= 10; exp += 1; }
+    while (mant !== 0 && Math.abs(mant) < 1) { mant *= 10; exp -= 1; }
+    var digits = String(exp).split('').map(function (c) {
+      return SUP[c] !== undefined ? SUP[c] : c;
+    }).join('');
+    return trimZeros(mant.toFixed(2)) + '\u00D710' + digits;
+  }
+
   var SUFFIXES = [
     '', 'K', 'M', 'B', 'T',
     'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No',
@@ -227,7 +248,10 @@
       if (tier < WORDS.length) return text + ' ' + WORDS[tier];
       return trimZeros(v.m.toFixed(3)) + ' \u00D7 10^' + v.e;
     }
-    if (tier < SUFFIXES.length) return text + SUFFIXES[tier];
+    // Past the plain suffixes the table starts compounding — UDc, OcDc, NoVg —
+    // which nobody can read at a glance. Switch to a power of ten there.
+    if (tier < POWER_TIER && tier < SUFFIXES.length) return text + SUFFIXES[tier];
+    return superscript(v);
     return v.m.toFixed(3) + 'e' + v.e;
   }
 

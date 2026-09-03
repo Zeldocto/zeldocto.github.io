@@ -440,6 +440,13 @@ Set the default for new players with `CONFIG.formatting.defaultMode`. Full mode
 falls back to abbreviated past 10^60, where writing every digit stops being
 readable.
 
+**Abbreviated switches to powers of ten at 1e36** — `1.23×10³⁶` rather
+than `1.23UDc`. The suffix table starts compounding past `Dc` (UDc, OcDc,
+NoVg) and stops being readable at a glance. `POWER_TIER` in `js/numbers.js`
+sets where the switch happens; lower it to drop suffixes sooner, raise it to
+keep them longer. Shortened keeps its word forms at every size, and the big
+counter in full mode is unchanged.
+
 ## Casino
 
 Every spin costs **one Blue Coin plus a Durian stake**. The coin is the limiter,

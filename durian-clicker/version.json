@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-18",
-  "notes": "v2.6: leaderboard submission no longer blocked client-side.",
+  "build": "2026-09-19",
+  "notes": "v2.6.1: powers of ten for large abbreviated numbers.",
   "force": false
 }
