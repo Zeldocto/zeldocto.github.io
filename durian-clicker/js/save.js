@@ -38,7 +38,6 @@
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
       changelogSeen: state.changelogSeen,
-      integrity: DC.Game.integrity(),
       peakClickRate: state.peakClickRate,
       playTime: state.playTime,
       startedAt: state.startedAt,
@@ -60,8 +59,9 @@
     if (typeof data.totalClicks === 'number') state.totalClicks = data.totalClicks;
     if (typeof data.playTime === 'number') state.playTime = data.playTime;
     if (typeof data.changelogSeen === 'string') state.changelogSeen = data.changelogSeen;
-    // restored through the one-way setter, not written onto state
-    if (data.integrity) DC.Game.restoreIntegrity(data.integrity);
+    // Deliberately ignored. Saves written while the old flag existed carry
+    // one, including honest players caught by a false positive; loading now
+    // clears it rather than carrying the accusation forward.
     if (typeof data.peakClickRate === 'number') state.peakClickRate = data.peakClickRate;
     if (typeof data.startedAt === 'number') state.startedAt = data.startedAt;
     if (typeof data.lastSaved === 'number') state.lastSaved = data.lastSaved;
@@ -253,9 +253,7 @@
   function load() {
     var data = loadRaw();
     if (!data) return null;
-    var verdict = verify(data);
     DC.Game.state = deserialize(data);
-    if (verdict !== 'ok') DC.Game.restoreIntegrity(verdict);
     DC.Game.recalc();
     DC.Game.markBank();                 // the loaded total is the baseline
     DC.Game.checkUnlocks();
@@ -288,9 +286,7 @@
     }
     if (!data || typeof data !== 'object') return false;
 
-    var importVerdict = verify(data);
     DC.Game.state = deserialize(data);
-    if (importVerdict !== 'ok') DC.Game.restoreIntegrity(importVerdict);
     DC.Game.recalc();
     DC.Game.markBank();
     DC.Game.checkUnlocks();

@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-17",
-  "notes": "v2.5.4: overflow-safe plausibility, ceiling raised.",
+  "build": "2026-09-18",
+  "notes": "v2.6: leaderboard submission no longer blocked client-side.",
   "force": false
 }

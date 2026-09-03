@@ -301,11 +301,11 @@
 
     var s = DC.Game.state;
 
-    // A modified save still plays; it just does not go on the board.
-    if (DC.Game.integrity()) {
-      setStatus('error', 'This save was modified, so it cannot be submitted.');
-      return Promise.resolve({ ok: false, reason: 'modified' });
-    }
+    // NOTE: submissions are never blocked by the client's own tamper checks.
+    // They produced false positives on honest players — which is worse than
+    // the cheating they caught — and never stopped anyone determined, since
+    // the checks run on the player's machine. leaderboard-guard.sql does the
+    // real work now: it runs on the server, where a player cannot reach it.
     if (!s.player.name) return Promise.resolve({ ok: false, reason: 'no-name' });
     if (!options.force && N.lt(s.totalEarned, cfg.minScoreToSubmit)) {
       return Promise.resolve({ ok: false, reason: 'too-low' });

@@ -120,10 +120,13 @@ console.log('\n=== the flag cannot be cleared from the console ===');
   eq('restoreIntegrity cannot clear it', typeof Gf.integrity(), 'string');
   eq('the signing function is not exposed', typeof Df.Save.signature, 'undefined');
 
-  // and it survives a save and reload
+  // the flag is in-session only now: it is never written to the save, so a
+  // reload starts clean rather than carrying an accusation forward
   Df.Save.save(true);
-  eq('still flagged after a reload',
-     typeof boot(wf.localStorage.getItem('durianClicker.save.v1')).DC.Game.integrity(), 'string');
+  eq('not persisted to the save',
+     JSON.parse(wf.localStorage.getItem('durianClicker.save.v1')).integrity, undefined);
+  eq('and a reload starts clean',
+     boot(wf.localStorage.getItem('durianClicker.save.v1')).DC.Game.integrity(), null);
 }
 
 console.log('\n=== the click limiter cannot be switched off ===');
@@ -202,10 +205,8 @@ console.log('\n=== editing the total from the console is caught ===');
   Gt.tick(1);
   eq('flagged within a second', typeof Gt.integrity(), 'string');
   eq('and it says why', /changed outside the game/.test(Gt.integrity()), true);
-  eq('the flag persists to disk',
-     !!JSON.parse(wt.localStorage.getItem('durianClicker.save.v1')).integrity, true);
-  const wr = boot(wt.localStorage.getItem('durianClicker.save.v1'));
-  eq('and survives a reload', typeof wr.DC.Game.integrity(), 'string');
+  eq('but it is not written to the save',
+     JSON.parse(wt.localStorage.getItem('durianClicker.save.v1')).integrity, undefined);
 }
 
 console.log('\n=== adding crew from the console is caught ===');
@@ -221,8 +222,8 @@ console.log('\n=== adding crew from the console is caught ===');
   Gc.tick(1);
   eq('a pile of Pianta Judges is caught', typeof Gc.integrity(), 'string');
   eq('and it names the crew', /crew changed outside the game/.test(Gc.integrity()), true);
-  eq('the flag reaches the save',
-     !!JSON.parse(wc.localStorage.getItem('durianClicker.save.v1')).integrity, true);
+  eq('and nothing is written to the save',
+     JSON.parse(wc.localStorage.getItem('durianClicker.save.v1')).integrity, undefined);
 }
 {
   // even a single extra worker, on any crew
@@ -286,13 +287,15 @@ console.log('\n=== editing the save file is caught ===');
   const edited = JSON.parse(honest);
   edited.durians = { m: 9.99, e: 60 };
   const we = boot(JSON.stringify(edited));
-  eq('flagged on load', /edited|impossible/.test(we.DC.Game.integrity() || ''), true);
-  eq('progress still loads', we.DC.N.toNumber(we.DC.Game.state.durians) > 0, true);
+  eq('an edited save loads and plays', we.DC.N.toNumber(we.DC.Game.state.durians) > 0, true);
+  eq('and is not accused', we.DC.Game.integrity(), null);
+  // verify() still reports the problem for anyone who wants to use it
+  eq('verify still reports it', /edited|impossible/.test(we.DC.Save.verify(edited)), true);
 
   const stripped = JSON.parse(honest);
   delete stripped.sig;
-  eq('removing the signature does not help',
-     boot(JSON.stringify(stripped)).DC.Game.integrity() !== null, true);
+  eq('verify still notices a stripped signature',
+     boot(JSON.stringify(stripped)).DC.Save.verify(stripped) !== 'ok', true);
 
   const wq = boot();
   const resigned = JSON.parse(honest);
@@ -375,13 +378,38 @@ console.log('\n=== an old unsigned save is grandfathered ===');
      !!JSON.parse(wg.localStorage.getItem('durianClicker.save.v1')).sig, true);
 }
 
-console.log('\n=== flagged saves cannot reach the leaderboard ===');
+console.log('\n=== nobody is blocked from the leaderboard ===');
 {
-  const wf = boot(); const Df = wf.DC;
-  Df.Game.state.player.name = 'Tester';
-  Df.Game.restoreIntegrity('test');
-  Df.Leaderboard.submit({ force: true }).then(function (r) {
-    eq('submission refused', r.reason, 'modified');
+  // The client-side block was removed: it caught honest players and never
+  // stopped a determined one. leaderboard-guard.sql enforces limits on the
+  // server, which a player cannot reach.
+  const wf = boot(); const Df = wf.DC, Gf = Df.Game, Nf = Df.N;
+  Df.CONFIG.workers.forEach(x => { Gf.state.unlocked[x.id] = true; Gf.state.workers[x.id] = 10; });
+  Gf.recalc(); Gf.markBank(); Gf.tick(1);
+  Gf.state.durians = Nf.pow10(60);          // a blatant edit
+  Gf.tick(1);
+  eq('the audit still notices', typeof Gf.integrity(), 'string');
+  Gf.state.player.name = 'Tester';
+  Df.Leaderboard.submit({ force: true, ignoreThrottle: true }).then(function (r) {
+    eq('but the client does not block the submission', r.reason === 'modified', false);
+
+    // an honest save carrying a flag from the old build is cleared on load
+    const wh = boot(); const Dh = wh.DC, Gh = Dh.Game;
+    Dh.CONFIG.workers.forEach(x => { Gh.state.unlocked[x.id] = true; });
+    Gh.addDurians(Dh.N.pow10(12)); Gh.recalc();
+    Dh.Save.save(true);
+    const raw = JSON.parse(wh.localStorage.getItem('durianClicker.save.v1'));
+    raw.integrity = 'the save contains impossible values';
+    const wc = boot(JSON.stringify(raw));
+    eq('an old flag is cleared on load', wc.DC.Game.integrity(), null);
+    wc.DC.Save.save(true);
+    eq('and is not written back',
+       JSON.parse(wc.localStorage.getItem('durianClicker.save.v1')).integrity, undefined);
+
+    // and the save checks still LOAD everything, as they always did
+    eq('an edited save still loads and plays',
+       wc.DC.N.toNumber(wc.DC.Game.state.durians) > 0, true);
+
     console.log('\n' + (fails ? fails + ' FAILURES' : 'Integrity checks working.'));
     process.exit(fails ? 1 : 0);
   });

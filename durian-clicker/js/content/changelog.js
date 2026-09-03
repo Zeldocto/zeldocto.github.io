@@ -21,6 +21,14 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.6  2026-09-18',
+      title: 'Leaderboard is open again',
+      notes: [
+        'Saves are no longer blocked from the leaderboard — the check was catching honest players, which is not a trade worth making',
+        'If you were affected, your next submission goes through normally with no action needed'
+      ]
+    },
+    {
       version: '2.5.4  2026-09-17',
       title: 'Bug fixes',
       notes: [

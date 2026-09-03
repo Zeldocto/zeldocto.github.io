@@ -423,14 +423,19 @@
     tamperReason = String(reason);
   }
 
-  /** Marks the save ineligible. Never reversible. */
+  /**
+   * Records what the audits noticed. It gates NOTHING.
+   *
+   * This used to mark a save ineligible for the leaderboard. It caught honest
+   * players by mistake and never stopped a determined one, so the block was
+   * removed; leaderboard-guard.sql enforces limits on the server instead,
+   * where a player cannot reach them. The event still fires so the behaviour
+   * can be re-enabled later, and nothing is written to the save or the console.
+   */
   function flagTampered(reason) {
     if (tamperReason) return;
     tamperReason = reason;
-    console.warn('[Durian Clicker] ' + reason +
-                 ' \u2014 this save is no longer eligible for the leaderboard.');
     Events.emit('integrityFailed', reason);
-    if (DC.Save) DC.Save.save(true);
   }
 
   /*
