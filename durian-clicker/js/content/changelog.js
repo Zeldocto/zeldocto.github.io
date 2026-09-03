@@ -21,6 +21,13 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.6.2  2026-09-20',
+      title: 'Exponent display fix',
+      notes: [
+        'Large numbers now show their exponent consistently \u2014 some digits were rendering in a different font to the rest'
+      ]
+    },
+    {
       version: '2.6  2026-09-18',
       title: 'Leaderboard is open again',
       notes: [

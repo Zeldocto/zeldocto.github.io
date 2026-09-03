@@ -139,21 +139,22 @@
      where the suffix table stops being single words and starts compounding. */
   var POWER_TIER = 12;
 
-  var SUP = { '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
-              '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077',
-              '8': '\u2078', '9': '\u2079', '-': '\u207B' };
-
-  /** 1.23 x 10^45, with a real superscript exponent. */
-  function superscript(v) {
+  /*
+   * Exponents are written as ^45 rather than with Unicode superscript digits.
+   *
+   * The superscript block is split: 1, 2 and 3 live in Latin-1 and exist in
+   * virtually every font, while 0 and 4-9 sit in a separate block that many
+   * fonts omit. Browsers then substitute a different font for just those
+   * digits, so an exponent came out with some characters in the game's font
+   * and the rest visibly not — "10 to the 75" looked wrong while "10 to the
+   * 13" looked fine. A caret renders identically in every font.
+   */
+  function powerOfTen(v) {
     var exp = v.e;
     var mant = v.m;
-    // normalise so the mantissa reads 1.00-9.99
     while (Math.abs(mant) >= 10) { mant /= 10; exp += 1; }
     while (mant !== 0 && Math.abs(mant) < 1) { mant *= 10; exp -= 1; }
-    var digits = String(exp).split('').map(function (c) {
-      return SUP[c] !== undefined ? SUP[c] : c;
-    }).join('');
-    return trimZeros(mant.toFixed(2)) + '\u00D710' + digits;
+    return trimZeros(mant.toFixed(2)) + '\u00D710^' + exp;
   }
 
   var SUFFIXES = [
@@ -251,7 +252,7 @@
     // Past the plain suffixes the table starts compounding — UDc, OcDc, NoVg —
     // which nobody can read at a glance. Switch to a power of ten there.
     if (tier < POWER_TIER && tier < SUFFIXES.length) return text + SUFFIXES[tier];
-    return superscript(v);
+    return powerOfTen(v);
     return v.m.toFixed(3) + 'e' + v.e;
   }
 

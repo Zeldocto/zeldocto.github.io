@@ -440,12 +440,19 @@ Set the default for new players with `CONFIG.formatting.defaultMode`. Full mode
 falls back to abbreviated past 10^60, where writing every digit stops being
 readable.
 
-**Abbreviated switches to powers of ten at 1e36** — `1.23×10³⁶` rather
+**Abbreviated switches to powers of ten at 1e36** — `1.23×10^36` rather
 than `1.23UDc`. The suffix table starts compounding past `Dc` (UDc, OcDc,
 NoVg) and stops being readable at a glance. `POWER_TIER` in `js/numbers.js`
 sets where the switch happens; lower it to drop suffixes sooner, raise it to
 keep them longer. Shortened keeps its word forms at every size, and the big
 counter in full mode is unchanged.
+
+Exponents are written with a caret rather than Unicode superscript digits. The
+superscript block is split: `¹²³` live in Latin-1 and exist in
+virtually every font, while `⁰` and `⁴`-`⁹` sit elsewhere and are
+often missing. Browsers substitute a different font for just those digits, so
+an exponent came out half in the game's font and half not. A caret renders
+identically everywhere; `test-logic.js` asserts none creep back in.
 
 ## Casino
 
