@@ -157,6 +157,7 @@
       // the table. The function owner does the insert, so `anon` needs nothing
       // but EXECUTE — no insert/update grants, no privileges on player_id, and
       // no way to write arbitrary rows or delete anyone.
+      var self = this;
       var fn = cfg.supabase.submitFunction || 'submit_durian_score';
       var url = cfg.supabase.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn;
       return fetch(url, {
@@ -175,6 +176,10 @@
           p_workers: entry.workers,
           p_golden_shines: entry.golden_shines,
           p_achievements: entry.achievements
+        }, function (key, value) {
+          // Dropped when the server has the older function, which rejects any
+          // parameter it does not declare.
+          return (key === 'p_golden_shines' && !self.hasShines) ? undefined : value;
         })
       }).then(function (res) {
         if (!res.ok) return res.text().then(function (t) {
@@ -185,18 +190,61 @@
           throw err;
         });
         return { ok: true };
+      }).catch(function (err) {
+        // PostgREST answers 404 when no function matches the arguments given.
+        // That means leaderboard-guard.sql has not been run yet, so drop the
+        // Golden Shine parameter and try once more. Submitting without
+        // prestige is far better than not submitting at all.
+        var missing = self.hasShines &&
+          (err.serverStatus === 404 || /golden_shines|PGRST202/i.test(err.message || ''));
+        if (!missing) throw err;
+        self.hasShines = false;
+        console.warn('[Durian Clicker] leaderboard: the server has not got the ' +
+                     'Golden Shine column yet. Run leaderboard-guard.sql.');
+        return self.submit(entry);
       });
     },
 
+    /*
+     * The client must work against a database that has had
+     * leaderboard-guard.sql applied and one that has not, because the site and
+     * the SQL are deployed separately and either can land first. Asking for a
+     * column the server does not have fails the whole request, which would
+     * take the board down rather than just hiding the Shines.
+     *
+     * So: try with golden_shines, and on failure drop to the older list and
+     * remember for the rest of the session.
+     */
+    hasShines: true,
+
     // Explicit column list: player_id must never come back over the wire.
-    columns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,golden_shines,updated_at',
+    baseColumns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,updated_at',
+
+    columnList: function () {
+      return this.hasShines
+        ? this.baseColumns.replace('achievements,', 'achievements,golden_shines,')
+        : this.baseColumns;
+    },
 
     fetch: function (board) {
-      var url = this.base() + '?select=' + this.columns +
-                '&order=' + board.sortKey + '.desc&limit=' + cfg.maxEntries;
-      return fetch(url, { headers: this.headers() }).then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
+      var self = this;
+      var attempt = function () {
+        var url = self.base() + '?select=' + self.columnList() +
+                  '&order=' + board.sortKey + '.desc&limit=' + cfg.maxEntries;
+        return fetch(url, { headers: self.headers() }).then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        });
+      };
+      return attempt().catch(function (err) {
+        // Almost certainly the golden_shines column is missing because
+        // leaderboard-guard.sql has not been run yet. Fall back rather than
+        // leaving the board unreachable.
+        if (!self.hasShines) throw err;
+        self.hasShines = false;
+        console.warn('[Durian Clicker] leaderboard: no golden_shines column yet, ' +
+                     'showing the board without prestige. Run leaderboard-guard.sql.');
+        return attempt();
       });
     },
 

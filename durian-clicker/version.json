@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-21-4",
-  "notes": "v2.7: Golden Shines prestige.",
+  "build": "2026-09-21-5",
+  "notes": "v2.7: leaderboard works with or without the Shine column.",
   "force": false
 }

@@ -403,8 +403,15 @@ parameter, and **drops the old eleven-argument function**. Leaving both in
 place would make the call ambiguous and let an older client reach the
 unguarded version.
 
+The client works **either way round**, because the site and the database are
+deployed separately and either can land first. If the server has not got the
+column yet, the board fetch falls back to the older column list and submissions
+retry without the Shine parameter — you lose the pips, not the leaderboard. A
+warning naming the SQL file is logged once.
+
 `test-supabase.js` reads the parameter list straight out of the SQL and checks
-every key the client sends is declared there, so the two cannot drift apart.
+every key the client sends is declared there, and exercises both server
+versions end to end.
 
 ## Balance knobs## Balance knobs
 
