@@ -176,10 +176,6 @@
           p_workers: entry.workers,
           p_golden_shines: entry.golden_shines,
           p_achievements: entry.achievements
-        }, function (key, value) {
-          // Dropped when the server has the older function, which rejects any
-          // parameter it does not declare.
-          return (key === 'p_golden_shines' && !self.hasShines) ? undefined : value;
         })
       }).then(function (res) {
         if (!res.ok) return res.text().then(function (t) {
@@ -190,19 +186,6 @@
           throw err;
         });
         return { ok: true };
-      }).catch(function (err) {
-        // PostgREST answers 404 when no function matches the arguments given.
-        // That means leaderboard-guard.sql has not been run yet, so drop the
-        // Golden Shine parameter and try once more. Submitting without
-        // prestige is far better than not submitting at all.
-        var missing = self.hasShines &&
-          (err.serverStatus === 404 || /golden_shines|PGRST202/i.test(err.message || ''));
-        if (!missing) throw err;
-        self.hasShines = false;
-        self.shinesRetryAt = Date.now() + 120000;
-        console.warn('[Durian Clicker] leaderboard: the server has not got the ' +
-                     'Golden Shine column yet. Run leaderboard-guard.sql.');
-        return self.submit(entry);
       });
     },
 
@@ -216,18 +199,22 @@
      * So: try with golden_shines, and on failure drop to the older list and
      * remember for the rest of the session.
      */
-    hasShines: true,
-    // When the column turns out to be missing we stop asking, but only for a
-    // while: the SQL is often applied mid-session, and latching off until the
-    // next reload would hide prestige from someone who had just fixed it.
+    /*
+     * Read-side only. The Golden Shine count is ALWAYS sent — a submission
+     * that quietly succeeds while storing zero is far worse than one that
+     * fails visibly, and that is exactly what happened: a single failed board
+     * fetch flipped this off and every submission for the next two minutes
+     * dropped the field, so the row said 0 while the player held a Shine.
+     */
+    readShines: true,
     shinesRetryAt: 0,
 
     // Explicit column list: player_id must never come back over the wire.
     baseColumns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,updated_at',
 
     columnList: function () {
-      if (!this.hasShines && Date.now() > this.shinesRetryAt) this.hasShines = true;
-      return this.hasShines
+      if (!this.readShines && Date.now() > this.shinesRetryAt) this.readShines = true;
+      return this.readShines
         ? this.baseColumns.replace('achievements,', 'achievements,golden_shines,')
         : this.baseColumns;
     },
@@ -246,9 +233,9 @@
         // Almost certainly the golden_shines column is missing because
         // leaderboard-guard.sql has not been run yet. Fall back rather than
         // leaving the board unreachable.
-        if (!self.hasShines) throw err;
-        self.hasShines = false;
-        self.shinesRetryAt = Date.now() + 120000;      // try again in two minutes
+        if (!self.readShines) throw err;
+        self.readShines = false;
+        self.shinesRetryAt = Date.now() + 30000;       // try again in half a minute
         console.warn('[Durian Clicker] leaderboard: no golden_shines column yet, ' +
                      'showing the board without prestige. Run leaderboard-guard.sql.');
         return attempt();
@@ -316,6 +303,8 @@
   }
 
   function isOnline() { return !!provider().online; }
+
+  var healed = false;          // one catch-up submission per session
 
   function getName() { return DC.Game.state.player.name; }
 
@@ -423,6 +412,18 @@
       state.entries.forEach(function (r) { if (r.isYou) state.yourRank = r.rank; });
 
       setStatus('ok', '');
+
+      // Repair a row that is behind what the player actually holds. Covers
+      // anyone whose count was dropped by the old conditional, or who claimed
+      // a Shine on a cached build. One submission per session, so no loop.
+      if (DC.Prestige && !healed) {
+        var mine = state.entries.filter(function (r) { return r.isYou; })[0];
+        if (mine && DC.Prestige.shines() > (mine.golden_shines || 0)) {
+          healed = true;
+          submit({ force: true, ignoreThrottle: true });
+        }
+      }
+
       DC.Events.emit('leaderboardLoaded', state.entries);
 
       // Not in the visible slice? Ask the backend where we actually sit.
