@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-21-2',
+    buildId: '2026-09-21-4',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -156,7 +156,8 @@
        Requirements are 1 sexdecillion through 1 googol. The length of this
        array IS the cap — there is no seventh Shine. */
     prestige: {
-      clickBonusPerShine: 0.10,
+      clickBonusPerShine: 0.10,      // +10% Durians per click, each
+      productionBonusPerShine: 0.05, // +5% to all production, each
       requirements: [1e51, 1e54, 1e57, 1e60, 1e63, 1e100]
     },
 

@@ -264,6 +264,14 @@
 
     // Worker counts are needed before production, because synergies read them.
     var counts = {}, totalWorkers = 0;
+    // Golden Shines add +5% each to everything the island produces, on top of
+    // their click bonus. This must sit OUTSIDE the crew loop: inside it, the
+    // multiplier compounded once per worker and six Shines became x30 rather
+    // than x1.30.
+    var goldenProduction = DC.Prestige ? DC.Prestige.productionMultiplier() : 1;
+    globalMult *= goldenProduction;
+    baseGlobalMult *= goldenProduction;
+
     CONFIG.workers.forEach(function (w) {
       counts[w.id] = s.workers[w.id] || 0;
       totalWorkers += counts[w.id];

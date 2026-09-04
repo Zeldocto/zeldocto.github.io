@@ -347,6 +347,65 @@ What remains client-side, and what it is for:
 The click limiter in `js/game.js` is unaffected and still caps click income —
 that shapes the game rather than policing it, and it never blocked anyone.
 
+## Prestige — Golden Shines
+
+Six times over the life of a save, a player can trade their run for a permanent
+Golden Shine worth **+10% Durians per click and +5% to all production**, both
+additive, capping at +60% and +30%. The production bonus is applied to
+`globalMult` **outside** the crew loop — inside it, the multiplier compounded
+once per worker and six Shines came to x30 rather than x1.30.
+Requirements are `CONFIG.prestige.requirements` — 1e51, 1e54, 1e57, 1e60, 1e63
+and 1e100. **The length of that array is the cap**; there is no seventh Shine.
+
+**Where the Shines live matters.** They are not in `Game.state`, because a
+prestige throws that away wholesale. `js/prestige.js` keeps them in its own
+closure with a dedicated `localStorage` key, and the save file carries a copy.
+On load, whichever source holds more wins — a rolled-back save or a cleared key
+cannot cost anyone a Shine. Forged counts are clamped to six.
+
+`Prestige.claim()` validates internally rather than trusting the button, so a
+console call without the Durians does nothing, and an in-flight flag makes it
+atomic: eight rapid clicks award exactly one Shine.
+
+### What a prestige resets, and what it does not
+
+The spec said "reset all normal progression". Taken literally that also took
+achievements, purchased skins, backgrounds and Blue Coins — including the
+365-day Mario skin. That is a punishment rather than a reset, so:
+
+- **Reset**: Durians, crew, all upgrades, unlocks, buffs, and achievements.
+- **Kept**: skins, backgrounds, Blue Coins, play time, name and display
+  settings — things paid for once, or that accumulate across every run.
+
+Two kinds of achievement outlive a run, keyed off the condition type in
+`PERMANENT_ACHIEVEMENTS`: `playTime` (time played never resets) and
+`goldenShines` (the reward itself). Everything else has to be earned again.
+
+The counters those achievements are measured against reset with them — click
+count, coins collected, events seen, casino record. Keeping a lifetime click
+count while wiping the click achievements would just hand them all back on the
+next tick.
+
+Resetting `totalEarned` also **wiped the player's leaderboard score**, dropping
+them to the bottom of the board for using the feature. `Prestige.carried` banks
+each run's earnings and the leaderboard ranks on `lifetimeEarned()`, so
+prestiging costs nothing there.
+
+Both decisions are reversible if the strict reading is wanted: the keep-list is
+one block in `Game.resetRun`, and the leaderboard line is in `js/leaderboard.js`.
+
+### Prestige on the leaderboard
+
+Golden Shines are submitted with the score and drawn as small suns beside each
+name, with the count in the tooltip. This needs a schema change, so **re-run
+`leaderboard-guard.sql`** — it adds the `golden_shines` column and a twelfth
+parameter, and **drops the old eleven-argument function**. Leaving both in
+place would make the call ambiguous and let an older client reach the
+unguarded version.
+
+`test-supabase.js` reads the parameter list straight out of the SQL and checks
+every key the client sends is declared there, so the two cannot drift apart.
+
 ## Balance knobs## Balance knobs
 
 All in `js/config.js`:

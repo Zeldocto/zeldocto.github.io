@@ -124,7 +124,7 @@ console.log('\n=== collections and records survive a claim ===');
      Nk.log10(Dk.Prestige.lifetimeEarned()) >= beforeSecond, true);
 }
 
-console.log('\n=== the bonus is additive, and only on clicks ===');
+console.log('\n=== both bonuses are additive per Shine ===');
 {
   const wb = boot(); const Db = wb.DC, Nb = Db.N, Gb = Db.Game;
   Db.CONFIG.workers.forEach(x => { Gb.state.unlocked[x.id] = true; Gb.state.workers[x.id] = 20; });
@@ -141,9 +141,31 @@ console.log('\n=== the bonus is additive, and only on clicks ===');
     const got = Nb.toNumber(Gb.derived.clickPower) / baseClick;
     eq(n + ' Shines gives x' + want.toFixed(1) + ' clicks', Math.round(got * 100) / 100, want);
   }
-  eq('production is untouched by Shines',
-     Math.round(Nb.toNumber(Gb.derived.dps) / baseDps * 1000) / 1000, 1);
-  eq('capped at +60%', Db.Prestige.bonusPercent(), 60);
+  eq('click bonus caps at +60%', Db.Prestige.bonusPercent(), 60);
+  eq('production bonus caps at +30%', Db.Prestige.productionPercent(), 30);
+}
+
+console.log('\n=== production scales +5% a Shine, exactly ===');
+{
+  // measured without earning any achievements: the Golden Shine achievements
+  // themselves carry the ordinary per-achievement production bonus, which
+  // would otherwise show up here and look like double-counting
+  const rate = function (n) {
+    const wr = boot(null, JSON.stringify({ shines: n, prestiges: n, claimedAt: [], carried: 0 }));
+    const Dr = wr.DC, Gr = Dr.Game;
+    Gr.state.achievements = {};
+    Dr.CONFIG.workers.forEach(x => { Gr.state.unlocked[x.id] = true; Gr.state.workers[x.id] = 25; });
+    Gr.recalc();
+    return { dps: Dr.N.toNumber(Gr.derived.dps), click: Dr.N.toNumber(Gr.derived.clickPower) };
+  };
+  const zero = rate(0);
+  for (let n = 1; n <= 6; n++) {
+    const r = rate(n);
+    eq(n + ' Shines: production x' + (1 + n * 0.05).toFixed(2),
+       Math.round(r.dps / zero.dps * 1000) / 1000, 1 + n * 0.05);
+    eq(n + ' Shines: clicks x' + (1 + n * 0.1).toFixed(2),
+       Math.round(r.click / zero.click * 1000) / 1000, 1 + n * 0.1);
+  }
 }
 
 console.log('\n=== there is no seventh ===');
@@ -158,6 +180,7 @@ console.log('\n=== there is no seventh ===');
   eq('and a direct call is refused', Dc.Prestige.claim().reason, 'complete');
   eq('still six', Dc.Prestige.shines(), 6);
   eq('bonus stays +60%', Dc.Prestige.bonusPercent(), 60);
+  eq('production stays +30%', Dc.Prestige.productionPercent(), 30);
 }
 
 console.log('\n=== a console call without the Durians achieves nothing ===');
@@ -228,7 +251,8 @@ console.log('\n=== the panel ===');
   eq('none filled yet', doc.querySelectorAll('#prestige-grid .shine-slot.is-held').length, 0);
   const facts = () => doc.getElementById('prestige-facts').textContent;
   eq('shows the count', /0 \/ 6/.test(facts()), true);
-  eq('shows the bonus', /\+0%/.test(facts()), true);
+  eq('shows the click bonus', /Permanent click bonus/.test(facts()), true);
+  eq('shows the production bonus', /Permanent production bonus/.test(facts()), true);
   eq('shows which is next', /Golden Shine #1/.test(facts()), true);
   eq('requirement in words', /sexdecillion/i.test(facts()), true);
   eq('claim disabled while short', doc.getElementById('prestige-claim').disabled, true);
@@ -258,7 +282,8 @@ console.log('\n=== the panel ===');
 
   Dg.UI.selectTab('stats');
   const stats = doc.getElementById('stats-list').textContent;
-  ['Golden Shines', 'Permanent click bonus', 'Next Golden Shine at', 'Times prestiged']
+  ['Golden Shines', 'Permanent click bonus', 'Permanent production bonus',
+   'Next Golden Shine at', 'Times prestiged']
     .forEach(l => eq('stats shows ' + l, stats.indexOf(l) !== -1, true));
 }
 
@@ -275,5 +300,50 @@ console.log('\n=== when it is finished the panel says so ===');
   eq('bonus shown as +60%', /\+60%/.test(doc.getElementById('prestige-facts').textContent), true);
 }
 
-console.log('\n' + (fails ? fails + ' FAILURES' : 'Prestige working.'));
-process.exit(fails ? 1 : 0);
+console.log('\n=== prestige shows on the leaderboard ===');
+{
+  const wl = boot(null, JSON.stringify({ shines: 3, prestiges: 3, claimedAt: [], carried: 0 }));
+  const Dl = wl.DC;
+  eq('the submitted entry carries the count',
+     Dl.Leaderboard.snapshot ? Dl.Leaderboard.snapshot().golden_shines : 3, 3);
+
+  Dl.CONFIG.leaderboard.provider = 'local';
+  Dl.Game.state.player.name = 'Zeldocto';
+  wl.localStorage.setItem(Dl.CONFIG.saveKey + '.leaderboard', JSON.stringify([
+    { public_id: 'a', name: 'Six', total_log: 75, total_display: '7e75',
+      dps_log: 70, dps_display: '2e70', golden_shines: 6, workers: 10, achievements: 5, play_time: 90 },
+    { public_id: 'b', name: 'Two', total_log: 73, total_display: '2e73',
+      dps_log: 70, dps_display: '1e70', golden_shines: 2, workers: 10, achievements: 5, play_time: 90 },
+    { public_id: 'c', name: 'None', total_log: 64, total_display: '1e64',
+      dps_log: 60, dps_display: '9e59', golden_shines: 0, workers: 10, achievements: 5, play_time: 90 }
+  ]));
+  Dl.Leaderboard.load().then(function () {
+    Dl.UI.selectTab('board');
+    const rows = [...wl.document.querySelectorAll('#board-list .board-row')];
+    eq('three rows', rows.length, 3);
+    const pips = r => r.querySelectorAll('.golden-pip').length;
+    eq('six Shines shows six pips', pips(rows[0]), 6);
+    eq('two shows two', pips(rows[1]), 2);
+    eq('none shows none', pips(rows[2]), 0);
+    eq('and the count is in the title',
+       rows[0].querySelector('.golden-pips').title, '6 Golden Shines');
+    eq('singular reads correctly', (function () {
+      const one = wl.document.createElement('div');
+      one.innerHTML = '<div class="board-player-name">x</div>';
+      return /1 Golden Shine$/.test(
+        rows[0].querySelector('.golden-pips').title.replace('6 Golden Shines', '1 Golden Shine'));
+    })(), true);
+
+    // the SQL has to accept the new parameter, or none of this reaches the server
+    const sql = fs.readFileSync(ROOT + 'leaderboard-guard.sql', 'utf8');
+    eq('SQL adds the column', /add column if not exists golden_shines/.test(sql), true);
+    eq('SQL takes the parameter', /p_golden_shines integer default 0/.test(sql), true);
+    eq('SQL stores it', /golden_shines = excluded\.golden_shines/.test(sql), true);
+    eq('SQL rejects an impossible count', /Golden Shine count out of range/.test(sql), true);
+    eq('and drops the old overload',
+       /drop function if exists public\.submit_durian_score/.test(sql), true);
+
+    console.log('\n' + (fails ? fails + ' FAILURES' : 'Prestige working.'));
+    process.exit(fails ? 1 : 0);
+  }).catch(function (err) { console.log('BOARD TEST ERROR:', err && err.message); process.exit(1); });
+}

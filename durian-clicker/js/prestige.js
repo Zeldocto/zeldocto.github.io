@@ -40,10 +40,21 @@
     return 1 + permanent.shines * settings().clickBonusPerShine;
   }
 
-  /** The permanent bonus as a percentage, for display. */
+  /** 1 + 0.05 per Shine, applied to everything the island produces. */
+  function productionMultiplier() {
+    return 1 + permanent.shines * settings().productionBonusPerShine;
+  }
+
+  /** The permanent click bonus as a percentage, for display. */
   function bonusPercent(count) {
     var n = count === undefined ? permanent.shines : count;
     return Math.round(n * settings().clickBonusPerShine * 100);
+  }
+
+  /** The permanent production bonus as a percentage, for display. */
+  function productionPercent(count) {
+    var n = count === undefined ? permanent.shines : count;
+    return Math.round(n * settings().productionBonusPerShine * 100);
   }
 
   function isComplete() { return permanent.shines >= maxShines(); }
@@ -145,6 +156,7 @@
       max: maxShines(),
       prestiges: permanent.prestiges,
       bonusPercent: bonusPercent(),
+      productionPercent: productionPercent(),
       complete: isComplete(),
       next: nextShineNumber(),
       requirement: requirement()
@@ -192,6 +204,7 @@
       if (DC.Save) DC.Save.save(true);
 
       var result = { ok: true, shine: number, bonusPercent: bonusPercent(),
+                     productionPercent: productionPercent(),
                      complete: isComplete() };
       DC.Events.emit('prestiged', result);
       return result;
@@ -205,7 +218,9 @@
     prestiges: prestiges,
     max: maxShines,
     clickMultiplier: clickMultiplier,
+    productionMultiplier: productionMultiplier,
     bonusPercent: bonusPercent,
+    productionPercent: productionPercent,
     isComplete: isComplete,
     requirement: requirement,
     nextShineNumber: nextShineNumber,

@@ -2133,3 +2133,19 @@ body.dark .shine-slot.is-held { background: linear-gradient(180deg, #5A4A18, #3C
   60%  { transform: scale(1.06) rotate(1deg); }
   100% { transform: scale(1) rotate(0deg); }
 }
+
+
+/* Golden Shines beside a leaderboard name. */
+.golden-pips {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.golden-pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF3C4, #FFC400 65%, #C98A00);
+  box-shadow: 0 0 4px rgba(255, 196, 0, 0.8);
+}

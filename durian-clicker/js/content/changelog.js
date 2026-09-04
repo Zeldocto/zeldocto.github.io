@@ -25,9 +25,10 @@
       title: 'Golden Shines',
       notes: [
         'New at the bottom of Upgrades: trade your run for a permanent Golden Shine',
-        'Six to collect, each worth +10% Durians per click forever \u2014 up to +60%',
+        'Six to collect, each worth +10% Durians per click and +5% to all production, forever \u2014 up to +60% and +30%',
         'The first needs 1 sexdecillion Durians, the last needs a googol',
         'Prestiging resets your Durians, crew, upgrades and achievements. It keeps your skins, backgrounds, Blue Coins, time played and your place on the leaderboard',
+        'Golden Shines show beside your name on the leaderboard',
         'Four new achievements for collecting them'
       ]
     },

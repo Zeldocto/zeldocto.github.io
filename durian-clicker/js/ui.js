@@ -540,6 +540,9 @@
         ['golden_bonus', 'Permanent click bonus', function () {
           return DC.Prestige ? '+' + DC.Prestige.bonusPercent() + '%' : '\u2014';
         }],
+        ['golden_prod', 'Permanent production bonus', function () {
+          return DC.Prestige ? '+' + DC.Prestige.productionPercent() + '%' : '\u2014';
+        }],
         ['golden_next', 'Next Golden Shine at', function () {
           if (!DC.Prestige) return '\u2014';
           var req = DC.Prestige.requirement();
@@ -1144,7 +1147,8 @@
       el['prestige-title'].textContent = 'Golden Shines complete';
       el['prestige-facts'].innerHTML =
         factRow('Golden Shines', p.shines + ' / ' + p.max) +
-        factRow('Permanent click bonus', '+' + p.bonusPercent + '%');
+        factRow('Permanent click bonus', '+' + p.bonusPercent + '%') +
+        factRow('Permanent production bonus', '+' + p.productionPercent + '%');
       el['prestige-note'].textContent =
         'Every Golden Shine has been collected. There is nothing further to claim.';
       el['prestige-claim'].hidden = true;
@@ -1157,10 +1161,12 @@
     el['prestige-facts'].innerHTML =
       factRow('Golden Shines', p.shines + ' / ' + p.max) +
       factRow('Permanent click bonus', '+' + p.bonusPercent + '%') +
+      factRow('Permanent production bonus', '+' + p.productionPercent + '%') +
       factRow('Working toward', 'Golden Shine #' + p.next) +
       factRow('Requires', inWords(p.requirement) + ' Durians') +
       factRow('You have', inWords(Game.state.durians) + ' Durians') +
-      factRow('It will be worth', '+' + DC.Prestige.bonusPercent(1) + '% Durians per click');
+      factRow('It will be worth', '+' + DC.Prestige.bonusPercent(1) + '% per click and +' +
+              DC.Prestige.productionPercent(1) + '% production');
 
     var ready = DC.Prestige.canPrestige();
     el['prestige-claim'].hidden = false;
@@ -1184,7 +1190,8 @@
       'This resets the run: your Durians, crew, upgrades and everything else ' +
       'from this run are lost.\n\n' +
       'You keep permanently: Golden Shine #' + p.next + ', taking you to ' +
-      (p.shines + 1) + ' of ' + p.max + ' and a +' + after + '% click bonus.',
+      (p.shines + 1) + ' of ' + p.max + ' \u2014 a +' + after + '% click bonus and +' +
+      DC.Prestige.productionPercent(p.shines + 1) + '% production, forever.',
       function () {
         var result = DC.Prestige.claim();
         if (result.ok) celebrateShine(result);
@@ -1202,7 +1209,8 @@
     el['golden-burst-which'].textContent = result.complete
       ? 'The ' + ORDINAL[result.shine] + ' and last'
       : 'Golden Shine #' + result.shine;
-    el['golden-burst-bonus'].textContent = 'Permanent click bonus: +' + result.bonusPercent + '%';
+    el['golden-burst-bonus'].textContent =
+      '+' + result.bonusPercent + '% per click \u00B7 +' + result.productionPercent + '% production';
     box.classList.toggle('is-final', !!result.complete);
     box.hidden = false;
     void box.offsetWidth;
@@ -1463,7 +1471,8 @@
       return '<li class="board-row' + (e.isYou ? ' is-you' : '') + (e.rank === 1 ? ' top1' : '') + '">' +
         '<div class="board-rank">' + e.rank + '</div>' +
         '<div class="board-player">' +
-          '<div class="board-player-name">' + escapeHtml(e.name || 'Anonymous') + '</div>' +
+          '<div class="board-player-name">' + escapeHtml(e.name || 'Anonymous') +
+            goldenPips(e.golden_shines) + '</div>' +
           '<div class="board-player-meta">' + meta.join(' · ') + '</div>' +
         '</div>' +
         '<div class="board-score">' + escapeHtml(boardScore(e, board)) + '</div>' +
@@ -1471,6 +1480,20 @@
     }).join('');
 
     refreshBoardHeader();
+  }
+
+  /**
+   * Golden Shines beside a leaderboard name. Drawn as small suns rather than a
+   * number so a prestiged player is obvious at a glance, with a title for the
+   * exact count.
+   */
+  function goldenPips(count) {
+    var n = Math.max(0, Math.min(parseInt(count, 10) || 0, 6));
+    if (!n) return '';
+    var pips = '';
+    for (var i = 0; i < n; i++) pips += '<i class="golden-pip"></i>';
+    return '<span class="golden-pips" title="' + n +
+           ' Golden Shine' + (n === 1 ? '' : 's') + '">' + pips + '</span>';
   }
 
   function escapeHtml(text) {

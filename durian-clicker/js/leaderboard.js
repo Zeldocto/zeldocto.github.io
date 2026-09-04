@@ -68,6 +68,7 @@
       play_time: Math.round(s.playTime),
       total_clicks: s.totalClicks,
       workers: d.totalWorkers,
+      golden_shines: DC.Prestige ? DC.Prestige.shines() : 0,
       achievements: d.achievementsEarned,
       updated_at: new Date().toISOString()
     };
@@ -172,6 +173,7 @@
           p_play_time: entry.play_time,
           p_total_clicks: entry.total_clicks,
           p_workers: entry.workers,
+          p_golden_shines: entry.golden_shines,
           p_achievements: entry.achievements
         })
       }).then(function (res) {
@@ -187,7 +189,7 @@
     },
 
     // Explicit column list: player_id must never come back over the wire.
-    columns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,updated_at',
+    columns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,golden_shines,updated_at',
 
     fetch: function (board) {
       var url = this.base() + '?select=' + this.columns +
