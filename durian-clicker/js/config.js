@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-20',
+    buildId: '2026-09-21-2',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -28,7 +28,7 @@
 
     // Shown beside the logo and used as the changelog heading. Bump this when
     // you cut a release; buildId is the deploy stamp and changes far more often.
-    version: '2.6',
+    version: '2.7',
 
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,
@@ -149,6 +149,15 @@
         { id: 'dps', label: 'Per second', sortKey: 'dps_log', displayKey: 'dps_display',
           note: 'Base production, before temporary Shine effects.' }
       ]
+    },
+
+    /* ------------------------------------------------------------ prestige */
+    /* Six Golden Shines, each worth +10% Durians per click, additively.
+       Requirements are 1 sexdecillion through 1 googol. The length of this
+       array IS the cap — there is no seventh Shine. */
+    prestige: {
+      clickBonusPerShine: 0.10,
+      requirements: [1e51, 1e54, 1e57, 1e60, 1e63, 1e100]
     },
 
     /* ------------------------------------------------------------- workers */

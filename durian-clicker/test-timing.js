@@ -5,7 +5,7 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const ROOT = '/home/claude/durian-clicker/';
 const FILES = ['config.js','content/upgrades.js','content/upgrades-farshore.js',
-  'content/achievements.js','content/events.js','content/changelog.js','content/skins.js',
+  'content/achievements.js','content/events.js','content/changelog.js','content/skins.js','content/backgrounds.js',
   'numbers.js','game.js','workers.js','upgrades.js','achievements.js','offline.js',
   'events.js','coins.js','casino.js','store.js'];
 

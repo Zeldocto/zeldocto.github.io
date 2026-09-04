@@ -54,10 +54,13 @@
       player_id: s.player.id,          // row key — never selected back
       public_id: s.player.publicId,    // safe to publish; identifies your row
       name: s.player.name,
-      total_log: safeLog(s.totalEarned),
+      // Lifetime, not this run: prestiging resets the run, and dropping
+      // someone to the bottom of the board for using a feature would be a
+      // poor reward for it.
+      total_log: safeLog(DC.Prestige ? DC.Prestige.lifetimeEarned() : s.totalEarned),
       // Always abbreviated: the stored string must not depend on the player's
       // own number-format setting. Clients rebuild the display from the log.
-      total_display: N.format(s.totalEarned, { mode: 'abbreviated' }),
+      total_display: N.format(DC.Prestige ? DC.Prestige.lifetimeEarned() : s.totalEarned, { mode: 'abbreviated' }),
       // Base DPS on purpose: submitting during a x25 Shine Swarm would
       // otherwise rank you far above an identical, unbuffed island.
       dps_log: safeLog(d.baseDps !== undefined ? d.baseDps : d.dps),

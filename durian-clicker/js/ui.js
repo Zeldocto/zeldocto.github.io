@@ -36,7 +36,11 @@
      'coin-balance', 'spin-coin-icon', 'lead-coin-icon', 'paytable', 'btn-skins',
      'slots-hint', 'slots-payout', 'slots-outcome',
      'btn-dark', 'dark-toggle', 'buy-custom',
-     'news-bar', 'news-icon', 'news-line', 'changelog-body', 'brand-version', 'changelog-title'
+     'news-bar', 'news-icon', 'news-line', 'changelog-body', 'brand-version', 'changelog-title',
+     'prestige-panel', 'prestige-title', 'prestige-grid', 'prestige-facts',
+     'prestige-note', 'prestige-claim',
+     'golden-burst', 'golden-burst-shine', 'golden-burst-title',
+     'golden-burst-which', 'golden-burst-bonus'
     ].forEach(function (id) { el[id] = $(id); });
   }
 
@@ -202,9 +206,16 @@
 
   /* ------------------------------------------------------------- counters */
 
+  var prestigeTick = 0;
+
   function refreshCounters() {
     if (suppressCounters) return;
     var s = Game.state, d = Game.derived;
+
+    // The claim button has to become available the moment the balance reaches
+    // the requirement, so this rides the counter refresh rather than waiting
+    // for a full rebuild. Twice a second is plenty and costs nothing.
+    if (++prestigeTick % 10 === 0) refreshPrestige();
     el['durian-count'].textContent = N.format(s.durians);
     el['dps-line'].textContent = N.formatRate(d.dps) + ' per second';
     el['click-power'].textContent = N.format(d.clickPower);
@@ -523,6 +534,20 @@
           return N.formatRate(d.dps);
         }],
         ['clicks', 'Total clicks', function () { return N.withCommas(Game.state.totalClicks); }],
+        ['golden_shines', 'Golden Shines', function () {
+          return DC.Prestige ? DC.Prestige.shines() + ' / ' + DC.Prestige.max() : '\u2014';
+        }],
+        ['golden_bonus', 'Permanent click bonus', function () {
+          return DC.Prestige ? '+' + DC.Prestige.bonusPercent() + '%' : '\u2014';
+        }],
+        ['golden_next', 'Next Golden Shine at', function () {
+          if (!DC.Prestige) return '\u2014';
+          var req = DC.Prestige.requirement();
+          return req ? inWords(req) + ' Durians' : 'all collected';
+        }],
+        ['prestige_count', 'Times prestiged', function () {
+          return DC.Prestige ? N.withCommas(DC.Prestige.prestiges()) : '0';
+        }],
         ['cps_now', 'Clicks per second, now', function () { return N.withCommas(Game.currentClickRate()); }],
         ['cps_avg', 'Clicks per second, average', function () { return Game.averageClickRate().toFixed(2); }],
         ['cps_peak', 'Clicks per second, peak', function () { return N.withCommas(Game.state.peakClickRate || 0); }],
@@ -1082,6 +1107,133 @@
     var bg = DC.Store.activeBackground();
     var src = (bg && bg.image) || CONFIG.assets.background;
     el['scene-img'].style.backgroundImage = 'url("' + src + '")';
+  }
+
+  /* ------------------------------------------------------------- prestige */
+
+  var burstTimer = null;
+  var ORDINAL = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+
+  /** The six slots, filled or not. Three across, two down. */
+  function buildShineGrid(held, total) {
+    var out = '';
+    for (var i = 1; i <= total; i++) {
+      var have = i <= held;
+      out += '<div class="shine-slot' + (have ? ' is-held' : '') + '" title="Golden Shine #' + i + '">' +
+             (have ? '<img src="' + CONFIG.assets.shine + '" alt="">'
+                   : '<span class="shine-slot-number">' + i + '</span>') +
+             '</div>';
+    }
+    return out;
+  }
+
+  /** Word form, always: "1 sexdecillion" reads better than 1x10^51 here. */
+  function inWords(value) { return N.format(value, { mode: 'shortened' }); }
+
+  function factRow(label, value) {
+    return '<dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(value) + '</dd>';
+  }
+
+  function refreshPrestige() {
+    if (!DC.Prestige || !el['prestige-panel']) return;
+    var p = DC.Prestige.snapshot();
+    el['prestige-panel'].hidden = false;
+    el['prestige-grid'].innerHTML = buildShineGrid(p.shines, p.max);
+
+    if (p.complete) {
+      el['prestige-title'].textContent = 'Golden Shines complete';
+      el['prestige-facts'].innerHTML =
+        factRow('Golden Shines', p.shines + ' / ' + p.max) +
+        factRow('Permanent click bonus', '+' + p.bonusPercent + '%');
+      el['prestige-note'].textContent =
+        'Every Golden Shine has been collected. There is nothing further to claim.';
+      el['prestige-claim'].hidden = true;
+      el['prestige-panel'].classList.add('is-complete');
+      return;
+    }
+
+    el['prestige-panel'].classList.remove('is-complete');
+    el['prestige-title'].textContent = 'Golden Shines';
+    el['prestige-facts'].innerHTML =
+      factRow('Golden Shines', p.shines + ' / ' + p.max) +
+      factRow('Permanent click bonus', '+' + p.bonusPercent + '%') +
+      factRow('Working toward', 'Golden Shine #' + p.next) +
+      factRow('Requires', inWords(p.requirement) + ' Durians') +
+      factRow('You have', inWords(Game.state.durians) + ' Durians') +
+      factRow('It will be worth', '+' + DC.Prestige.bonusPercent(1) + '% Durians per click');
+
+    var ready = DC.Prestige.canPrestige();
+    el['prestige-claim'].hidden = false;
+    el['prestige-claim'].disabled = !ready;
+    el['prestige-claim'].textContent = ready
+      ? 'Claim Golden Shine #' + p.next
+      : 'Not enough Durians yet';
+    el['prestige-note'].textContent = ready
+      ? 'Claiming resets this run. Your Golden Shines are kept.'
+      : 'Keep going \u2014 you need ' + inWords(p.requirement) + ' Durians to claim this one.';
+  }
+
+  /** The irreversible bit gets an explicit, specific confirmation. */
+  function askToPrestige() {
+    if (!DC.Prestige || !DC.Prestige.canPrestige()) return;
+    var p = DC.Prestige.snapshot();
+    var after = DC.Prestige.bonusPercent(p.shines + 1);
+    confirmDialog(
+      'Claim Golden Shine #' + p.next + '?',
+      'You have reached ' + inWords(p.requirement) + ' Durians.\n\n' +
+      'This resets the run: your Durians, crew, upgrades and everything else ' +
+      'from this run are lost.\n\n' +
+      'You keep permanently: Golden Shine #' + p.next + ', taking you to ' +
+      (p.shines + 1) + ' of ' + p.max + ' and a +' + after + '% click bonus.',
+      function () {
+        var result = DC.Prestige.claim();
+        if (result.ok) celebrateShine(result);
+      }
+    );
+  }
+
+  /** Brief, then out of the way. */
+  function celebrateShine(result) {
+    var box = el['golden-burst'];
+    if (!box) return;
+    el['golden-burst-shine'].src = CONFIG.assets.shine;
+    el['golden-burst-title'].textContent = result.complete
+      ? 'All six Golden Shines!' : 'Golden Shine obtained!';
+    el['golden-burst-which'].textContent = result.complete
+      ? 'The ' + ORDINAL[result.shine] + ' and last'
+      : 'Golden Shine #' + result.shine;
+    el['golden-burst-bonus'].textContent = 'Permanent click bonus: +' + result.bonusPercent + '%';
+    box.classList.toggle('is-final', !!result.complete);
+    box.hidden = false;
+    void box.offsetWidth;
+    box.classList.add('is-playing');
+    DC.Audio.play('achievement');
+    shineConfetti(result.complete);
+
+    // A plain timer: autoRemove expects a real node to detach, and this one
+    // stays in the document.
+    if (burstTimer) clearTimeout(burstTimer);
+    burstTimer = setTimeout(function () {
+      box.classList.remove('is-playing');
+      box.hidden = true;
+      burstTimer = null;
+    }, result.complete ? 4200 : 2600);
+  }
+
+  function shineConfetti(big) {
+    var count = big ? 40 : 16;
+    for (var i = 0; i < count; i++) {
+      var bit = document.createElement('div');
+      bit.className = 'slot-confetti';
+      bit.style.left = (window.innerWidth / 2) + 'px';
+      bit.style.top = (window.innerHeight / 2) + 'px';
+      bit.style.setProperty('--dx', (Math.random() * 500 - 250) + 'px');
+      bit.style.setProperty('--dy', (Math.random() * 400 - 260) + 'px');
+      bit.style.setProperty('--spin', (Math.random() * 720 - 360) + 'deg');
+      bit.style.background = ['#FFD429', '#FFF0A8', '#FFB300'][i % 3];
+      document.body.appendChild(bit);
+      autoRemove(bit, 1400);
+    }
   }
 
   /* ---------------------------------------------------------- Blue Coins */
@@ -1657,6 +1809,9 @@
 
     $('news-read').addEventListener('click', openChangelog);
     $('btn-history').addEventListener('click', openFullChangelog);
+    $('prestige-claim').addEventListener('click', askToPrestige);
+    DC.Events.on('prestiged', function () { rebuildAll(); });
+    DC.Events.on('runReset', function () { rebuildAll(); });
     $('news-close').addEventListener('click', function () {
       DC.Changelog.markRead();          // dismissing counts as read
       el['news-bar'].hidden = true;
@@ -1771,6 +1926,7 @@
     step('stat values', refreshStats);
     step('buy buttons', syncBuyAmountButtons);
     step('settings', syncSettingsControls);
+    step('prestige', refreshPrestige);
   }
 
   function syncSettingsControls() {

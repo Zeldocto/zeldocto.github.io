@@ -129,6 +129,7 @@
       case 'coinsCollected': return (s.coins.collected || 0) >= req.count;
       case 'casinoSpins':    return (s.casino.spins || 0) >= req.count;
       case 'casinoJackpots': return (s.casino.jackpots || 0) >= req.count;
+      case 'goldenShines':   return DC.Prestige ? DC.Prestige.shines() >= req.count : false;
       case 'skinsOwned':     return DC.Store ? DC.Store.ownedCount() >= req.count : false;
       default:
         console.warn('Unknown requirement type:', req.type);
@@ -159,6 +160,7 @@
       case 'coinsCollected': return 'Unlocks after collecting ' + req.count + ' Blue Coins';
       case 'casinoSpins':    return 'Unlocks after ' + req.count + ' spins';
       case 'casinoJackpots': return 'Unlocks after ' + req.count + ' jackpots';
+      case 'goldenShines':   return 'Unlocks with ' + req.count + ' Golden Shines';
       case 'skinsOwned':     return 'Unlocks with ' + req.count + ' skins owned';
       default:               return 'Locked';
     }
@@ -336,7 +338,12 @@
     // nothing, and a x2 click multiplier multiplied by 1.000. Adding them
     // keeps every description literally true. Gear simply becomes a small part
     // of a large total later on, which is honest and expected.
-    d.clickPower = N.mul(N.add(gearRoute, shareRoute), buffClick);
+    // Golden Shines multiply the finished figure, so they compose with every
+    // other click bonus rather than replacing any of them. This is the only
+    // place click power is decided.
+    var goldenMult = DC.Prestige ? DC.Prestige.clickMultiplier() : 1;
+    d.clickPower = N.mul(N.add(gearRoute, shareRoute), buffClick * goldenMult);
+    d.goldenMultiplier = goldenMult;
     d.clickShare = clickFromDps;
 
     Events.emit('recalc');
@@ -746,6 +753,69 @@
     configurable: false,
     enumerable: true
   });
+
+  /**
+   * Throws the current run away and starts a new one.
+   *
+   * Everything run-specific is rebuilt from newState(); the only things
+   * carried across are the player's identity and their display preferences,
+   * which are not progression. Golden Shines are not touched here at all —
+   * they live in DC.Prestige, outside the state this replaces, which is
+   * exactly why they cannot be lost to a reset.
+   */
+  /** Condition types that outlive a run. */
+  var PERMANENT_ACHIEVEMENTS = { playTime: true, goldenShines: true };
+
+  function keptAchievements(earned) {
+    var kept = {};
+    CONFIG.achievements.forEach(function (a) {
+      if (!earned[a.id]) return;
+      if (a.condition && PERMANENT_ACHIEVEMENTS[a.condition.type]) {
+        kept[a.id] = earned[a.id];
+      }
+    });
+    return kept;
+  }
+
+  function resetRun() {
+    var old = Game.state;
+    var fresh = newState();
+
+    // Identity and preferences are not progression.
+    fresh.player = old.player;
+    fresh.settings = old.settings;
+    fresh.changelogSeen = old.changelogSeen;
+
+    // Things that were paid for once and are genuinely permanent.
+    fresh.skins = old.skins;
+    fresh.backgrounds = old.backgrounds;
+    fresh.blueCoins = old.blueCoins;          // a currency, like the skins
+    fresh.playTime = old.playTime;            // accumulates across every run
+
+    // Achievements go with the run, except the two kinds that are not part of
+    // it: time played, and the Golden Shines themselves.
+    fresh.achievements = keptAchievements(old.achievements);
+
+    // The counters those achievements are measured against reset alongside
+    // them. Keeping a lifetime click count while wiping the click achievements
+    // would just hand them all straight back on the next tick.
+    fresh.totalClicks = 0;
+    fresh.coins = { nextAt: 0, spawned: 0, collected: 0 };
+    fresh.casino = old.casino && typeof old.casino === 'object'
+      ? Object.assign({}, newState().casino, { coinsSpent: 0 })
+      : newState().casino;
+    fresh.events = { seen: {}, total: 0, nextAt: 0 };
+
+    // Everything else — Durians, crew, upgrades, unlocks, buffs — starts over.
+    Game.state = fresh;
+
+    recalc();
+    checkUnlocks();
+    markBank();
+    Events.emit('runReset');
+  }
+
+  Game.resetRun = resetRun;
 
   DC.Game = Game;
   Object.assign(Game, {

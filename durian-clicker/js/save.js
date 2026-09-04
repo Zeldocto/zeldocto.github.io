@@ -38,6 +38,9 @@
       events: { seen: Object.assign({}, state.events.seen),
                 total: state.events.total, nextAt: state.events.nextAt },
       changelogSeen: state.changelogSeen,
+      // A copy only. DC.Prestige keeps its own store and takes whichever is
+      // higher on load, so neither source alone can cost someone a Shine.
+      prestige: DC.Prestige ? DC.Prestige.serialize() : undefined,
       peakClickRate: state.peakClickRate,
       playTime: state.playTime,
       startedAt: state.startedAt,
@@ -59,6 +62,7 @@
     if (typeof data.totalClicks === 'number') state.totalClicks = data.totalClicks;
     if (typeof data.playTime === 'number') state.playTime = data.playTime;
     if (typeof data.changelogSeen === 'string') state.changelogSeen = data.changelogSeen;
+    if (DC.Prestige) DC.Prestige.load(data.prestige);
     // Deliberately ignored. Saves written while the old flag existed carry
     // one, including honest players caught by a false positive; loading now
     // clears it rather than carrying the accusation forward.

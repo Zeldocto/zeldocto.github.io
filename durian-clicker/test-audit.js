@@ -14,8 +14,8 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const ROOT = '/home/claude/durian-clicker/';
 const FILES = ['config.js','content/upgrades.js','content/upgrades-farshore.js','content/achievements.js','content/events.js',
-  'content/changelog.js','content/skins.js','numbers.js','game.js','workers.js','upgrades.js',
-  'achievements.js','save.js','offline.js','events.js','coins.js','casino.js','store.js'];
+  'content/changelog.js','content/skins.js','content/backgrounds.js','numbers.js','game.js','workers.js','upgrades.js',
+  'achievements.js','prestige.js','save.js','offline.js','events.js','coins.js','casino.js','store.js'];
 
 function fresh() {
   const dom = new JSDOM('<body></body>', { runScripts: 'outside-only', url: 'https://x.io/' });
@@ -70,7 +70,7 @@ const seenIds = new Set(), seenNames = new Set();
 const KNOWN = ['always','totalEarned','durians','clickEarned','clicks','workerCount',
   'totalWorkers','dps','upgrade','upgradesBought','achievement','playTime',
   'achievementCount','eventsSeen','eventTypeSeen','offlineEarned','blueCoins',
-  'coinsCollected','casinoSpins','casinoJackpots','skinsOwned'];
+  'coinsCollected','casinoSpins','casinoJackpots','skinsOwned','goldenShines'];
 
 let numberChecked = 0, fireChecked = 0;
 
@@ -155,6 +155,16 @@ function setup(DC, c, atThreshold) {
     case 'coinsCollected': G.state.coins.collected = c.count + step; break;
     case 'casinoSpins': G.state.casino.spins = c.count + step; break;
     case 'casinoJackpots': G.state.casino.jackpots = c.count + step; break;
+    case 'goldenShines': {
+      // Golden Shines live outside the run state, so drive them through the
+      // real claim path rather than writing a number anywhere.
+      var want = c.count + step;
+      for (var g = 0; g < want; g++) {
+        DC.Game.state.durians = DC.N.big(DC.CONFIG.prestige.requirements[g]);
+        DC.Prestige.claim();
+      }
+      break;
+    }
     case 'skinsOwned': {
       DC.CONFIG.skins.slice(0, c.count + step).forEach(s => G.state.skins.owned[s.id] = true);
       break;

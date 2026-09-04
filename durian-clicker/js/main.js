@@ -15,7 +15,7 @@
                   'Save', 'Offline', 'Audio', 'UI'];
   // Modules that add features. If one is absent the game still plays.
   var OPTIONAL = ['IslandEvents', 'Coins', 'Casino', 'Store', 'Leaderboard',
-                  'Updates', 'Changelog', 'Debug'];
+                  'Updates', 'Changelog', 'Prestige', 'Debug'];
 
   var FILE_FOR = {
     CONFIG: 'js/config.js', N: 'js/numbers.js', Game: 'js/game.js',
@@ -24,7 +24,8 @@
     Offline: 'js/offline.js', Audio: 'js/audio.js', UI: 'js/ui.js',
     IslandEvents: 'js/events.js', Coins: 'js/coins.js', Casino: 'js/casino.js',
     Store: 'js/store.js', Leaderboard: 'js/leaderboard.js',
-    Updates: 'js/updates.js', Changelog: 'js/changelog.js', Debug: 'js/debug.js'
+    Updates: 'js/updates.js', Changelog: 'js/changelog.js',
+    Prestige: 'js/prestige.js', Debug: 'js/debug.js'
   };
 
   function missing(list) {
@@ -70,6 +71,9 @@
     DC.Audio.init();
 
     var saved = DC.Save.load();
+    // A brand-new save never calls Prestige.load, but the dedicated key may
+    // still hold Shines from before a wipe.
+    if (DC.Prestige && !saved) DC.Prestige.load(null);
     DC.Game.markBank();
     if (!saved) {
       DC.Game.recalc();

@@ -31,7 +31,7 @@
     font-display: swap;
   }
 </style>
-<link rel="stylesheet" href="css/style.css?v=2026-09-20">
+<link rel="stylesheet" href="css/style.css?v=2026-09-21-2">
 </head>
 <body>
 
@@ -134,6 +134,16 @@
         </div>
         <p class="list-count" id="upgrade-count"></p>
         <div class="list" id="upgrade-list"></div>
+
+        <section class="prestige" id="prestige-panel" hidden>
+          <h3 class="prestige-title" id="prestige-title">Golden Shines</h3>
+          <div class="prestige-grid" id="prestige-grid" aria-label="Golden Shines collected"></div>
+          <dl class="prestige-facts" id="prestige-facts"></dl>
+          <p class="prestige-note" id="prestige-note"></p>
+          <button class="btn btn-primary prestige-claim" id="prestige-claim" hidden>
+            Claim Golden Shine
+          </button>
+        </section>
         <button class="btn btn-small show-more" id="upgrade-more" hidden>Show more</button>
         <details class="owned-details" id="owned-details" hidden>
           <summary>Already installed (<span id="owned-count">0</span>)</summary>
@@ -198,6 +208,15 @@
     <button class="modal-close" data-close="modal-changelog" aria-label="Close">&times;</button>
     <h2 id="changelog-title">What&#39;s new</h2>
     <div class="changelog" id="changelog-body"></div>
+  </div>
+</div>
+
+<div class="golden-burst" id="golden-burst" hidden aria-live="polite">
+  <div class="golden-burst-card">
+    <img class="golden-burst-shine" id="golden-burst-shine" alt="">
+    <strong id="golden-burst-title">Golden Shine obtained!</strong>
+    <span id="golden-burst-which"></span>
+    <span class="golden-burst-bonus" id="golden-burst-bonus"></span>
   </div>
 </div>
 
@@ -360,31 +379,32 @@
 </div>
 
 <!-- Load order matters: data → maths → state → systems → interface. -->
-<script src="js/config.js?v=2026-09-20"></script>
-<script src="js/content/upgrades.js?v=2026-09-20"></script>
-<script src="js/content/upgrades-farshore.js?v=2026-09-20"></script>
-<script src="js/content/achievements.js?v=2026-09-20"></script>
-<script src="js/content/events.js?v=2026-09-20"></script>
-<script src="js/content/changelog.js?v=2026-09-20"></script>
-<script src="js/content/backgrounds.js?v=2026-09-20"></script>
-<script src="js/content/skins.js?v=2026-09-20"></script>
-<script src="js/numbers.js?v=2026-09-20"></script>
-<script src="js/game.js?v=2026-09-20"></script>
-<script src="js/workers.js?v=2026-09-20"></script>
-<script src="js/upgrades.js?v=2026-09-20"></script>
-<script src="js/achievements.js?v=2026-09-20"></script>
-<script src="js/save.js?v=2026-09-20"></script>
-<script src="js/offline.js?v=2026-09-20"></script>
-<script src="js/events.js?v=2026-09-20"></script>
-<script src="js/changelog.js?v=2026-09-20"></script>
-<script src="js/updates.js?v=2026-09-20"></script>
-<script src="js/coins.js?v=2026-09-20"></script>
-<script src="js/casino.js?v=2026-09-20"></script>
-<script src="js/store.js?v=2026-09-20"></script>
-<script src="js/audio.js?v=2026-09-20"></script>
-<script src="js/leaderboard.js?v=2026-09-20"></script>
-<script src="js/ui.js?v=2026-09-20"></script>
-<script src="js/debug.js?v=2026-09-20"></script>
-<script src="js/main.js?v=2026-09-20"></script>
+<script src="js/config.js?v=2026-09-21-2"></script>
+<script src="js/content/upgrades.js?v=2026-09-21-2"></script>
+<script src="js/content/upgrades-farshore.js?v=2026-09-21-2"></script>
+<script src="js/content/achievements.js?v=2026-09-21-2"></script>
+<script src="js/content/events.js?v=2026-09-21-2"></script>
+<script src="js/content/changelog.js?v=2026-09-21-2"></script>
+<script src="js/content/backgrounds.js?v=2026-09-21-2"></script>
+<script src="js/content/skins.js?v=2026-09-21-2"></script>
+<script src="js/numbers.js?v=2026-09-21-2"></script>
+<script src="js/game.js?v=2026-09-21-2"></script>
+<script src="js/workers.js?v=2026-09-21-2"></script>
+<script src="js/upgrades.js?v=2026-09-21-2"></script>
+<script src="js/achievements.js?v=2026-09-21-2"></script>
+<script src="js/save.js?v=2026-09-21-2"></script>
+<script src="js/offline.js?v=2026-09-21-2"></script>
+<script src="js/events.js?v=2026-09-21-2"></script>
+<script src="js/prestige.js?v=2026-09-21-2"></script>
+<script src="js/changelog.js?v=2026-09-21-2"></script>
+<script src="js/updates.js?v=2026-09-21-2"></script>
+<script src="js/coins.js?v=2026-09-21-2"></script>
+<script src="js/casino.js?v=2026-09-21-2"></script>
+<script src="js/store.js?v=2026-09-21-2"></script>
+<script src="js/audio.js?v=2026-09-21-2"></script>
+<script src="js/leaderboard.js?v=2026-09-21-2"></script>
+<script src="js/ui.js?v=2026-09-21-2"></script>
+<script src="js/debug.js?v=2026-09-21-2"></script>
+<script src="js/main.js?v=2026-09-21-2"></script>
 </body>
 </html>
