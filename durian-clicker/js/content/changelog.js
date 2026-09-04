@@ -26,7 +26,8 @@
       notes: [
         'Fixed: after claiming a Golden Shine your leaderboard entry stopped updating entirely. Scores are ranked on lifetime Durians, so a reset no longer stalls it',
         'Claiming a Golden Shine now updates the board straight away',
-        'Golden Shines show beside your name once the board has them'
+        'Golden Shines show beside your name once the board has them',
+        'Currently, prestiging makes your score unsubmittable. This will be fixed tomorrow.'
       ]
     },
     {
