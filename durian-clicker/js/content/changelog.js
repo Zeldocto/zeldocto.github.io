@@ -10,10 +10,6 @@
  * is what the game compares against to decide whether to show the prompt, so
  * anyone who has already read this entry will not be shown it again.
  *
- * Keep the bullets short. If a change closes an exploit, just write "Bug fix"
- * or something equally bland — a changelog that names the exploit is a how-to
- * guide for anyone who missed it.
- *
  * `title` is optional and shows above the bullets.
  * ========================================================================== */
 (function (DC) {
