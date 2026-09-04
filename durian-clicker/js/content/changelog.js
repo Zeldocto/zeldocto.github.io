@@ -17,7 +17,7 @@
 
   DC.CONFIG.changelog = [
     {
-      version: '2.7.1  2026-09-22',
+      version: '2.7.1  2026-09-04',
       title: 'Golden Shines',
       notes: [
         'New at the bottom of Upgrades: trade your run for a permanent Golden Shine!!!',
