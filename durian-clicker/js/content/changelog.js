@@ -29,14 +29,14 @@
       ]
     },
     {
-      version: '2.6.2  2026-09-20',
+      version: '2.6.2',
       title: 'Exponent display fix',
       notes: [
         'Large numbers now show their exponent consistently \u2014 some digits were rendering in a different font to the rest'
       ]
     },
     {
-      version: '2.6  2026-09-18',
+      version: '2.6',
       title: 'Leaderboard is open again',
       notes: [
         'Saves are no longer blocked from the leaderboard — the check was catching honest players, which is not a trade worth making',
@@ -44,7 +44,7 @@
       ]
     },
     {
-      version: '2.5.4  2026-09-17',
+      version: '2.5.4',
       title: 'Bug fixes',
       notes: [
         'Very large totals are handled correctly everywhere',
@@ -52,7 +52,7 @@
       ]
     },
     {
-      version: '2.5.3  2026-09-16',
+      version: '2.5.3',
       title: 'Bug fixes',
       notes: [
         'Autoclickers are unaffected, as always',
@@ -60,7 +60,7 @@
       ]
     },
     {
-      version: '2.5.2  2026-09-15',
+      version: '2.5.2',
       title: 'Bug fixes',
       notes: [
         'Autoclickers are still welcome and still work exactly as before',
@@ -68,14 +68,14 @@
       ]
     },
     {
-      version: '2.5.1  2026-09-14',
+      version: '2.5.1',
       title: 'Store layout fix',
       notes: [
         'Background previews no longer overlap the names and descriptions in the store'
       ]
     },
     {
-      version: '2.5  2026-09-13',
+      version: '2.5',
       title: 'Backgrounds',
       notes: [
         'The Tanooki Store now sells backgrounds as well as skins',
@@ -84,7 +84,7 @@
       ]
     },
     {
-      version: '2.4  2026-09-12',
+      version: '2.4',
       title: 'Offline production',
       notes: [
         'Your crew now works at 10% of normal while you are away, instead of full rate',
@@ -93,7 +93,7 @@
       ]
     },
     {
-      version: '2.3  2026-09-10',
+      version: '2.3',
       title: 'Leaderboard integrity',
       notes: [
         'Saves are now signed, and edited saves are refused by the leaderboard',
@@ -103,7 +103,7 @@
       ]
     },
     {
-      version: '2.2  2026-09-08',
+      version: '2.2',
       title: 'Achievement scaling and the changelog',
       notes: [
         'Production per achievement halved — with hundreds of Shines it was overwhelming everything else and flattening the nonillion stretch',
@@ -113,7 +113,7 @@
       ]
     },
     {
-      version: '2026-09-07',
+      version: '2026-09-01',
       title: 'The Far Shore',
       notes: [
         '100 new upgrades for the extreme endgame, from octodecillion upward',
@@ -123,7 +123,7 @@
       ]
     },
     {
-      version: '2026-09-06',
+      version: '2026-09-01',
       title: 'Two fixes',
       notes: [
         'Island events now always pay out or take what they say — at very large banks the amount was being announced but never applied',
@@ -132,7 +132,7 @@
       ]
     },
     {
-      version: 'v19 2026-09-05',
+      version: 'v19,
       title: 'Airplane fix',
       notes: [
         'Airplanes now appear for everyone. If you had reduced motion turned on in your system settings, they were spawning off the edge of the screen and you never saw one',
@@ -140,7 +140,7 @@
       ]
     },
     {
-      version: 'v18 2026-09-04',
+      version: 'v18',
       title: 'Pacing, stats and a lot of new flavour',
       notes: [
         'The biggest all-worker multipliers are split into sequences — no more quadrupling your income in one purchase',
@@ -152,7 +152,7 @@
       ]
     },
     {
-      version: 'v17 2026-08-30',
+      version: 'v17',
       title: 'Content audit',
       notes: [
         'Audited every upgrade and achievement: fixed four achievements whose text did not match their requirement, and three duplicate upgrade names.',
@@ -161,7 +161,7 @@
       ]
     },
     {
-      version: 'v16 2026-08-30',
+      version: 'v16',
       title: 'Corona Mountain and the Pianta Judge',
       notes: [
         'Two new endgame crew: Corona Mountain, then the Pianta Judge',
@@ -171,7 +171,7 @@
       ]
     },
     {
-      version: 'v15 2026-08-30',
+      version: 'v15',
       title: 'Clicking, events and a pile of fixes',
       notes: [
         'Island events rebalanced.',
