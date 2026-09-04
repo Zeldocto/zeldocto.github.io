@@ -396,6 +396,13 @@ one block in `Game.resetRun`, and the leaderboard line is in `js/leaderboard.js`
 
 ### Prestige on the leaderboard
 
+**The minimum-score check reads lifetime earnings, not the run's.** It used to
+read `state.totalEarned`, which a prestige resets to zero — so every submission
+after a first Golden Shine was refused as "too-low" and the player's row
+silently stopped updating. Claiming also submits immediately, so the board
+reflects a new Shine at once rather than at the next interval.
+
+
 Golden Shines are submitted with the score and drawn as small suns beside each
 name, with the count in the tooltip. This needs a schema change, so **re-run
 `leaderboard-guard.sql`** — it adds the `golden_shines` column and a twelfth

@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-21-5",
-  "notes": "v2.7: leaderboard works with or without the Shine column.",
+  "build": "2026-09-22",
+  "notes": "v2.7.1: leaderboard no longer freezes after a prestige.",
   "force": false
 }

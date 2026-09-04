@@ -199,6 +199,7 @@
           (err.serverStatus === 404 || /golden_shines|PGRST202/i.test(err.message || ''));
         if (!missing) throw err;
         self.hasShines = false;
+        self.shinesRetryAt = Date.now() + 120000;
         console.warn('[Durian Clicker] leaderboard: the server has not got the ' +
                      'Golden Shine column yet. Run leaderboard-guard.sql.');
         return self.submit(entry);
@@ -216,11 +217,16 @@
      * remember for the rest of the session.
      */
     hasShines: true,
+    // When the column turns out to be missing we stop asking, but only for a
+    // while: the SQL is often applied mid-session, and latching off until the
+    // next reload would hide prestige from someone who had just fixed it.
+    shinesRetryAt: 0,
 
     // Explicit column list: player_id must never come back over the wire.
     baseColumns: 'public_id,name,total_log,total_display,dps_log,dps_display,play_time,total_clicks,workers,achievements,updated_at',
 
     columnList: function () {
+      if (!this.hasShines && Date.now() > this.shinesRetryAt) this.hasShines = true;
       return this.hasShines
         ? this.baseColumns.replace('achievements,', 'achievements,golden_shines,')
         : this.baseColumns;
@@ -242,6 +248,7 @@
         // leaving the board unreachable.
         if (!self.hasShines) throw err;
         self.hasShines = false;
+        self.shinesRetryAt = Date.now() + 120000;      // try again in two minutes
         console.warn('[Durian Clicker] leaderboard: no golden_shines column yet, ' +
                      'showing the board without prestige. Run leaderboard-guard.sql.');
         return attempt();
@@ -360,7 +367,12 @@
     // the checks run on the player's machine. leaderboard-guard.sql does the
     // real work now: it runs on the server, where a player cannot reach it.
     if (!s.player.name) return Promise.resolve({ ok: false, reason: 'no-name' });
-    if (!options.force && N.lt(s.totalEarned, cfg.minScoreToSubmit)) {
+    // Judge the minimum on LIFETIME earnings, which is what actually gets
+    // submitted. Using this run's total meant that the moment someone
+    // prestiged it fell to zero and every submission was refused as too low —
+    // their row silently stopped updating, Golden Shines included.
+    var scoreForMinimum = DC.Prestige ? DC.Prestige.lifetimeEarned() : s.totalEarned;
+    if (!options.force && N.lt(scoreForMinimum, cfg.minScoreToSubmit)) {
       return Promise.resolve({ ok: false, reason: 'too-low' });
     }
 
@@ -435,6 +447,15 @@
   /* -------------------------------------------------------------- autosubmit */
 
   var timer = null;
+
+  /*
+   * Claiming a Golden Shine changes the row in a way the player expects to see
+   * at once. Without this it waits for the next interval, which looks like the
+   * feature not working.
+   */
+  DC.Events.on('prestiged', function () {
+    if (isEnabled() && getName()) submit({ force: true, ignoreThrottle: true });
+  });
 
   function startAutoSubmit() {
     if (!isEnabled() || !cfg.submitIntervalSeconds) return;

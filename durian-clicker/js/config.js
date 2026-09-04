@@ -13,7 +13,7 @@
     /* --------------------------------------------------------------- meta */
     // Bump this AND version.json on every deploy. Anyone mid-session gets a
     // "refresh for the update" prompt instead of silently running old code.
-    buildId: '2026-09-21-5',
+    buildId: '2026-09-22',
     updateCheck: {
       enabled: true,
       url: 'version.json',
@@ -28,7 +28,7 @@
 
     // Shown beside the logo and used as the changelog heading. Bump this when
     // you cut a release; buildId is the deploy stamp and changes far more often.
-    version: '2.7',
+    version: '2.7.1',
 
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,

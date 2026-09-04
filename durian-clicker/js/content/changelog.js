@@ -21,6 +21,15 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.7.1  2026-09-22',
+      title: 'Leaderboard fix after prestiging',
+      notes: [
+        'Fixed: after claiming a Golden Shine your leaderboard entry stopped updating entirely. Scores are ranked on lifetime Durians, so a reset no longer stalls it',
+        'Claiming a Golden Shine now updates the board straight away',
+        'Golden Shines show beside your name once the board has them'
+      ]
+    },
+    {
       version: '2.7  2026-09-21',
       title: 'Golden Shines',
       notes: [

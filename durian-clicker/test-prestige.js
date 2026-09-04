@@ -343,6 +343,49 @@ console.log('\n=== prestige shows on the leaderboard ===');
     eq('and drops the old overload',
        /drop function if exists public\.submit_durian_score/.test(sql), true);
 
+    // A prestige must not freeze the row. The minimum-score check used to read
+    // this run's totalEarned, which a prestige resets to zero, so every later
+    // submission was refused as "too-low" and the entry silently stopped
+    // updating — Shine count included.
+    console.log('\n=== a prestige does not freeze your leaderboard row ===');
+    const dm = new JSDOM('<body></body>', { runScripts: 'outside-only', url: 'https://x.io/' });
+    const wm = dm.window;
+    ['config.js','content/upgrades.js','content/upgrades-farshore.js','content/achievements.js',
+     'content/events.js','content/skins.js','content/backgrounds.js','numbers.js','game.js',
+     'workers.js','upgrades.js','achievements.js','prestige.js','save.js','events.js','leaderboard.js']
+      .forEach(f => wm.eval(fs.readFileSync(ROOT + 'js/' + f, 'utf8')));
+    const Dm = wm.DC, Nm = Dm.N, Gm = Dm.Game;
+    const posted = [];
+    wm.fetch = function (url, opts) {
+      if (String(url).indexOf('/rpc/') !== -1) {
+        posted.push(JSON.parse(opts.body));
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('') });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]),
+                               headers: { get: () => '0-0/0' } });
+    };
+    Dm.CONFIG.leaderboard.provider = 'supabase';
+    Gm.state.player.name = 'Zeldocto';
+    Gm.addDurians(Nm.pow10(51), 'worker');
+    Gm.recalc();
+
+    return Dm.Leaderboard.submit({ ignoreThrottle: true }).then(function () {
+      eq('submits before prestige', posted.length, 1);
+      Dm.Prestige.claim();
+      return new Promise(function (go) { setTimeout(go, 40); });
+    }).then(function () {
+      eq('the name survives the reset', Gm.state.player.name, 'Zeldocto');
+      eq('claiming pushes the score at once', posted.length, 2);
+      eq('carrying the Shine count', posted[posted.length - 1].p_golden_shines, 1);
+      eq('while this run has earned nothing', Nm.toNumber(Gm.state.totalEarned), 0);
+      return Dm.Leaderboard.submit({ ignoreThrottle: true });
+    }).then(function (r) {
+      eq('routine submissions still go through', r.ok, true);
+      eq('scored on lifetime, not the empty run',
+         Math.round(posted[posted.length - 1].p_total_log), 51);
+    });
+  }).then(function () {
+
     console.log('\n' + (fails ? fails + ' FAILURES' : 'Prestige working.'));
     process.exit(fails ? 1 : 0);
   }).catch(function (err) { console.log('BOARD TEST ERROR:', err && err.message); process.exit(1); });
