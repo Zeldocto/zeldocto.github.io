@@ -18,24 +18,14 @@
   DC.CONFIG.changelog = [
     {
       version: '2.7.1  2026-09-22',
-      title: 'Leaderboard fix after prestiging',
-      notes: [
-        'Fixed: after claiming a Golden Shine your leaderboard entry stopped updating entirely. Scores are ranked on lifetime Durians, so a reset no longer stalls it',
-        'Claiming a Golden Shine now updates the board straight away',
-        'Golden Shines show beside your name once the board has them',
-        'Currently, prestiging makes your score unsubmittable. This will be fixed tomorrow \u2014 Sorry!!'
-      ]
-    },
-    {
-      version: '2.7  2026-09-21',
       title: 'Golden Shines',
       notes: [
-        'New at the bottom of Upgrades: trade your run for a permanent Golden Shine',
+        'New at the bottom of Upgrades: trade your run for a permanent Golden Shine!!!',
         'Six to collect, each worth +10% Durians per click and +5% to all production, forever \u2014 up to +60% and +30%',
-        'The first needs 1 sexdecillion Durians, the last needs a googol',
-        'Prestiging resets your Durians, crew, upgrades and achievements. It keeps your skins, backgrounds, Blue Coins, time played and your place on the leaderboard',
-        'Golden Shines show beside your name on the leaderboard',
-        'Four new achievements for collecting them'
+        'This is known as a prestige. Prestiging resets your Durians, crew, upgrades and achievements (except the ones that keep track of playtime & prestige related ones). It keeps your skins, backgrounds, Blue Coins, time played and your place on the leaderboard',
+        'Four new achievements for collecting them',
+        'Fixed leaderboards that broke for a few, but Golden Shines do not show up on the leaderboards.',
+        'Currently, prestiging makes your score unsubmittable. This will be fixed tomorrow \u2014 Sorry!!'
       ]
     },
     {
