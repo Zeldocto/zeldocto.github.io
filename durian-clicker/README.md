@@ -420,6 +420,30 @@ warning naming the SQL file is logged once.
 every key the client sends is declared there, and exercises both server
 versions end to end.
 
+## Late-game brake and spacing
+
+Everything up to about a nonillion (1e30) paced well; past it the game ran
+away — 1e30 arrived at 4.4 days and 1e50 only five days later. Two causes,
+both fixed in `gen_upgrades.py` and re-run with `python3 gen_upgrades.py`:
+
+**Power.** Upgrades above `BRAKE_FROM` (1e30) stacked a combined x1e55 on
+production. The brake keeps a share of each effect — `BRAKE_GLOBAL`,
+`BRAKE_WORKER`, `BRAKE_ACH`, `BRAKE_SYN` — tightening by `BRAKE_DECADE` per
+order of magnitude past the line.
+
+**Spacing.** The cost ladder had 92 upgrades packed into 1e29-1e31 and nothing
+at all between 1e43 and 1e46, so players bought ninety in an afternoon and then
+hit a wall. Everything at or above `SPREAD_FROM` is now laid on an even
+geometric ladder up to `SPREAD_TO`, about 17 per order of magnitude.
+
+Descriptions are rewritten from the adjusted numbers afterwards; without that
+step 242 upgrades advertised their old strength. `test-descriptions.js` checks
+this and will fail if a new effect type is added to the brake without matching
+wording.
+
+Resulting pace: 1e30 at 4.4d, 1e33 at 12.4d, 1e36 at 15.7d, 1e39 at 21.8d,
+1e42 at 27.4d, with no droughts. Check with `node balance.js 150`.
+
 ## Balance knobs## Balance knobs
 
 All in `js/config.js`:

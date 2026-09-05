@@ -1542,6 +1542,111 @@ def num(v):
         return str(int(v))
     return repr(v)
 
+# =============================================================================
+# LATE-GAME BRAKE
+# -----------------------------------------------------------------------------
+# Everything up to about a nonillion (1e30) paces well. Past that the game ran
+# away: 1e30 arrived at 4.4 days and 1e50 only five days later, because the
+# upgrades above that line stack a combined x1e55 on production and each one
+# pays for the next almost immediately.
+#
+# This pass scales back the effects of upgrades priced at or above the brake
+# point, ramping harder the further past it they sit, so the curve keeps
+# climbing without folding in on itself. Descriptions are rewritten from the
+# adjusted numbers further down, so they stay honest.
+#
+# Tune with BRAKE_* below and re-run; `node balance.js 90` reports the pacing.
+BRAKE_FROM = 1e30            # where the brake starts to bite
+BRAKE_GLOBAL = 0.36          # kept share of a global multiplier's bonus
+BRAKE_WORKER = 0.52          # kept share of a single worker's multiplier
+BRAKE_ACH = 0.36             # kept share of achievement-scaling bonuses
+BRAKE_SYN = 0.52             # kept share of synergy and self-scaling values
+BRAKE_DECADE = 0.905          # extra squeeze per order of magnitude past the point
+
+def _brake_factor(cost, keep):
+    """Keep-share for one upgrade, tightening the further past the brake it is."""
+    import math
+    decades = max(0.0, math.log10(max(cost, 1.0)) - math.log10(BRAKE_FROM))
+    return keep * (BRAKE_DECADE ** decades)
+
+for _u in up:
+    _cost = _u.get('cost') or 0
+    if _cost < BRAKE_FROM:
+        continue
+    for _e in _u.get('effects', []):
+        _t = _e.get('type')
+        if _t == 'globalMult':
+            _e['value'] = round(1 + (_e['value'] - 1) * _brake_factor(_cost, BRAKE_GLOBAL), 6)
+        elif _t == 'workerMult':
+            _e['value'] = round(1 + (_e['value'] - 1) * _brake_factor(_cost, BRAKE_WORKER), 6)
+        elif _t == 'achievementBonus':
+            _e['value'] = round(_e['value'] * _brake_factor(_cost, BRAKE_ACH), 8)
+        elif _t in ('workerSynergy', 'workerScaling'):
+            _e['value'] = round(_e['value'] * _brake_factor(_cost, BRAKE_SYN), 8)
+
+# -----------------------------------------------------------------------------
+# The brake changed the numbers, so the sentences describing them have to be
+# rewritten or every nerfed upgrade advertises its old strength. Only the
+# leading claim is replaced; the flavour after it is kept.
+def _restate(u):
+    fx = u.get('effects') or []
+    if len(fx) != 1:
+        return
+    e = fx[0]
+    t, v = e.get('type'), e.get('value')
+    desc = u.get('description', '')
+    # split the mechanical first sentence from the flavour that follows
+    parts = desc.split('. ', 1)
+    tail = (' ' + parts[1]) if len(parts) > 1 else ''
+    if t == 'globalMult':
+        u['description'] = 'All workers produce +%s%% Durians.%s' % (pct(v - 1), tail)
+    elif t == 'workerMult':
+        u['description'] = '%s produce +%s%% Durians.%s' % (
+            WORKER_LABEL.get(e.get('target'), 'These workers'), pct(v - 1), tail)
+    elif t == 'achievementBonus':
+        u['description'] = 'Each Shine earned adds +%s%% production.%s' % (pct(v), tail)
+    elif t == 'workerScaling':
+        u['description'] = '%s gain +%s%% output for every %d you own.%s' % (
+            WORKER_LABEL.get(e.get('target'), 'These workers'), pct(v), e.get('per', 10), tail)
+    elif t == 'workerSynergy':
+        src = e.get('source')
+        u['description'] = '%s gain +%s%% output for each %s you own.%s' % (
+            WORKER_LABEL.get(e.get('target'), 'These workers'), pct(v),
+            WORKER_LABEL.get(src, src), tail)
+
+for _u in up:
+    if (_u.get('cost') or 0) >= BRAKE_FROM:
+        _restate(_u)
+
+# -----------------------------------------------------------------------------
+# LATE-GAME SPACING
+#
+# The brake above fixes how strong the late upgrades are; this fixes WHEN they
+# arrive, which was the other half of the runaway. The cost ladder had 92
+# upgrades packed into 1e29-1e31 and then nothing at all between 1e43 and 1e46:
+# a player bought ninety upgrades in an afternoon, rocketed, and then hit a
+# wall with nothing left to buy.
+#
+# This lays every upgrade at or above SPREAD_FROM onto an even geometric ladder
+# up to SPREAD_TO, keeping their existing order, so they arrive at a steady few
+# per order of magnitude with no cluster and no gap.
+SPREAD_FROM = 1e29
+SPREAD_TO = 1e46
+
+_late = sorted([u for u in up if (u.get('cost') or 0) >= SPREAD_FROM],
+               key=lambda u: u['cost'])
+if len(_late) > 1:
+    import math
+    _lo, _hi = math.log10(SPREAD_FROM), math.log10(SPREAD_TO)
+    _step = (_hi - _lo) / (len(_late) - 1)
+    for _i, _u in enumerate(_late):
+        _new = 10 ** (_lo + _step * _i)
+        # keep the unlock tied to the price, as it was when generated
+        _unl = _u.get('unlock')
+        if isinstance(_unl, dict) and _unl.get('type') == 'totalEarned':
+            _unl['amount'] = _new * 0.6
+        _u['cost'] = _new
+
 lines = []
 for u in up:
     key = u.get('icon', 'upgrade')

@@ -113,7 +113,7 @@ const times = Object.values(t0.upgradeTimes).sort((a, b) => a - b);
 console.log('   last upgrade bought  : ' + (times.length ? fmtT(times[times.length - 1]) : 'n/a'));
 
 console.log('\n   milestones:');
-[3, 6, 9, 12, 18, 24, 30, 40, 50, 70, 100].forEach(m => {
+[3, 6, 9, 12, 18, 24, 30, 33, 36, 39, 42, 45, 48, 51, 54, 60, 70, 100].forEach(m => {
   if (t0.magnitudes[m] !== undefined) {
     console.log('     1e' + String(m).padEnd(4) + ' at ' + fmtT(t0.magnitudes[m]));
   }
