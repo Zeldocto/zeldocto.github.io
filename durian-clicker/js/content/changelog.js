@@ -17,14 +17,6 @@
 
   DC.CONFIG.changelog = [
     {
-      version: 'v22',
-      title: 'Golden Shines on the leaderboard',
-      notes: [
-        'Every leaderboard row now shows six dots beside the name \u2014 one lit for each Golden Shine that player has earned',
-        'Hover the dots to see their prestige level'
-      ]
-    },
-    {
       version: '2.7.1  2026-09-04',
       title: 'Golden Shines',
       notes: [
