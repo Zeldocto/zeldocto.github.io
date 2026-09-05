@@ -33,13 +33,18 @@ create table if not exists public.durian_scores (
   workers        integer not null default 0,
   achievements   integer not null default 0,
 
+  -- Golden Shines: the prestige reward, 0 to 6. Distinct from `achievements`,
+  -- which the game calls Shines.
+  golden_shines  integer not null default 0,
+
   updated_at     timestamptz not null default now(),
 
   -- Cheap sanity limits. These stop typos and lazy nonsense, nothing more.
   constraint name_length     check (char_length(name) between 2 and 20),
   constraint sane_total      check (total_log >= 0 and total_log < 1000),
   constraint sane_dps        check (dps_log >= 0 and dps_log < 1000),
-  constraint sane_playtime   check (play_time >= 0 and play_time < 31536000)
+  constraint sane_playtime   check (play_time >= 0 and play_time < 31536000),
+  constraint sane_shines     check (golden_shines between 0 and 6)
 );
 
 create index if not exists durian_scores_total_idx on public.durian_scores (total_log desc);
@@ -52,8 +57,11 @@ alter table public.durian_scores enable row level security;
 -- Column-level select grant. Note that player_id is deliberately absent:
 -- even a hand-written ?select=player_id request is refused.
 revoke all on public.durian_scores from anon;
+-- NOTE: this list is column-by-column, so ANY new column added later must be
+-- added here too or readers simply will not see it.
 grant select (public_id, name, total_log, total_display, dps_log, dps_display,
-              play_time, total_clicks, workers, achievements, updated_at)
+              play_time, total_clicks, workers, achievements, golden_shines,
+              updated_at)
   on public.durian_scores to anon;
 -- Deliberately NO insert/update grant: writes go through the function below.
 

@@ -236,8 +236,11 @@
         if (!self.readShines) throw err;
         self.readShines = false;
         self.shinesRetryAt = Date.now() + 30000;       // try again in half a minute
-        console.warn('[Durian Clicker] leaderboard: no golden_shines column yet, ' +
-                     'showing the board without prestige. Run leaderboard-guard.sql.');
+        console.warn('[Durian Clicker] leaderboard: could not read golden_shines, ' +
+                     'so prestige will not show. Two causes: the column is missing ' +
+                     '(run leaderboard-guard.sql), or anon has no SELECT grant on it ' +
+                     '\u2014 the grant in leaderboard-setup.sql is column-by-column, ' +
+                     'so a new column is invisible until it is added there too.');
         return attempt();
       });
     },

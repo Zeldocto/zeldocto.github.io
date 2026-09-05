@@ -28,6 +28,18 @@ alter table public.durian_scores
 alter table public.durian_scores
   add constraint sane_shines check (golden_shines between 0 and 6);
 
+-- 1b. Let readers actually SEE the new column.
+--
+-- The select grant in leaderboard-setup.sql is COLUMN-LEVEL, and it lists the
+-- columns one by one. Adding golden_shines to the table therefore did not make
+-- it readable: PostgREST refused the request, the client fell back to the old
+-- column list, and every row arrived without prestige. player_id stays absent
+-- on purpose so a hand-written ?select=player_id is still refused.
+grant select (public_id, name, total_log, total_display, dps_log, dps_display,
+              play_time, total_clicks, workers, achievements, golden_shines,
+              updated_at)
+  on public.durian_scores to anon;
+
 -- 2. The submit function, with limits and the new parameter.
 create or replace function public.submit_durian_score(
   p_player_id     text,

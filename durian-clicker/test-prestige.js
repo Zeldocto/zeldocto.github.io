@@ -355,6 +355,17 @@ console.log('\n=== prestige shows on the leaderboard ===');
     eq('SQL takes the parameter', /p_golden_shines integer default 0/.test(sql), true);
     eq('SQL stores it', /golden_shines = excluded\.golden_shines/.test(sql), true);
     eq('SQL rejects an impossible count', /Golden Shine count out of range/.test(sql), true);
+
+    // The select grant is column-by-column, so adding a column is not enough:
+    // without a matching grant PostgREST refuses the request, the client falls
+    // back to the old column list, and prestige silently never appears.
+    eq('SQL grants read access to the column',
+       /grant select \([^)]*golden_shines[^)]*\)\s*\n?\s*on public\.durian_scores to anon/.test(sql), true);
+    const setup = fs.readFileSync(ROOT + 'leaderboard-setup.sql', 'utf8');
+    eq('a fresh install declares the column', /golden_shines\s+integer not null default 0/.test(setup), true);
+    eq('and grants it', /grant select \([^)]*golden_shines/.test(setup), true);
+    eq('while player_id stays unreadable',
+       /grant select \([^)]*player_id/.test(setup), false);
     eq('and drops the old overload',
        /drop function if exists public\.submit_durian_score/.test(sql), true);
 
