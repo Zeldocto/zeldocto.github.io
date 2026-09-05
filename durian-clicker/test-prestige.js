@@ -345,6 +345,18 @@ console.log('\n=== prestige shows on the leaderboard ===');
     eq('and after the rank',
        order.indexOf('board-rank') < order.indexOf('board-shines'), true);
 
+    // Dark mode: a rule scoped to body.dark once outranked .is-held on
+    // specificity and painted over the gold, so every dot looked unlit while
+    // light mode was fine. The dark rule must only ever target unlit slots.
+    {
+      const css = fs.readFileSync(ROOT + 'css/style.css', 'utf8');
+      eq('the dark rule spares lit dots',
+         /body\.dark \.board-shine:not\(\.is-held\)/.test(css), true);
+      eq('and no unscoped dark rule remains',
+         /body\.dark \.board-shine\s*\{/.test(css), false);
+      eq('the lit style is defined once', (css.match(/#FFC400 65%/g) || []).length, 1);
+    }
+
     // the achievement count in the meta line is a different thing entirely
     eq('the meta line still shows achievement shines',
        / shines/.test(rows[0].querySelector('.board-player-meta').textContent), true);
@@ -355,6 +367,29 @@ console.log('\n=== prestige shows on the leaderboard ===');
     eq('SQL takes the parameter', /p_golden_shines integer default 0/.test(sql), true);
     eq('SQL stores it', /golden_shines = excluded\.golden_shines/.test(sql), true);
     eq('SQL rejects an impossible count', /Golden Shine count out of range/.test(sql), true);
+
+    /* ------------------------------------------------------------------
+     * Rules that must NEVER come back. Each was tried, rejected honest
+     * players, and was removed. The bank-lead rule was reinstated by
+     * accident when the file was rebuilt from an older copy and broke
+     * submissions a second time, which is why this is a test and not a
+     * comment.
+     *
+     *   bank lead   — a lifetime total sits against a freshly reset rate
+     *                 after a prestige, so the gap is unbounded and honest.
+     *   clicks/sec  — autoclickers are allowed at any speed.
+     *   time played — an offline return spends weeks of bank in minutes.
+     * ------------------------------------------------------------------ */
+    const banned = [
+      ['bank lead', /max_bank_lead|dps_log\s*\+|Total is impossible for that production rate/i],
+      ['clicks per second', /max_clicks_per_sec|More clicks than the time played/i],
+      ['production vs time played', /max_log_per_hour|Production too high for the time played/i]
+    ];
+    const verify = fs.readFileSync(ROOT + 'leaderboard-verify.sql', 'utf8');
+    banned.forEach(function (pair) {
+      eq('the ' + pair[0] + ' rule is not in the guard', pair[1].test(sql), false);
+      eq('nor in the verify query', pair[1].test(verify), false);
+    });
 
     // The select grant is column-by-column, so adding a column is not enough:
     // without a matching grant PostgREST refuses the request, the client falls

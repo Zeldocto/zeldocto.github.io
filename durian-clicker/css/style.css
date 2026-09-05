@@ -2160,7 +2160,10 @@ body.dark .shine-slot.is-held { background: linear-gradient(180deg, #5A4A18, #3C
   opacity: 1;
 }
 .board-shines.is-empty { opacity: 0.35; }
-body.dark .board-shine { background: #2C4356; }
+/* Only the UNLIT slots get the dark background. Without :not(.is-held) this
+   rule outranks .board-shine.is-held on specificity and paints over the gold,
+   which left every dot dim in dark mode while light mode looked right. */
+body.dark .board-shine:not(.is-held) { background: #2C4356; }
 
 @media (max-width: 420px) {
   .board-shines { grid-template-columns: repeat(2, 6px); grid-auto-rows: 6px; gap: 2px; }

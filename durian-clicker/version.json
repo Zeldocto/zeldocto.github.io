@@ -1,5 +1,5 @@
 {
-  "build": "2026-09-24-2",
-  "notes": "Grant read access to golden_shines.",
+  "build": "2026-09-24-3",
+  "notes": "Golden Shine dots light correctly in dark mode.",
   "force": false
 }

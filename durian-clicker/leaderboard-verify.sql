@@ -17,7 +17,6 @@ where n.nspname = 'public' and p.proname = 'submit_durian_score';
 select public_id, name, total_display, dps_display, play_time, total_clicks,
        case
          when total_log > 300 then 'above ceiling'
-         when total_log > dps_log + 12 then 'bank runs too far ahead of production'
          when play_time > 0 and dps_log > 20 + 10 * (play_time / 3600.0)
               then 'production too high for time played'
          when play_time > 0 and total_clicks > play_time * 200 then 'impossible click count'
@@ -25,7 +24,6 @@ select public_id, name, total_display, dps_display, play_time, total_clicks,
        end as verdict
 from public.durian_scores
 where total_log > 300
-   or total_log > dps_log + 12
    or (play_time > 0 and dps_log > 20 + 10 * (play_time / 3600.0))
    or (play_time > 0 and total_clicks > play_time * 200)
 order by total_log desc;

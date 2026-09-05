@@ -69,10 +69,6 @@ declare
   -- tier.
   ceiling_log     constant double precision := 300;
 
-  -- How far a bank may run ahead of production. Offline caps at 49 days
-  -- (~6.6 in log10) and event windfalls add more, so 12 leaves real room while
-  -- still catching a huge total attached to a small rate.
-  max_bank_lead   constant double precision := 12;
 begin
   if p_player_id is null or char_length(p_player_id) < 8 then
     raise exception 'Bad player id';
@@ -83,10 +79,6 @@ begin
 
   if coalesce(p_total_log, 0) > ceiling_log or coalesce(p_dps_log, 0) > ceiling_log then
     raise exception 'Score above the possible ceiling';
-  end if;
-
-  if coalesce(p_total_log, 0) > coalesce(p_dps_log, 0) + max_bank_lead then
-    raise exception 'Total is impossible for that production rate';
   end if;
 
   -- Loose sanity only: real crews already run past 20,000.
@@ -151,7 +143,6 @@ notify pgrst, 'reload schema';
 --   select public_id, name, total_display, dps_display, golden_shines
 --   from public.durian_scores
 --   where total_log > 300
---      or total_log > dps_log + 12
 --      or golden_shines not between 0 and 6
 --   order by total_log desc;
 --
