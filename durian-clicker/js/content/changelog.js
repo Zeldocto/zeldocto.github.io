@@ -20,10 +20,9 @@
       version: '2.8  2026-09-04',
       title: 'Late game rebalance',
       notes: [
-        'Everything past a nonillion was running away \u2014 you could go from a nonillion to a quindecillion in a few days. Upgrades above that point are now much weaker',
-        'Late upgrades are also spread out evenly instead of arriving in one huge clump, and the empty stretch where there was nothing left to buy is filled in',
-        'The early and mid game are untouched',
-        'Nothing you already own has changed hands \u2014 the upgrades you bought are simply worth less than they were'
+        'Everything past a nonillion was running away \u2014 you could go from a nonillion to endgame in a matter of seconds. Upgrades above that point should be nerfed.',
+        'Late upgrades are also spread out evenly instead of arriving in one huge clump, and the empty stretch where there was nothing left to buy is filled in.',
+        'The early and mid game are untouched, as balance seems to be almost perfected.'
       ]
     },
     {
