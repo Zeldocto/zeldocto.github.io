@@ -321,18 +321,33 @@ console.log('\n=== prestige shows on the leaderboard ===');
     Dl.UI.selectTab('board');
     const rows = [...wl.document.querySelectorAll('#board-list .board-row')];
     eq('three rows', rows.length, 3);
-    const pips = r => r.querySelectorAll('.golden-pip').length;
-    eq('six Shines shows six pips', pips(rows[0]), 6);
-    eq('two shows two', pips(rows[1]), 2);
-    eq('none shows none', pips(rows[2]), 0);
-    eq('and the count is in the title',
-       rows[0].querySelector('.golden-pips').title, '6 Golden Shines');
-    eq('singular reads correctly', (function () {
-      const one = wl.document.createElement('div');
-      one.innerHTML = '<div class="board-player-name">x</div>';
-      return /1 Golden Shine$/.test(
-        rows[0].querySelector('.golden-pips').title.replace('6 Golden Shines', '1 Golden Shine'));
-    })(), true);
+    // GOLDEN SHINES (the prestige reward), drawn as a fixed 2x3 grid of dots
+    // left of the name. Not the "shines" in the meta line — those are
+    // achievements and must be left alone.
+    const grid = r => r.querySelector('.board-shines');
+    const slots = r => grid(r).querySelectorAll('.board-shine').length;
+    const filled = r => grid(r).querySelectorAll('.board-shine.is-held').length;
+
+    eq('three rows', rows.length, 3);
+    eq('every row draws all six slots',
+       rows.every(r => slots(r) === 6), true);
+    eq('six Golden Shines fills six', filled(rows[0]), 6);
+    eq('two fills two', filled(rows[1]), 2);
+    eq('none fills none', filled(rows[2]), 0);
+    eq('tooltip gives the prestige level', grid(rows[0]).title, 'Prestige 6');
+    eq('and reads sensibly at one', grid(rows[1]).title, 'Prestige 2');
+    eq('with a clear empty state', grid(rows[2]).title, 'No prestige yet');
+
+    // position: its own column, before the name
+    const order = [...rows[0].children].map(c => c.className.split(' ')[0]);
+    eq('the dots sit left of the name',
+       order.indexOf('board-shines') < order.indexOf('board-player'), true);
+    eq('and after the rank',
+       order.indexOf('board-rank') < order.indexOf('board-shines'), true);
+
+    // the achievement count in the meta line is a different thing entirely
+    eq('the meta line still shows achievement shines',
+       / shines/.test(rows[0].querySelector('.board-player-meta').textContent), true);
 
     // the SQL has to accept the new parameter, or none of this reaches the server
     const sql = fs.readFileSync(ROOT + 'leaderboard-guard.sql', 'utf8');

@@ -966,7 +966,7 @@ body.dark .amt-custom { color: var(--ink); }
 
 .board-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px auto minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
   border: 2px solid var(--sand-line);
@@ -2135,17 +2135,34 @@ body.dark .shine-slot.is-held { background: linear-gradient(180deg, #5A4A18, #3C
 }
 
 
-/* Golden Shines beside a leaderboard name. */
-.golden-pips {
-  display: inline-flex;
-  gap: 2px;
-  margin-left: 6px;
-  vertical-align: middle;
+/* GOLDEN SHINES on a leaderboard row: the prestige reward, shown as a 2x3
+   grid of dots left of the name. Distinct from the "shines" in the row's meta
+   line, which are achievements. Every row draws all six slots so the column
+   keeps a constant width and the names stay aligned. */
+.board-shines {
+  display: grid;
+  grid-template-columns: repeat(2, 7px);
+  grid-auto-rows: 7px;
+  gap: 3px;
+  flex-shrink: 0;
+  cursor: help;
 }
-.golden-pip {
-  width: 9px;
-  height: 9px;
+.board-shine {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  background: var(--sand-line);
+  opacity: 0.5;
+}
+.board-shine.is-held {
   background: radial-gradient(circle at 35% 30%, #FFF3C4, #FFC400 65%, #C98A00);
-  box-shadow: 0 0 4px rgba(255, 196, 0, 0.8);
+  box-shadow: 0 0 4px rgba(255, 196, 0, 0.75);
+  opacity: 1;
+}
+.board-shines.is-empty { opacity: 0.35; }
+body.dark .board-shine { background: #2C4356; }
+
+@media (max-width: 420px) {
+  .board-shines { grid-template-columns: repeat(2, 6px); grid-auto-rows: 6px; gap: 2px; }
+  .board-shine { width: 6px; height: 6px; }
 }

@@ -1470,9 +1470,9 @@
       if (e.play_time) meta.push(N.formatDuration(e.play_time) + ' played');
       return '<li class="board-row' + (e.isYou ? ' is-you' : '') + (e.rank === 1 ? ' top1' : '') + '">' +
         '<div class="board-rank">' + e.rank + '</div>' +
+        goldenPips(e.golden_shines) +
         '<div class="board-player">' +
-          '<div class="board-player-name">' + escapeHtml(e.name || 'Anonymous') +
-            goldenPips(e.golden_shines) + '</div>' +
+          '<div class="board-player-name">' + escapeHtml(e.name || 'Anonymous') + '</div>' +
           '<div class="board-player-meta">' + meta.join(' · ') + '</div>' +
         '</div>' +
         '<div class="board-score">' + escapeHtml(boardScore(e, board)) + '</div>' +
@@ -1483,17 +1483,23 @@
   }
 
   /**
-   * Golden Shines beside a leaderboard name. Drawn as small suns rather than a
-   * number so a prestiged player is obvious at a glance, with a title for the
-   * exact count.
+   * A player's GOLDEN SHINES — the prestige reward, not their Shine
+   * achievements — drawn as a 2x3 grid of dots left of the name.
+   *
+   * All six slots are always drawn, filled or not, so the column is a constant
+   * width, every row stays aligned, and a glance shows how far through
+   * prestige someone is. Hovering gives their prestige level.
    */
   function goldenPips(count) {
-    var n = Math.max(0, Math.min(parseInt(count, 10) || 0, 6));
-    if (!n) return '';
-    var pips = '';
-    for (var i = 0; i < n; i++) pips += '<i class="golden-pip"></i>';
-    return '<span class="golden-pips" title="' + n +
-           ' Golden Shine' + (n === 1 ? '' : 's') + '">' + pips + '</span>';
+    var total = (CONFIG.prestige && CONFIG.prestige.requirements.length) || 6;
+    var held = Math.max(0, Math.min(parseInt(count, 10) || 0, total));
+    var label = held ? 'Prestige ' + held : 'No prestige yet';
+    var dots = '';
+    for (var i = 1; i <= total; i++) {
+      dots += '<i class="board-shine' + (i <= held ? ' is-held' : '') + '"></i>';
+    }
+    return '<div class="board-shines' + (held ? '' : ' is-empty') + '" title="' +
+           label + '" aria-label="' + label + '">' + dots + '</div>';
   }
 
   function escapeHtml(text) {
