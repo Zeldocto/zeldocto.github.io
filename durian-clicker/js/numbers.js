@@ -137,7 +137,16 @@
 
   /* First tier shown as a power of ten instead of a suffix. Tier 12 is 1e36,
      where the suffix table stops being single words and starts compounding. */
-  var POWER_TIER = 12;
+  /*
+   * Abbreviated numbers switch to a power of ten once the exponent reaches
+   * this. 1 means anything from ten upwards reads as 1.5x10^1 rather than 15,
+   * so the K/M/B suffixes are effectively retired. Raise it to bring them
+   * back: 3 starts at a thousand, 12 was the old behaviour (1e36, where the
+   * suffix table began compounding into UDc/OcDc and stopped being readable).
+   *
+   * CONFIG.formatting.powerOfTenFrom overrides it.
+   */
+  var POWER_FROM_DEFAULT = 1;
 
   /*
    * Exponents are written as ^45 rather than with Unicode superscript digits.
@@ -249,11 +258,11 @@
       if (tier < WORDS.length) return text + ' ' + WORDS[tier];
       return trimZeros(v.m.toFixed(3)) + ' \u00D7 10^' + v.e;
     }
-    // Past the plain suffixes the table starts compounding — UDc, OcDc, NoVg —
-    // which nobody can read at a glance. Switch to a power of ten there.
-    if (tier < POWER_TIER && tier < SUFFIXES.length) return text + SUFFIXES[tier];
+    var powerFrom = (cfg.powerOfTenFrom !== undefined)
+      ? cfg.powerOfTenFrom : POWER_FROM_DEFAULT;
+    if (v.e >= powerFrom) return powerOfTen(v);
+    if (tier < SUFFIXES.length) return text + SUFFIXES[tier];
     return powerOfTen(v);
-    return v.m.toFixed(3) + 'e' + v.e;
   }
 
   /**

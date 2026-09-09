@@ -28,7 +28,7 @@
 
     // Shown beside the logo and used as the changelog heading. Bump this when
     // you cut a release; buildId is the deploy stamp and changes far more often.
-    version: '2.8',
+    version: '2.8.1',
 
     saveKey: 'durianClicker.save.v1',
     saveVersion: 1,
@@ -59,9 +59,12 @@
     },
 
     formatting: {
+      // Abbreviated numbers become 1.5x10^1 from this exponent up. 1 retires
+      // the K/M/B suffixes almost entirely; raise it to bring them back.
+      powerOfTenFrom: 1,
       // Values below this print as "12,345"; at or above it they print as
       // "1.25K", "2.40M", ... Raise to 1e6 if you prefer commas for longer.
-      suffixThreshold: 1000,
+      suffixThreshold: 10,
       defaultMode: 'abbreviated'    // players can change this in Settings
     },
 

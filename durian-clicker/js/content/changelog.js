@@ -17,6 +17,14 @@
 
   DC.CONFIG.changelog = [
     {
+      version: '2.8.1  2026-09-04',
+      title: 'Number display',
+      notes: [
+        'Abbreviated numbers now use powers of ten from ten upwards \u2014 1.5\u00D710^3 instead of 1.5K',
+        'Shortened (\"1.5 million\") and full numbers are unchanged, and you can still switch in Settings'
+      ]
+    },
+    {
       version: '2.8  2026-09-04',
       title: 'Late game rebalance',
       notes: [

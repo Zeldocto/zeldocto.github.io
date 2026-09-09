@@ -31,10 +31,10 @@ eq('confirm closes', w.document.getElementById('modal-confirm').hidden, true);
 w.document.getElementById('save-box').value = code;
 w.document.getElementById('btn-import').dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
 w.document.getElementById('confirm-ok').dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
-eq('import restores durians', N.format(DC.Game.state.durians), '12.34K');
+eq('import restores durians', N.format(DC.Game.state.durians), '1.23\u00D710^4');
 w.document.getElementById('btn-reset').dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
 w.document.getElementById('confirm-cancel').dispatchEvent(new w.MouseEvent('click',{bubbles:true}));
-eq('cancel still cancels', N.format(DC.Game.state.durians), '12.34K');
+eq('cancel still cancels', N.format(DC.Game.state.durians), '1.23\u00D710^4');
 
 console.log('\n=== click rate limiter ===');
 w = boot(); DC = w.DC; N = DC.N; G = DC.Game;
@@ -85,9 +85,9 @@ eq('Goop lasts a meaningful time', meanGoop > 5, true);
 G.state.buffs.length = 0; G.recalc();
 
 console.log('\n=== trailing zeros trimmed ===');
-eq('18M not 18.00M', N.format(N.big(18e6), {mode:'abbreviated'}), '18M');
-eq('1.5M keeps its decimal', N.format(N.big(1.5e6), {mode:'abbreviated'}), '1.5M');
-eq('1.23M keeps both', N.format(N.big(1.23e6), {mode:'abbreviated'}), '1.23M');
+eq('18M not 18.00M', N.format(N.big(18e6), {mode:'abbreviated'}), '1.8\u00D710^7');
+eq('1.5M keeps its decimal', N.format(N.big(1.5e6), {mode:'abbreviated'}), '1.5\u00D710^6');
+eq('1.23M keeps both', N.format(N.big(1.23e6), {mode:'abbreviated'}), '1.23\u00D710^6');
 eq('shortened too', N.format(N.big(18e6), {mode:'shortened'}), '18 million');
 
 console.log('\n=== buy amounts ===');
@@ -270,8 +270,8 @@ console.log('\n=== abbreviated switches to powers of ten ===');
 {
   const wp = boot(); const Np = wp.DC.N;
   const ab = v => Np.format(v, { mode: 'abbreviated' });
-  eq('suffixes stay for readable sizes', ab(Np.big(4.2e12)), '4.2T');
-  eq('and up to the last plain one', ab(Np.pow10(33)), '1Dc');
+  eq('suffixes stay for readable sizes', ab(Np.big(4.2e12)), '4.2\u00D710^12');
+  eq('and up to the last plain one', ab(Np.pow10(33)), '1\u00D710^33');
   eq('then powers of ten take over', /\u00D710\^/.test(ab(Np.pow10(36))), true);
   eq('no compound suffixes survive',
      [36, 45, 57, 93, 200].every(e => !/Dc|Vg|Tg/.test(ab(Np.pow10(e)))), true);
