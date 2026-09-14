@@ -6,305 +6,269 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeldocto</title>
     <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
-    <link rel="preload" href="assets/fonts/Delfino.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="assets/fonts/SMSScript.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        @font-face {
-            font-family: 'Delfino';
-            src: url('assets/fonts/Delfino.ttf') format('truetype');
+        :root {
+            --bg: #141414;
+            --fg: #d4d4d4;
+            --dim: #8a8a8a;
+            --faint: #444;
+            --accent: #7cc4ff;
         }
-        @font-face {
-            font-family: 'SMSScript';
-            src: url('assets/fonts/SMSScript.ttf') format('truetype');
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        html {
-            height: 100%;
-            overflow: hidden;
-        }
-        html::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 0;
-        }
+
+        * { box-sizing: border-box; }
+
+        html, body { height: 100%; margin: 0; }
+
         body {
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 13px;
             overflow: hidden;
         }
-        #leaderboard {
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
-        }
-        #leaderboard::-webkit-scrollbar {
-            width: 12px;
-        }
-        #leaderboard::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        #leaderboard::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.4);
-            border-radius: 6px;
-            border: 3px solid rgba(0, 0, 0, 0);
-            background-clip: padding-box;
-        }
+
+        ::selection { background: var(--accent); color: var(--bg); }
+
+        /* background video + dim overlay */
         .video-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+            inset: 0;
+            z-index: 0;
+        }
+        .video-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(20, 20, 20, 0.78);
         }
         #intro-video, #loop-video {
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        #intro-video {
+        #loop-video { display: none; }
+
+        canvas {
+            position: fixed;
+            inset: 0;
             z-index: 1;
+            pointer-events: none;
         }
-        #loop-video {
-            z-index: 0;
-            display: none;
-        }
-        .container {
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            z-index: 1;
-        }
-        h1 {
-            font-family: 'Delfino', Arial, sans-serif;
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .link {
-            display: block;
-            font-family: 'SMSScript', Arial, sans-serif;
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            margin: 15px 0;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 18px;
-            transition: all 0.2s ease;
+
+        main {
             position: relative;
-            overflow: hidden;
-        }
-        .link:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .link:active {
-            background-color: #003d82;
-            transform: translateY(1px);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        .link::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s ease, height 0.3s ease;
-        }
-        .link:active::after {
-            width: 300px;
-            height: 300px;
-            opacity: 0;
-        }
-        .home-link {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-family: 'Delfino', Arial, sans-serif;
-            font-size: 48px;
-            color: white;
-            text-decoration: none;
             z-index: 2;
-            text-shadow: 2px 2px 2px #000;
-            transition: all 0.2s ease;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3.5rem;
+            padding: 2rem 1rem;
+            animation: fade 0.8s ease-out both;
         }
-        .home-link:hover {
-            color: #ddd;
-            text-shadow: 2px 2px 2px #000;
-            transform: scale(1.05);
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: none; }
         }
-        .home-link:active {
-            transform: scale(0.95);
+
+        /* title */
+        header { text-align: center; user-select: none; }
+        header h1 {
+            margin: 0;
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 300;
+            letter-spacing: -0.04em;
+            line-height: 1;
         }
-        .separator {
-            border: 0;
-            height: 1px;
-            background: #333;
-            margin: 15px 0;
-            opacity: 0.3;
+        header h1::after {
+            content: '_';
+            color: var(--accent);
+            animation: blink 1s steps(2) infinite;
         }
+        @keyframes blink { to { opacity: 0; } }
+        header p { margin: 0.75rem 0 0; color: var(--dim); }
+        header p::before { content: '# '; color: var(--faint); }
+
+        /* links */
+        nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(9rem, max-content));
+            justify-content: center;
+            gap: 2rem 3.5rem;
+            width: 100%;
+            max-width: 60rem;
+        }
+        nav h2 {
+            margin: 0 0 0.75rem;
+            font-size: inherit;
+            font-weight: 500;
+            color: var(--accent);
+        }
+        nav h2::before { content: '// '; color: var(--faint); }
+        nav ul { list-style: none; margin: 0; padding: 0; }
+        nav li { margin: 0.3rem 0; }
+        nav a {
+            color: var(--dim);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        nav a::before {
+            content: '> ';
+            color: transparent;
+            transition: color 0.15s;
+        }
+        nav a:hover, nav a:focus-visible { color: var(--fg); outline: none; }
+        nav a:hover::before, nav a:focus-visible::before { color: var(--accent); }
+
+        /* support prompt */
+        .prompt {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 32rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--faint);
+            background: rgba(20, 20, 20, 0.6);
+            color: var(--dim);
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .prompt::before { content: '~ $'; color: var(--accent); }
+        .prompt:hover, .prompt:focus-visible { border-color: var(--accent); color: var(--fg); outline: none; }
+
         .loading {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
+            bottom: 1rem;
+            right: 1rem;
             z-index: 3;
-            font-family: 'Delfino', Arial, sans-serif;
-            text-shadow: 1px 1px 2px #000;
+            color: var(--faint);
+            animation: spin 1.2s linear infinite;
         }
-        @media (max-width: 768px) {
-            .home-link {
-                font-size: 32px;
-                top: 5px;
-                left: 5px;
-            }
-            .container {
-                padding: 15px;
-                max-width: 90%;
-            }
-        }
-        #support-link {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-family: 'SMSScript', Arial, sans-serif;
-            background-color: #28a745;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 16px;
-            text-decoration: none;
-            z-index: 10;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-        }
-        #support-link:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-        #support-link:active {
-            background-color: #1e7e34;
-            transform: translateY(1px);
-        }
-        .social-icons {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-        .social-icon {
-            width: 40px;
-            height: 40px;
-            opacity: 0.8;
-            transition: all 0.2s ease;
-            border-radius: 8px;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-        }
-        .social-icon:hover {
-            opacity: 1;
-            transform: translateY(-2px) scale(1.1);
-            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.9));
-        }
-        .social-icon:active {
-            transform: translateY(1px) scale(0.95);
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="video-container">
         <video id="intro-video" autoplay muted preload="auto" playsinline>
             <source src="assets/background/p3rstart.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         <video id="loop-video" muted preload="auto" playsinline>
             <source src="assets/background/p3r.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
     </div>
+    <canvas id="dots"></canvas>
     <div class="loading" id="loading">↻</div>
-    <a href="https://zeldocto.github.io/" class="home-link"></a>
-    <div class="container">
-        <h1>Zeldocto</h1>
-        <a href="https://speedrun.com/users/Zeldocto" class="link">Speedrun.com</a>
-        <a href="https://zeldocto.github.io/history" class="link">PB History</a>
-        <a href="https://www.start.gg/user/79bb75cd" class="link">start.gg</a>
-        <hr class="separator">
-        <a href="/randotracker/" class="link">Randomizer Tracker</a>
-        <a href="/iltool/" class="link">IL Tool</a>
-        <a href="/worldcalc/" class="link">World Calculator</a>
-        <hr class="separator">
-        <a href="/delfino-ghosts/" class="link">Delfino Ghosts</a>
-        <a href="/durian-clicker/" class="link">Durian Clicker</a>
-        <a href="/moonshine-customs/" class="link">Moonshine Customs</a>
-    </div>
+
+    <main>
+        <header>
+            <h1>zeldocto</h1>
+            <p>super mario sunshine speedrunner</p>
+        </header>
+
+        <nav id="links"></nav>
+
+        <a href="https://ko-fi.com/zeldocto" target="_blank" rel="noopener" class="prompt">support me on ko-fi</a>
+    </main>
 
     <script>
+        const categories = [
+            { title: "profiles", links: [
+                ["speedrun.com", "https://speedrun.com/users/Zeldocto"],
+                ["pb history", "https://zeldocto.github.io/history"],
+                ["start.gg", "https://www.start.gg/user/79bb75cd"],
+            ]},
+            { title: "tools", links: [
+                ["randomizer tracker", "/randotracker/"],
+                ["il tool", "/iltool/"],
+                ["world calculator", "/worldcalc/"],
+            ]},
+            { title: "projects", links: [
+                ["delfino ghosts", "/delfino-ghosts/"],
+                ["durian clicker", "/durian-clicker/"],
+                ["moonshine customs", "/moonshine-customs/"],
+            ]},
+            { title: "social", links: [
+                ["bluesky", "https://bsky.app/profile/zeldocto.bsky.social"],
+                ["x", "https://x.com/zeldocto"],
+                ["github", "https://github.com/Zeldocto"],
+                ["twitch", "https://twitch.tv/zeldocto"],
+                ["youtube", "https://youtube.com/@zeldocto"],
+            ]},
+        ];
+
+        document.getElementById('links').innerHTML = categories.map(c => `
+            <section>
+                <h2>${c.title}</h2>
+                <ul>${c.links.map(([n, u]) => `<li><a href="${u}"${u.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${n}</a></li>`).join('')}</ul>
+            </section>`).join('');
+
+        // video: play intro once, then loop
         const introVideo = document.getElementById('intro-video');
         const loopVideo = document.getElementById('loop-video');
         const loading = document.getElementById('loading');
 
         loopVideo.load();
-
-        introVideo.addEventListener('canplay', () => {
-            loading.style.display = 'none';
-        });
-
-        introVideo.addEventListener('ended', function() {
+        introVideo.addEventListener('canplay', () => { loading.style.display = 'none'; });
+        introVideo.addEventListener('ended', () => {
             introVideo.style.display = 'none';
             loopVideo.style.display = 'block';
-            loopVideo.play();
             loopVideo.loop = true;
+            loopVideo.play();
         });
+
+        // dots: each wanders on its own, drifts slightly toward the cursor
+        const canvas = document.getElementById('dots');
+        const ctx = canvas.getContext('2d');
+        const mouse = { x: -1e4, y: -1e4 };
+        let dots = [];
+
+        function resize() {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            const n = Math.round(innerWidth * innerHeight / 14000);
+            dots = Array.from({ length: n }, () => ({
+                x: Math.random() * innerWidth,
+                y: Math.random() * innerHeight,
+                a: Math.random() * Math.PI * 2,   // heading
+                s: 0.15 + Math.random() * 0.35,   // speed
+                r: 0.8 + Math.random() * 1.2,     // radius
+                blue: Math.random() < 0.12,
+            }));
+        }
+
+        function frame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const d of dots) {
+                d.a += (Math.random() - 0.5) * 0.3;            // random wander
+                const dx = mouse.x - d.x, dy = mouse.y - d.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 260) {                              // gentle pull to cursor
+                    d.x += dx / dist * (1 - dist / 260) * 0.6;
+                    d.y += dy / dist * (1 - dist / 260) * 0.6;
+                }
+                d.x = (d.x + Math.cos(d.a) * d.s + canvas.width) % canvas.width;
+                d.y = (d.y + Math.sin(d.a) * d.s + canvas.height) % canvas.height;
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                ctx.fillStyle = d.blue ? 'rgba(124,196,255,0.6)' : 'rgba(255,255,255,0.25)';
+                ctx.fill();
+            }
+            requestAnimationFrame(frame);
+        }
+
+        addEventListener('resize', resize);
+        addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        addEventListener('mouseleave', () => { mouse.x = mouse.y = -1e4; });
+        resize();
+        frame();
     </script>
-    
-    <div class="social-icons">
-        <a href="https://bsky.app/profile/zeldocto.bsky.social" target="_blank">
-            <img src="assets/icons/bluesky-48.png" alt="Bluesky" class="social-icon">
-        </a>
-        <a href="https://x.com/zeldocto" target="_blank">
-            <img src="assets/icons/x-48.png" alt="X" class="social-icon">
-        </a>
-        <a href="https://github.com/Zeldocto" target="_blank">
-            <img src="assets/icons/github-48.png" alt="GitHub" class="social-icon">
-        </a>
-        <a href="https://twitch.tv/zeldocto" target="_blank">
-            <img src="assets/icons/twitch-48.png" alt="Twitch" class="social-icon">
-        </a>
-        <a href="https://youtube.com/@zeldocto" target="_blank">
-            <img src="assets/icons/youtube-48.png" alt="YouTube" class="social-icon">
-        </a>
-    </div>
-    
-    <a href="https://ko-fi.com/zeldocto" target="_blank" id="support-link">Support Me💲</a>
 </body>
 </html>
