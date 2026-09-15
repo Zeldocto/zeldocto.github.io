@@ -115,6 +115,9 @@
         nav ul { list-style: none; margin: 0; padding: 0; }
         nav li { margin: 0.3rem 0; }
         nav a {
+            display: block;
+            padding-left: 2ch;
+            text-indent: -2ch;
             color: var(--dim);
             text-decoration: none;
             transition: color 0.15s;
@@ -232,18 +235,26 @@
         const mouse = { x: -1e4, y: -1e4 };
         let dots = [];
 
-        function resize() {
-            canvas.width = innerWidth;
-            canvas.height = innerHeight;
-            const n = Math.round(innerWidth * innerHeight / 14000);
-            dots = Array.from({ length: n }, () => ({
+        function makeDot() {
+            return {
                 x: Math.random() * innerWidth,
                 y: Math.random() * innerHeight,
                 a: Math.random() * Math.PI * 2,   // heading
                 s: 0.15 + Math.random() * 0.35,   // speed
                 r: 0.8 + Math.random() * 1.2,     // radius
                 blue: Math.random() < 0.12,
-            }));
+            };
+        }
+
+        function resize() {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            const n = Math.round(innerWidth * innerHeight / 14000);
+            if (dots.length > n) {
+                dots.length = n;
+            } else {
+                while (dots.length < n) dots.push(makeDot());
+            }
         }
 
         function frame() {
