@@ -1,0 +1,27 @@
+# Keeps the Durian Clicker Supabase project from auto-pausing.
+# Free-tier projects pause after ~7 days without database activity,
+# so this reads one leaderboard row every 3 days.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 15 */3 * *'   # every 3 days, 15:17 UTC
+  workflow_dispatch:          # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the leaderboard table
+        env:
+          # Same publishable key the game already ships in durian-clicker/js/config.js
+          SUPABASE_URL: https://fiedmihcarlernixzlps.supabase.co
+          SUPABASE_KEY: sb_publishable_NAkqrWI96qG43ALKHhQDxg_p7q395cA
+        run: |
+          status=$(curl -s -o response.txt -w '%{http_code}' --max-time 30 \
+            -H "apikey: $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/durian_scores?select=public_id&limit=1")
+          echo "HTTP $status"
+          cat response.txt; echo
+          # Fail the run (GitHub emails you) if the project is paused or erroring
+          if [ "$status" != "200" ]; then exit 1; fi
